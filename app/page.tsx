@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -68,26 +68,6 @@ function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: str
     <span ref={ref}>
       {count.toLocaleString()}{suffix}
     </span>
-  );
-}
-
-/* ─── Floating Particles (decorative) ─── */
-function Particles() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(6)].map((_, i) => (
-        <div
-          key={i}
-          className="absolute w-1 h-1 rounded-full bg-primary/40 animate-float"
-          style={{
-            left: `${15 + i * 15}%`,
-            top: `${20 + (i % 3) * 25}%`,
-            animationDelay: `${i * 0.8}s`,
-            animationDuration: `${5 + i * 1.5}s`,
-          }}
-        />
-      ))}
-    </div>
   );
 }
 
@@ -165,23 +145,23 @@ export default function Home() {
       <main className="flex-grow">
         {/* ───────── HERO ───────── */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-          {/* Background */}
+          {/* ── Video Background ── */}
           <div className="absolute inset-0 z-0">
-            <Image
-              src="/hero.png"
-              alt="Aaradhya Dream City"
-              fill
-              className="object-cover brightness-[0.3] scale-105"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black" />
-            <div className="absolute inset-0 grid-pattern" />
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover brightness-[0.45]"
+            >
+              <source src="/landingpagev1.mp4" type="video/mp4" />
+            </video>
+            {/* Dark gradient overlays */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30" />
+            <div className="absolute inset-0 grid-pattern opacity-30" />
           </div>
 
-          {/* Decorative orbs */}
-          <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-primary/8 rounded-full blur-[150px] animate-float-slow" />
-          <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-amber-500/6 rounded-full blur-[120px] animate-float" />
-          <Particles />
 
           {/* Content */}
           <div
@@ -189,64 +169,20 @@ export default function Home() {
             className={`relative z-10 max-w-6xl mx-auto px-6 text-center ${heroSection.visible ? "animate-fade-in-up" : "opacity-0"}`}
           >
             {/* Badge */}
-            <div className="inline-flex items-center gap-2.5 bg-white/[0.07] backdrop-blur-xl px-5 py-2.5 rounded-full border border-white/[0.12] mb-10">
-              <div className="w-2 h-2 rounded-full bg-primary animate-shimmer" />
-              <span className="text-[13px] font-semibold tracking-[0.15em] text-zinc-300 uppercase">
-                The Future of Brokerage
-              </span>
-            </div>
-
+            
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white mb-8 tracking-tight leading-[1.05]">
-              Unlock Limitless
+              Aaradhya
               <br />
-              <span className="gold-text-gradient animate-gradient-text">
-                Growth Today
+              <span className="text-primary">
+                Dream City
               </span>
             </h1>
 
             <p className="text-lg md:text-xl text-zinc-400 mb-12 max-w-2xl mx-auto leading-relaxed font-light">
-              Join India&apos;s most innovative real estate broker network.
-              Leverage our state-of-the-art referral system, transparent commissions,
-              and premium property access.
+              Discover Plots, Homes, and Commercial Spaces Designed for Your Aspirations.
             </p>
 
-            {/* Hero CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
-              <Link
-                href="/register"
-                id="hero-register-btn"
-                className="group relative gold-gradient px-10 py-4.5 rounded-full text-black font-bold text-lg hover:scale-105 transition-all duration-300 shadow-[0_0_40px_rgba(212,175,55,0.3)] flex items-center gap-3"
-              >
-                <span>Register as Broker</span>
-                <ArrowRight className="group-hover:translate-x-1.5 transition-transform duration-300" size={20} />
-                <div className="absolute inset-0 rounded-full animate-pulse-ring pointer-events-none" />
-              </Link>
-              <Link
-                href="/login"
-                id="hero-login-btn"
-                className="px-10 py-4.5 rounded-full border border-zinc-700/80 text-zinc-300 font-medium text-lg hover:bg-white/[0.06] hover:border-zinc-600 hover:text-white transition-all duration-300 backdrop-blur-sm"
-              >
-                Broker Login
-              </Link>
-            </div>
 
-            {/* Trust badges */}
-            <div className="mt-16 flex items-center justify-center gap-6 text-zinc-600 text-sm">
-              <div className="flex items-center gap-1.5">
-                <ShieldCheck size={14} className="text-primary/60" />
-                <span>KYC Verified</span>
-              </div>
-              <div className="w-px h-4 bg-zinc-800" />
-              <div className="flex items-center gap-1.5">
-                <Zap size={14} className="text-primary/60" />
-                <span>Instant Payouts</span>
-              </div>
-              <div className="w-px h-4 bg-zinc-800" />
-              <div className="flex items-center gap-1.5">
-                <Star size={14} className="text-primary/60" />
-                <span>Trusted by 2,500+</span>
-              </div>
-            </div>
           </div>
 
           {/* Scroll indicator */}
@@ -291,10 +227,6 @@ export default function Home() {
 
         {/* ───────── FEATURES ───────── */}
         <section id="features" className="relative py-32 bg-[#030303] overflow-hidden">
-          {/* Decorative */}
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/[0.04] rounded-full blur-[160px] -mr-80 -mt-80" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-amber-500/[0.03] rounded-full blur-[120px] -ml-40 -mb-40" />
-          <Particles />
 
           <div ref={featuresSection.ref} className="relative z-10 max-w-7xl mx-auto px-6">
             {/* Section Header */}
@@ -305,7 +237,7 @@ export default function Home() {
               </div>
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 tracking-tight">
                 The Premium Broker{" "}
-                <span className="gold-text-gradient">Advantage</span>
+                <span className="text-primary">Advantage</span>
               </h2>
               <p className="text-zinc-400 max-w-2xl mx-auto text-lg leading-relaxed">
                 World-class technology, transparent earnings, and an exclusive network
@@ -353,7 +285,7 @@ export default function Home() {
               </div>
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 tracking-tight">
                 Start Earning in{" "}
-                <span className="gold-text-gradient">4 Steps</span>
+                <span className="text-primary">4 Steps</span>
               </h2>
               <p className="text-zinc-400 max-w-xl mx-auto text-lg">
                 From registration to your first commission — it&apos;s faster than you think.
@@ -373,7 +305,7 @@ export default function Home() {
                   )}
 
                   <div className="relative z-10 p-8 rounded-3xl bg-zinc-950/80 border border-zinc-800/80 hover:border-primary/40 transition-all duration-500 text-center">
-                    <div className="w-16 h-16 rounded-full gold-gradient flex items-center justify-center mx-auto mb-6 text-black font-black text-xl shadow-[0_0_30px_rgba(212,175,55,0.2)] group-hover:scale-110 transition-transform duration-500">
+                    <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center mx-auto mb-6 text-black font-black text-xl group-hover:scale-110 transition-transform duration-500">
                       {step.num}
                     </div>
                     <h4 className="text-lg font-bold text-white mb-3">{step.title}</h4>
@@ -387,15 +319,15 @@ export default function Home() {
 
         {/* ───────── CTA ───────── */}
         <section className="relative py-32 bg-[#030303] overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/[0.06] rounded-full blur-[200px]" />
+
 
           <div
             ref={ctaSection.ref}
             className={`relative z-10 max-w-5xl mx-auto px-6 ${ctaSection.visible ? "animate-scale-in" : "opacity-0"}`}
           >
             <div className="relative rounded-[3rem] overflow-hidden">
-              {/* Gold gradient background */}
-              <div className="absolute inset-0 gold-gradient" />
+              {/* Background */}
+              <div className="absolute inset-0 bg-primary" />
               {/* Subtle pattern overlay */}
               <div className="absolute inset-0 grid-pattern opacity-10" />
               {/* Noise overlay */}
