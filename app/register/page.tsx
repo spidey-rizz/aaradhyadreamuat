@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
@@ -22,7 +22,7 @@ import {
   XCircle
 } from "lucide-react";
 
-export default function RegisterPage() {
+function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
@@ -284,5 +284,18 @@ export default function RegisterPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center">
+        <Loader2 className="text-primary animate-spin mb-4" size={48} />
+        <p className="text-zinc-500 font-medium animate-pulse">Loading...</p>
+      </div>
+    }>
+      <RegisterContent />
+    </Suspense>
   );
 }
