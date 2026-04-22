@@ -1,40 +1,31 @@
 "use client";
 
-
 import Link from "next/link";
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useEffect, useRef, useState } from "react";
-import {
-  ArrowRight,
-  BarChart3,
-  Users,
-  Smartphone,
-  ShieldCheck,
-  Gem,
-  Globe,
-  TrendingUp,
-  Award,
-  Building2,
-  ChevronDown,
-  Star,
-  Zap,
-  Target,
-  Wallet,
-} from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 
 /* ─── Intersection Observer hook for scroll reveals ─── */
-function useInView(threshold = 0.15) {
+function useInView(threshold = 0.15, initialVisible = false) {
   const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(initialVisible);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.unobserve(el); } },
+      ([e]) => {
+        if (e.isIntersecting) {
+          setVisible(true);
+          obs.unobserve(el);
+        }
+      },
       { threshold }
     );
+
     obs.observe(el);
     return () => obs.disconnect();
   }, [threshold]);
@@ -42,110 +33,26 @@ function useInView(threshold = 0.15) {
   return { ref, visible };
 }
 
-/* ─── Animated Counter ─── */
-function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: string }) {
-  const [count, setCount] = useState(0);
-  const { ref, visible } = useInView(0.3);
-
-  useEffect(() => {
-    if (!visible) return;
-    let start = 0;
-    const duration = 2000;
-    const step = target / (duration / 16);
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= target) {
-        setCount(target);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(start));
-      }
-    }, 16);
-    return () => clearInterval(timer);
-  }, [visible, target]);
-
-  return (
-    <span ref={ref}>
-      {count.toLocaleString()}{suffix}
-    </span>
-  );
-}
-
-/* ─── Feature Data ─── */
-const features = [
-  {
-    icon: <BarChart3 size={28} />,
-    title: "Live Commission Tracking",
-    desc: "Real-time dashboard showing every lead, conversion, and commission earned across your network.",
-    accent: "from-amber-500/20 to-yellow-600/5",
-  },
-  {
-    icon: <Users size={28} />,
-    title: "Multi-Level Referrals",
-    desc: "Build a recursive referral tree and earn commissions from every level of your downward network.",
-    accent: "from-orange-500/20 to-amber-600/5",
-  },
-  {
-    icon: <Smartphone size={28} />,
-    title: "WhatsApp Verification",
-    desc: "Instant, frictionless onboarding through WhatsApp — no complex forms or waiting periods.",
-    accent: "from-green-500/20 to-emerald-600/5",
-  },
-  {
-    icon: <ShieldCheck size={28} />,
-    title: "KYC Verified Network",
-    desc: "Every broker is identity-verified, ensuring trust and professionalism across all transactions.",
-    accent: "from-blue-500/20 to-cyan-600/5",
-  },
-  {
-    icon: <Globe size={28} />,
-    title: "Premium Listings Access",
-    desc: "Browse exclusive properties across Dream City and beyond from your centralized broker portal.",
-    accent: "from-purple-500/20 to-violet-600/5",
-  },
-  {
-    icon: <Target size={28} />,
-    title: "Growth & Training",
-    desc: "Expert-led workshops, conversion tools, and marketing resources to accelerate your success.",
-    accent: "from-rose-500/20 to-pink-600/5",
-  },
-];
-
-/* ─── Stats ─── */
-const stats = [
-  { label: "Active Brokers", value: 2500, suffix: "+", icon: <Users size={20} /> },
-  { label: "Successful Referrals", value: 10000, suffix: "+", icon: <TrendingUp size={20} /> },
-  { label: "Properties Listed", value: 450, suffix: "+", icon: <Building2 size={20} /> },
-  { label: "Commission Paid", value: 25, suffix: "Cr+", prefix: "₹", icon: <Wallet size={20} /> },
-];
-
-/* ─── Process Steps ─── */
-const steps = [
-  { num: "01", title: "Register", desc: "Create your broker account in under 2 minutes with basic details." },
-  { num: "02", title: "Get Verified", desc: "Complete KYC via WhatsApp for instant identity verification." },
-  { num: "03", title: "Build Network", desc: "Share your unique referral code and grow your broker tree." },
-  { num: "04", title: "Earn Commissions", desc: "Track and withdraw your earnings through the live dashboard." },
-];
-
 /* ═══════════════════════════════════════════════════════ */
 /*                     MAIN COMPONENT                    */
 /* ═══════════════════════════════════════════════════════ */
 
 export default function Home() {
-  const heroSection = useInView(0.1);
-  const statsSection = useInView(0.15);
-  const featuresSection = useInView(0.1);
-  const processSection = useInView(0.1);
-  const ctaSection = useInView(0.15);
+  const heroSection   = useInView(0.1, true);
+  const missionSection = useInView(0.2);
+  const offerHeader   = useInView(0.15);
+  const offer1        = useInView(0.1);
+  const offer2        = useInView(0.1);
+  const offer3        = useInView(0.1);
 
   return (
     <div className="flex flex-col min-h-screen bg-black">
       <Navbar />
 
       <main className="flex-grow">
+
         {/* ───────── HERO ───────── */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-          {/* ── Video Background ── */}
           <div className="absolute inset-0 z-0">
             <video
               autoPlay
@@ -156,33 +63,24 @@ export default function Home() {
             >
               <source src="/landingpagev1.mp4" type="video/mp4" />
             </video>
-            {/* Dark gradient overlays */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30" />
             <div className="absolute inset-0 grid-pattern opacity-30" />
           </div>
 
-
           {/* Content */}
           <div
             ref={heroSection.ref}
-            className={`relative z-10 max-w-6xl mx-auto px-6 text-center ${heroSection.visible ? "animate-fade-in-up" : "opacity-0"}`}
+            className={`relative z-10 max-w-6xl mx-auto px-6 text-center ${heroSection.visible ? "animate-fade-in-up" : ""}`}
           >
-            {/* Badge */}
-            
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white mb-8 tracking-tight leading-[1.05]">
               Aaradhya
               <br />
-              <span className="text-primary">
-                Dream City
-              </span>
+              <span className="text-primary">Dream City</span>
             </h1>
-
             <p className="text-lg md:text-xl text-zinc-400 mb-12 max-w-2xl mx-auto leading-relaxed font-light">
               Discover Plots, Homes, and Commercial Spaces Designed for Your Aspirations.
             </p>
-
-
           </div>
 
           {/* Scroll indicator */}
@@ -192,184 +90,186 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ───────── STATS ───────── */}
-        <section className="relative py-24 bg-black overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-black via-zinc-950 to-black" />
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-
-          <div
-            ref={statsSection.ref}
-            className={`relative z-10 max-w-7xl mx-auto px-6 ${statsSection.visible ? "animate-fade-in-up" : "opacity-0"}`}
-          >
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-              {stats.map((stat, idx) => (
-                <div
-                  key={idx}
-                  className={`text-center group p-6 rounded-2xl border border-zinc-900 hover:border-primary/30 transition-all duration-500 bg-zinc-950/50 ${statsSection.visible ? "animate-fade-in-up" : "opacity-0"}`}
-                  style={{ animationDelay: `${idx * 150}ms` }}
-                >
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 text-primary group-hover:scale-110 transition-transform duration-500">
-                    {stat.icon}
-                  </div>
-                  <div className="text-3xl md:text-4xl font-black text-white mb-2 tabular-nums">
-                    {stat.prefix || ""}
-                    <AnimatedCounter target={stat.value} suffix={stat.suffix} />
-                  </div>
-                  <div className="text-zinc-500 text-xs font-bold uppercase tracking-[0.2em]">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
-            </div>
+        
+        {/* ═══════════ What We Offer ═══════════ */}
+        <section className="relative py-28 bg-black border-t border-zinc-900/60 overflow-hidden">
+          {/* subtle ambient glows */}
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -top-40 left-1/3 w-[500px] h-[500px] bg-primary/4 rounded-full blur-[160px]" />
+            <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-primary/4 rounded-full blur-[140px]" />
           </div>
-        </section>
 
-        {/* ───────── FEATURES ───────── */}
-        <section id="features" className="relative py-32 bg-[#030303] overflow-hidden">
+          <div className="max-w-7xl mx-auto px-6">
 
-          <div ref={featuresSection.ref} className="relative z-10 max-w-7xl mx-auto px-6">
-            {/* Section Header */}
-            <div className={`text-center mb-20 ${featuresSection.visible ? "animate-fade-in-up" : "opacity-0"}`}>
-              <div className="inline-flex items-center gap-2 bg-primary/[0.08] px-4 py-1.5 rounded-full border border-primary/20 mb-6">
-                <Gem size={14} className="text-primary" />
-                <span className="text-xs font-bold text-primary uppercase tracking-[0.2em]">Why Partner With Us</span>
+            {/* ── Section header ── */}
+            <div
+              ref={offerHeader.ref}
+              className={`text-center mb-24 transition-all duration-700 ${
+                offerHeader.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+              }`}
+            >
+              <div className="inline-flex items-center gap-2 bg-primary/10 px-5 py-1.5 rounded-full border border-primary/25 mb-6">
+                <span className="text-[10px] font-bold text-primary uppercase tracking-[0.25em]">What We Offer</span>
               </div>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 tracking-tight">
-                The Premium Broker{" "}
-                <span className="text-primary">Advantage</span>
+              <h2 className="text-4xl md:text-5xl lg:text-[3.5rem] font-black text-white tracking-tight leading-[1.1]">
+                Your Dream,{" "}
+                <span className="text-primary">Our Mission</span>
               </h2>
-              <p className="text-zinc-400 max-w-2xl mx-auto text-lg leading-relaxed">
-                World-class technology, transparent earnings, and an exclusive network
-                — everything you need to thrive in modern real estate.
+              <p className="mt-5 text-zinc-500 text-lg max-w-2xl mx-auto font-light leading-relaxed">
+                Three carefully crafted offerings — one unwavering commitment to excellence.
               </p>
             </div>
 
-            {/* Feature Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {features.map((feature, idx) => (
-                <div
-                  key={idx}
-                  className={`group relative p-8 rounded-3xl bg-zinc-950/80 border border-zinc-800/80 hover:border-primary/40 transition-all duration-500 overflow-hidden ${featuresSection.visible ? "animate-fade-in-up" : "opacity-0"}`}
-                  style={{ animationDelay: `${idx * 100 + 200}ms` }}
-                >
-                  {/* Gradient highlight on hover */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${feature.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-
-                  <div className="relative z-10">
-                    <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-6 text-primary group-hover:bg-primary/10 group-hover:border-primary/30 group-hover:scale-110 transition-all duration-500">
-                      {feature.icon}
-                    </div>
-                    <h4 className="text-xl font-bold text-white mb-3 group-hover:text-primary transition-colors duration-300">
-                      {feature.title}
-                    </h4>
-                    <p className="text-zinc-400 leading-relaxed text-[15px]">
-                      {feature.desc}
-                    </p>
-                  </div>
+            {/* ══ ROW 1 — Duplex House  (image LEFT, text RIGHT) ══ */}
+            <div
+              ref={offer1.ref}
+              className={`group grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-24 items-center mb-32 transition-all duration-1000 ${
+                offer1.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-14"
+              }`}
+            >
+              {/* Image */}
+              <div className={`relative transition-all duration-1000 ${offer1.visible ? "animate-slide-in-left" : "opacity-0"}`}>
+                <div className="relative aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl ring-1 ring-white/5">
+                  <Image
+                    src="/house for home page.jfif"
+                    alt="Duplex House at Aaradhya Dream City"
+                    fill
+                    className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                    sizes="(max-width:1024px) 100vw, 50vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ───────── HOW IT WORKS ───────── */}
-        <section className="relative py-32 bg-black overflow-hidden">
-          <div className="absolute inset-0 grid-pattern opacity-50" />
-
-          <div ref={processSection.ref} className="relative z-10 max-w-6xl mx-auto px-6">
-            <div className={`text-center mb-20 ${processSection.visible ? "animate-fade-in-up" : "opacity-0"}`}>
-              <div className="inline-flex items-center gap-2 bg-primary/[0.08] px-4 py-1.5 rounded-full border border-primary/20 mb-6">
-                <Zap size={14} className="text-primary" />
-                <span className="text-xs font-bold text-primary uppercase tracking-[0.2em]">Simple Process</span>
+                {/* Floating badge */}
+                <div className="absolute -bottom-6 -left-6 bg-zinc-900 border border-zinc-800 px-6 py-4 rounded-2xl shadow-2xl z-20">
+                  <p className="text-primary font-black text-xl leading-none">150+</p>
+                  <p className="text-white font-black text-[11px] uppercase tracking-widest mt-1">Duplex House</p>
+                </div>
               </div>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 tracking-tight">
-                Start Earning in{" "}
-                <span className="text-primary">4 Steps</span>
-              </h2>
-              <p className="text-zinc-400 max-w-xl mx-auto text-lg">
-                From registration to your first commission — it&apos;s faster than you think.
-              </p>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {steps.map((step, idx) => (
-                <div
-                  key={idx}
-                  className={`relative group ${processSection.visible ? "animate-fade-in-up" : "opacity-0"}`}
-                  style={{ animationDelay: `${idx * 150 + 200}ms` }}
-                >
-                  {/* Connector line */}
-                  {idx < steps.length - 1 && (
-                    <div className="hidden lg:block absolute top-12 left-[calc(50%+40px)] w-[calc(100%-80px)] h-px bg-gradient-to-r from-primary/40 to-primary/10 z-0" />
-                  )}
-
-                  <div className="relative z-10 p-8 rounded-3xl bg-zinc-950/80 border border-zinc-800/80 hover:border-primary/40 transition-all duration-500 text-center">
-                    <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center mx-auto mb-6 text-black font-black text-xl group-hover:scale-110 transition-transform duration-500">
-                      {step.num}
-                    </div>
-                    <h4 className="text-lg font-bold text-white mb-3">{step.title}</h4>
-                    <p className="text-zinc-500 text-sm leading-relaxed">{step.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ───────── CTA ───────── */}
-        <section className="relative py-32 bg-[#030303] overflow-hidden">
-
-
-          <div
-            ref={ctaSection.ref}
-            className={`relative z-10 max-w-5xl mx-auto px-6 ${ctaSection.visible ? "animate-scale-in" : "opacity-0"}`}
-          >
-            <div className="relative rounded-[3rem] overflow-hidden">
-              {/* Background */}
-              <div className="absolute inset-0 bg-primary" />
-              {/* Subtle pattern overlay */}
-              <div className="absolute inset-0 grid-pattern opacity-10" />
-              {/* Noise overlay */}
-              <div className="absolute inset-0 bg-black/[0.03]" />
-
-              <div className="relative z-10 p-12 md:p-20 text-center">
-                <div className="inline-flex items-center gap-2 bg-black/10 px-4 py-1.5 rounded-full mb-8">
-                  <Award size={16} className="text-black/70" />
-                  <span className="text-sm font-bold text-black/70 uppercase tracking-widest">Limited Slots</span>
-                </div>
-
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-black mb-6 leading-tight tracking-tight">
-                  Ready to Build Your
-                  <br />
-                  Dream Career?
-                </h2>
-                <p className="text-black/70 text-lg md:text-xl font-medium mb-10 max-w-2xl mx-auto leading-relaxed">
-                  Take the first step towards a lucrative real estate career.
-                  Registration takes less than 2 minutes.
+              {/* Text */}
+              <div className={`flex flex-col transition-all duration-1000 delay-200 ${offer1.visible ? "animate-slide-in-right" : "opacity-0"}`}>
+                <h3 className="text-4xl md:text-5xl font-black leading-[1.1] tracking-tight mb-8">
+                  <span className="text-white">Live the Life</span><br />
+                  <span className="text-primary">You Always Imagined</span>
+                </h3>
+                <p className="text-zinc-400 text-base md:text-[17px] leading-relaxed mb-6">
+                  A duplex is not just a house — it&apos;s a statement. Designed for families who refuse to compromise on space,
+                  style, or comfort. At <span className="text-white font-semibold">Aaradhya Dream City</span>, our duplex homes
+                  are crafted with premium architecture, spacious rooms, private gardens, and modern interiors that make every
+                  corner feel like yours. Whether it&apos;s your parents upstairs or your growing family downstairs — our duplexes
+                  are built for real Indian families, with love and precision.
                 </p>
+                <p className="text-zinc-500 text-base md:text-[17px] leading-relaxed mb-10">
+                  Your dream home is already designed.{" "}
+                  <span className="text-primary font-bold italic">It&apos;s waiting for you.</span>
+                </p>
+                <Link href="/contact" className="inline-flex items-center gap-3 text-white font-bold group/link self-start">
+                  <span className="border-b-2 border-primary pb-1 group-hover/link:text-primary transition-colors">Enquire Now</span>
+                  <ArrowRight size={18} className="text-primary group-hover/link:translate-x-2 transition-transform" />
+                </Link>
+              </div>
+            </div>
 
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <Link
-                    href="/register"
-                    id="cta-register-btn"
-                    className="group bg-black text-white px-12 py-5 rounded-full font-bold text-lg hover:scale-105 transition-all duration-300 shadow-2xl inline-flex items-center gap-3"
-                  >
-                    Start Your Journey
-                    <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
-                  </Link>
-                  <Link
-                    href="/login"
-                    id="cta-login-btn"
-                    className="px-10 py-4.5 rounded-full border-2 border-black/20 text-black/80 font-bold text-lg hover:bg-black/10 transition-all duration-300"
-                  >
-                    Already a Broker?
-                  </Link>
+            {/* ══ ROW 2 — Plotting  (text LEFT, image RIGHT) ══ */}
+            <div
+              ref={offer2.ref}
+              className={`group grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-24 items-center mb-32 transition-all duration-1000 ${
+                offer2.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-14"
+              }`}
+            >
+              {/* Text */}
+              <div className={`flex flex-col order-2 lg:order-1 transition-all duration-1000 ${offer2.visible ? "animate-slide-in-left" : "opacity-0"}`}>
+                <h3 className="text-4xl md:text-5xl font-black leading-[1.1] tracking-tight mb-8">
+                  <span className="text-white">Own the Land.</span><br />
+                  <span className="text-primary">Own the Future.</span>
+                </h3>
+                <p className="text-zinc-400 text-base md:text-[17px] leading-relaxed mb-6">
+                  There is no better investment than land — and there is no better time than now.{" "}
+                  <span className="text-white font-semibold">Aaradhya Dream City</span> offers prime residential plots in
+                  strategically located areas with full legal clearance, wide roads, and all basic amenities in place. Buy a
+                  plot today, build tomorrow, or simply hold it and watch your investment multiply. The choice is yours — the
+                  land is ours to offer.
+                </p>
+                <p className="text-zinc-500 text-base md:text-[17px] leading-relaxed mb-10">
+                  Plant your roots where the city is growing.{" "}
+                  <span className="text-primary font-bold italic">The future belongs here.</span>
+                </p>
+                <Link href="/contact" className="inline-flex items-center gap-3 text-white font-bold group/link self-start">
+                  <span className="border-b-2 border-primary pb-1 group-hover/link:text-primary transition-colors">Enquire Now</span>
+                  <ArrowRight size={18} className="text-primary group-hover/link:translate-x-2 transition-transform" />
+                </Link>
+              </div>
+
+              {/* Image */}
+              <div className={`relative order-1 lg:order-2 transition-all duration-1000 delay-200 ${offer2.visible ? "animate-slide-in-right" : "opacity-0"}`}>
+                <div className="relative aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl ring-1 ring-white/5">
+                  <Image
+                    src="/Land plot in aaradhya.jfif"
+                    alt="Residential Plot at Aaradhya Dream City"
+                    fill
+                    className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                    sizes="(max-width:1024px) 100vw, 50vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                </div>
+                <div className="absolute -bottom-6 -left-6 bg-zinc-900 border border-zinc-800 px-6 py-4 rounded-2xl shadow-2xl z-20">
+                  <p className="text-primary font-black text-xl leading-none">600+</p>
+                  <p className="text-white font-black text-[11px] uppercase tracking-widest mt-1">Plotting</p>
                 </div>
               </div>
             </div>
+
+            {/* ══ ROW 3 — Flat  (image LEFT, text RIGHT) ══ */}
+            <div
+              ref={offer3.ref}
+              className={`group grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-24 items-center transition-all duration-1000 ${
+                offer3.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-14"
+              }`}
+            >
+              {/* Image */}
+              <div className={`relative transition-all duration-1000 ${offer3.visible ? "animate-slide-in-left" : "opacity-0"}`}>
+                <div className="relative aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl ring-1 ring-white/5">
+                  <Image
+                    src="/flats.jpg"
+                    alt="Modern Flat at Aaradhya Dream City"
+                    fill
+                    className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                    sizes="(max-width:1024px) 100vw, 50vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                </div>
+                <div className="absolute -bottom-6 -left-6 bg-zinc-900 border border-zinc-800 px-6 py-4 rounded-2xl shadow-2xl z-20">
+                  <p className="text-primary font-black text-xl leading-none">1000+</p>
+                  <p className="text-white font-black text-[11px] uppercase tracking-widest mt-1">Happy Families</p>
+                </div>
+              </div>
+
+              {/* Text */}
+              <div className={`flex flex-col transition-all duration-1000 delay-200 ${offer3.visible ? "animate-slide-in-right" : "opacity-0"}`}>
+                <h3 className="text-4xl md:text-5xl font-black leading-[1.1] tracking-tight mb-8">
+                  <span className="text-white">Smart Living for</span><br />
+                  <span className="text-primary">the Modern Family</span>
+                </h3>
+                <p className="text-zinc-400 text-base md:text-[17px] leading-relaxed mb-6">
+                  Life moves fast — your home should keep up. Our thoughtfully designed flats offer the perfect blend of comfort,
+                  convenience, and affordability. With modern layouts, quality construction, gated security, and prime locations
+                  close to schools, markets, and highways — an <span className="text-white font-semibold">Aaradhya flat</span> is
+                  the smartest decision for young families, working professionals, and first-time buyers alike.
+                </p>
+                <p className="text-zinc-500 text-base md:text-[17px] leading-relaxed mb-10">
+                  Everything you need.{" "}
+                  <span className="text-primary font-bold italic">Nothing you don&apos;t.</span>
+                </p>
+                <Link href="/contact" className="inline-flex items-center gap-3 text-white font-bold group/link self-start">
+                  <span className="border-b-2 border-primary pb-1 group-hover/link:text-primary transition-colors">Enquire Now</span>
+                  <ArrowRight size={18} className="text-primary group-hover/link:translate-x-2 transition-transform" />
+                </Link>
+              </div>
+            </div>
+
           </div>
         </section>
+
       </main>
 
       <Footer />
