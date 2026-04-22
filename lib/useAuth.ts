@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { apiFetch, endpoints } from "./api";
 
 /**
- * Verifies the JWT session exists and is valid by calling /broker/me.
+ * Verifies the JWT session exists and is valid by calling /brokar/me.
  *
  * @param redirectIfValid - Path to redirect to if a valid session exists (use on login/register pages)
  * @param redirectIfInvalid - Path to redirect to if no valid session (use on protected pages)

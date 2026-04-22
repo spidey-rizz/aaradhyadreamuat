@@ -18,7 +18,7 @@ function LoginContent() {
 
   // ── Session check: if already logged in with valid JWT, redirect to dashboard ──
   const { status } = useAuth({ redirectIfValid: "/dashboard" });
-  
+
   const [formData, setFormData] = useState({
     phone: "",
     password: "",
@@ -35,8 +35,8 @@ function LoginContent() {
 
     // Sanitize phone
     const sanitizedPhone = formData.phone.replace(/\D/g, "");
-    const phoneToSend = (!sanitizedPhone.startsWith("91") && sanitizedPhone.length === 10) 
-      ? "91" + sanitizedPhone 
+    const phoneToSend = (!sanitizedPhone.startsWith("91") && sanitizedPhone.length === 10)
+      ? "91" + sanitizedPhone
       : sanitizedPhone;
 
     try {
@@ -74,7 +74,7 @@ function LoginContent() {
   return (
     <div className="flex flex-col min-h-screen bg-black">
       <Navbar />
-      
+
       <main className="flex-grow flex items-center justify-center pt-32 pb-20 px-4">
         <div className="absolute inset-0 z-0 overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px]"></div>
@@ -85,7 +85,7 @@ function LoginContent() {
             <div className="w-16 h-16 gold-gradient rounded-2xl flex items-center justify-center mx-auto mb-6">
               <LogIn size={32} className="text-black" />
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">Broker <span className="gold-text-gradient">Login</span></h1>
+            <h1 className="text-3xl font-bold text-white mb-2">Associate <span className="gold-text-gradient">Login</span></h1>
             <p className="text-zinc-400">Access your dashboard and manage your network.</p>
           </div>
 

@@ -15,7 +15,7 @@ export default function VerifyPage() {
   useEffect(() => {
     const storedWaLink = sessionStorage.getItem("wa_link");
     const storedToken = sessionStorage.getItem("verify_token");
-    
+
     if (storedWaLink) setWaLink(storedWaLink);
     if (storedToken) setToken(storedToken);
 
@@ -28,7 +28,7 @@ export default function VerifyPage() {
   return (
     <div className="flex flex-col min-h-screen bg-black">
       <Navbar />
-      
+
       <main className="flex-grow flex items-center justify-center pt-32 pb-20 px-4">
         <div className="absolute inset-0 z-0 overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[150px]"></div>
@@ -41,7 +41,7 @@ export default function VerifyPage() {
 
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">Registration <span className="gold-text-gradient">Successful!</span></h1>
           <p className="text-zinc-400 text-lg mb-10 leading-relaxed">
-            Your broker account has been created. To activate your account and start earning, please verify your phone number via WhatsApp.
+            Your Associate account has been created. To activate your account and start earning, please verify your phone number via WhatsApp.
           </p>
 
           <div className="bg-black/50 border border-zinc-800 rounded-2xl p-6 mb-10 text-left">

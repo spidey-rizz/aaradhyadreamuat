@@ -53,7 +53,7 @@ export default function Footer() {
               Thousands are already dreaming here.
             </p>
             <p className="text-zinc-500 text-sm leading-relaxed mb-6 max-w-md">
-              Join the Aaradhya family — investors, brokers, and homeowners building the city of tomorrow.
+              Join the Aaradhya family — investors, Associates, and homeowners building the city of tomorrow.
             </p>
 
             <Link
@@ -101,9 +101,9 @@ export default function Footer() {
             <h4 className="text-white font-bold mb-6">Quick Links</h4>
             <ul className="space-y-4">
               <li><Link href="/" className="text-zinc-400 hover:text-primary transition-colors">Home</Link></li>
-              <li><Link href="/register" className="text-zinc-400 hover:text-primary transition-colors">Join as Broker</Link></li>
-              <li><Link href="/#features" className="text-zinc-400 hover:text-primary transition-colors">Broker Benefits</Link></li>
-              <li><Link href="/login" className="text-zinc-400 hover:text-primary transition-colors">Broker Login</Link></li>
+              <li><Link href="/register" className="text-zinc-400 hover:text-primary transition-colors">Join as Associate</Link></li>
+              <li><Link href="/#features" className="text-zinc-400 hover:text-primary transition-colors">Associate Benefits</Link></li>
+              <li><Link href="/login" className="text-zinc-400 hover:text-primary transition-colors">Associate Login</Link></li>
             </ul>
           </div>
 

@@ -1,22 +1,22 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { apiFetch, endpoints } from "@/lib/api";
 import { useAuth } from "@/lib/useAuth";
-import { 
-  User, 
-  Phone, 
-  Lock, 
-  CreditCard, 
-  Mail, 
-  Shield, 
-  ArrowRight, 
-  Loader2, 
-  AlertCircle, 
+import {
+  User,
+  Phone,
+  Lock,
+  CreditCard,
+  Mail,
+  Shield,
+  ArrowRight,
+  Loader2,
+  AlertCircle,
   UserPlus,
   CheckCircle2,
   XCircle
@@ -30,7 +30,7 @@ function RegisterContent() {
 
   // ── Session check: redirect to dashboard if already logged in ──
   const { status } = useAuth({ redirectIfValid: "/dashboard" });
-  
+
   // Referral states
   const [verifyingReferral, setVerifyingReferral] = useState(false);
   const [referrerName, setReferrerName] = useState<string | null>(null);
@@ -58,8 +58,8 @@ function RegisterContent() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (e.target.name === "referred_by") {
-        setReferrerName(null);
-        setReferralError(null);
+      setReferrerName(null);
+      setReferralError(null);
     }
   };
 
@@ -70,7 +70,7 @@ function RegisterContent() {
     setReferrerName(null);
 
     try {
-      const res = await apiFetch(`/broker/check-referral?code=${code.trim()}`);
+      const res = await apiFetch(`/brokar/check-referral?code=${code.trim()}`);
       if (res.valid) {
         setReferrerName(res.name);
       } else {
@@ -98,14 +98,14 @@ function RegisterContent() {
       const response = await apiFetch(endpoints.register, {
         method: "POST",
         body: JSON.stringify({
-            ...formData,
-            phone: sanitizedPhone
+          ...formData,
+          phone: sanitizedPhone
         }),
       });
 
       sessionStorage.setItem("verify_token", response.verify_token);
       sessionStorage.setItem("wa_link", response.wa_link);
-      
+
       router.push("/verify");
     } catch (err: any) {
       setError(err.detail || "Registration failed. Please check your details.");
@@ -127,7 +127,7 @@ function RegisterContent() {
   return (
     <div className="flex flex-col min-h-screen bg-black">
       <Navbar />
-      
+
       <main className="flex-grow flex items-center justify-center pt-32 pb-20 px-4">
         <div className="absolute inset-0 z-0 overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[150px]"></div>
@@ -136,7 +136,7 @@ function RegisterContent() {
         <div className="relative z-10 w-full max-w-2xl bg-zinc-900/50 border border-zinc-800 rounded-[2.5rem] p-6 md:p-12 shadow-2xl backdrop-blur-xl">
           <div className="text-center mb-10">
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Join the <span className="gold-text-gradient">Elite Network</span></h1>
-            <p className="text-zinc-400">Join Aaradhya Real Estate as a verified broker.</p>
+            <p className="text-zinc-400">Join Aaradhya Dream city as a verified Associate.</p>
           </div>
 
           {error && (
@@ -233,15 +233,15 @@ function RegisterContent() {
               <div className="flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-grow">
                   <UserPlus className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
-                  <input 
-                    name="referred_by" 
-                    value={formData.referred_by} 
-                    onChange={handleChange} 
-                    placeholder="Enter referral code" 
-                    className={`w-full bg-black border ${referrerName ? "border-green-500/50" : referralError ? "border-red-500/50" : "border-zinc-800"} rounded-xl py-3 pl-12 pr-4 text-white focus:border-primary outline-none transition-colors`} 
+                  <input
+                    name="referred_by"
+                    value={formData.referred_by}
+                    onChange={handleChange}
+                    placeholder="Enter referral code"
+                    className={`w-full bg-black border ${referrerName ? "border-green-500/50" : referralError ? "border-red-500/50" : "border-zinc-800"} rounded-xl py-3 pl-12 pr-4 text-white focus:border-primary outline-none transition-colors`}
                   />
                 </div>
-                <button 
+                <button
                   type="button"
                   onClick={() => handleVerifyReferral(formData.referred_by)}
                   disabled={!formData.referred_by || verifyingReferral}
@@ -250,7 +250,7 @@ function RegisterContent() {
                   {verifyingReferral ? <Loader2 className="animate-spin" size={18} /> : "Verify Code"}
                 </button>
               </div>
-              
+
               {/* Feedback messages */}
               {referrerName && (
                 <div className="flex items-center gap-2 text-green-400 text-xs ml-1 mt-1 animate-in fade-in">
@@ -271,7 +271,7 @@ function RegisterContent() {
               {loading ? (
                 <><Loader2 className="animate-spin" />Creating Account...</>
               ) : (
-                <>Register as Broker <ArrowRight className="group-hover:translate-x-1 transition-transform" /></>
+                <>Register as Associate <ArrowRight className="group-hover:translate-x-1 transition-transform" /></>
               )}
             </button>
 

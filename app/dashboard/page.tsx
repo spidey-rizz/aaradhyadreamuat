@@ -6,15 +6,15 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ReferralTree from "@/components/ReferralTree";
 import { useAuth } from "@/lib/useAuth";
-import { 
-  User, 
-  Copy, 
-  Check, 
-  Users, 
-  TrendingUp, 
-  UserPlus, 
-  Loader2, 
-  LayoutDashboard, 
+import {
+  User,
+  Copy,
+  Check,
+  Users,
+  TrendingUp,
+  UserPlus,
+  Loader2,
+  LayoutDashboard,
   IdCard,
   Target,
   Globe,
@@ -47,7 +47,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col min-h-screen bg-black">
       <Navbar />
-      
+
       <main className="flex-grow pt-32 pb-20 px-4">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
@@ -55,17 +55,17 @@ export default function DashboardPage() {
             <div>
               <div className="flex items-center gap-3 text-primary mb-2">
                 <LayoutDashboard size={20} />
-                <span className="text-sm font-bold uppercase tracking-[0.2em]">Broker Portal</span>
+                <span className="text-sm font-bold uppercase tracking-[0.2em]">Associate Portal</span>
               </div>
               <h1 className="text-4xl font-bold text-white">Welcome, <span className="gold-text-gradient">{profile.first_name}</span></h1>
             </div>
-            
+
             <div className="flex items-center gap-4 bg-zinc-900/50 border border-zinc-800 p-2 rounded-2xl backdrop-blur-md">
               <div className="pl-4 pr-2">
                 <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mb-1">Your Referral Code</div>
                 <div className="text-white font-mono font-bold text-lg select-all">{profile.referral_code}</div>
               </div>
-              <button 
+              <button
                 onClick={() => copyToClipboard(profile.referral_code)}
                 className={`p-3 rounded-xl transition-all ${copySuccess ? "bg-green-500 text-black shadow-[0_0_15px_rgba(34,197,94,0.4)]" : "bg-black text-primary hover:bg-zinc-800"}`}
               >
@@ -87,9 +87,9 @@ export default function DashboardPage() {
                   <h2 className="text-2xl font-bold text-white mb-2">{profile.first_name} {profile.last_name}</h2>
                   <p className="text-zinc-500 flex items-center gap-2 mb-6">
                     <IdCard size={16} className="text-primary" />
-                    Verified Broker
+                    Verified Associate
                   </p>
-                  
+
                   <div className="space-y-4 pt-6 border-t border-zinc-800/50">
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-zinc-500">Phone</span>
@@ -138,7 +138,7 @@ export default function DashboardPage() {
                   <div className="text-3xl font-bold text-white">{directReferrals}</div>
                   <div className="text-xs text-zinc-500 uppercase font-bold tracking-widest mt-1">Direct Referrals</div>
                 </div>
-                
+
                 <div className="bg-zinc-900/40 border border-zinc-800 rounded-3xl p-6 group hover:border-accent/50 transition-all duration-300">
                   <Globe className="text-accent mb-4 group-hover:rotate-12 transition-transform" size={24} />
                   <div className="text-3xl font-bold text-white">{profile.total_in_tree}</div>

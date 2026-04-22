@@ -18,9 +18,9 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Aaradhya Real Estate | Premium Broker Network",
-  description: "Join the most exclusive real estate broker network in Aaradhya Dream City. Register, verify, and grow your referral network.",
-  keywords: ["Real Estate", "Broker", "Aaradhya", "Referral Network", "Dream City"],
+  title: "Estate | Premium Associate Network",
+  description: "Join the most exclusive real estate Associate network in Aaradhya Dream City. Register, verify, and grow your referral network.",
+  keywords: ["Real Estate", "Associate", "Aaradhya", "Referral Network", "Dream City"],
 };
 
 export default function RootLayout({
