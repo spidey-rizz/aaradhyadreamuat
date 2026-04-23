@@ -70,7 +70,7 @@ function RegisterContent() {
     setReferrerName(null);
 
     try {
-      const res = await apiFetch(`/brokar/check-referral?code=${code.trim()}`);
+      const res = await apiFetch(`/broker/check-referral?code=${code.trim()}`);
       if (res.valid) {
         setReferrerName(res.name);
       } else {

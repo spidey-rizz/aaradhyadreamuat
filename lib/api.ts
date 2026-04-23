@@ -53,7 +53,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
 }
 
 export const endpoints = {
-  register: "/brokar/register",
-  login: "/brokar/login",
-  me: "/brokar/me",
+  register: "/broker/register",
+  login: "/broker/login",
+  me: "/broker/me",
 };
