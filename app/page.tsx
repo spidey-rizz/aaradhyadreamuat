@@ -131,7 +131,7 @@ export default function Home() {
               <div className={`relative transition-all duration-1000 ${offer1.visible ? "animate-slide-in-left" : "opacity-0"}`}>
                 <div className="relative aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl ring-1 ring-white/5">
                   <Image
-                    src="/house for home page.jfif"
+                    src="/house-home.jpg"
                     alt="Duplex House at Aaradhya Dream City"
                     fill
                     className="object-cover transition-transform duration-1000 group-hover:scale-105"
@@ -204,7 +204,7 @@ export default function Home() {
               <div className={`relative order-1 lg:order-2 transition-all duration-1000 delay-200 ${offer2.visible ? "animate-slide-in-right" : "opacity-0"}`}>
                 <div className="relative aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl ring-1 ring-white/5">
                   <Image
-                    src="/Land plot in aaradhya.jfif"
+                    src="/land-plot.jpg"
                     alt="Residential Plot at Aaradhya Dream City"
                     fill
                     className="object-cover transition-transform duration-1000 group-hover:scale-105"
