@@ -141,7 +141,7 @@ function LoginContent() {
                   type="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="••••••••"
+                  placeholder="Min 5 chars"
                   className="w-full bg-background border border-border rounded-xl py-3.5 pl-12 pr-4 text-foreground focus:border-primary outline-none transition-all font-bold placeholder:font-normal placeholder:text-muted-foreground/50"
                 />
               </div>

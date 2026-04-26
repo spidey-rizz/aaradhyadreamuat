@@ -200,7 +200,7 @@ function RegisterContent() {
                 <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Password</label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" size={18} />
-                  <input required name="password" type="password" value={formData.password} onChange={handleChange} placeholder="Minimum 8 characters"
+                  <input required name="password" type="password" value={formData.password} onChange={handleChange} placeholder="Minimum 5 characters"
                     className="w-full bg-background border border-border rounded-xl py-3.5 pl-12 pr-4 text-foreground focus:border-primary outline-none transition-all font-bold placeholder:font-normal placeholder:text-muted-foreground/50" />
                 </div>
               </div>
