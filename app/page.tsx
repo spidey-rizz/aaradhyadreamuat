@@ -42,10 +42,10 @@ export default function Home() {
   const statsSection = useInView(0.1);
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground transition-colors duration-500">
+    <div className="flex flex-col min-h-screen bg-background text-foreground transition-colors duration-500 overflow-x-hidden max-w-[100vw]">
       <Navbar />
 
-      <main className="flex-grow">
+      <main className="flex-grow overflow-x-hidden">
         {/* ───────── HERO (ALWAYS DARK/IMPACTFUL) ───────── */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
           <div className="absolute inset-0 z-0">

@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
 :root {
   --background: #faf9f6; /* Off-white/Cream for premium feel */
   --foreground: #1a1a1a;

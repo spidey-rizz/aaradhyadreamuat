@@ -98,6 +98,26 @@ export default function DashboardPage() {
                       <span className="text-[10px] uppercase tracking-widest text-primary/60 w-16">Referral:</span> {profile.referral_code}
                     </p>
                   </div>
+
+                  {/* Conditionally Render Referred By */}
+                  {profile.referred_by_user && (
+                    <div className="mt-6 pt-6 border-t border-border/50 flex flex-col sm:flex-row items-center sm:items-start gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
+                      <div className="shrink-0">
+                        <div className="w-10 h-10 rounded-xl bg-muted border border-border flex items-center justify-center text-xs font-black text-primary italic">
+                          {profile.referred_by_user.first_name?.[0]}{profile.referred_by_user.last_name?.[0]}
+                        </div>
+                      </div>
+                      <div className="text-center sm:text-left">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 mb-0.5">Referred By</p>
+                        <p className="text-sm font-bold text-foreground">
+                          {profile.referred_by_user.first_name} {profile.referred_by_user.last_name}
+                        </p>
+                        <p className="text-[10px] font-mono text-muted-foreground opacity-70">
+                          {profile.referred_by_user.referral_code}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

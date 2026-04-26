@@ -64,68 +64,77 @@ function LoginContent() {
   // Show a loading state while verifying existing session
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
         <Loader2 className="text-primary animate-spin mb-4" size={48} />
-        <p className="text-zinc-500 font-medium animate-pulse">Checking session...</p>
+        <p className="text-muted-foreground font-medium animate-pulse">Checking session...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-black">
+    <div className="flex flex-col min-h-screen bg-background text-foreground transition-colors duration-300">
       <Navbar />
 
-      <main className="flex-grow flex items-center justify-center pt-32 pb-20 px-4">
-        <div className="absolute inset-0 z-0 overflow-hidden">
+      <main className="flex-grow flex items-center justify-center pt-32 pb-20 px-4 relative overflow-hidden">
+        {/* Decorative Background Element */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px]"></div>
         </div>
 
-        <div className="relative z-10 w-full max-w-md bg-zinc-900/50 border border-zinc-800 rounded-[2.5rem] p-8 md:p-12 shadow-2xl backdrop-blur-xl">
+        <div className="relative z-10 w-full max-w-md bg-card border border-border rounded-[2.5rem] p-8 md:p-12 shadow-2xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-500">
           <div className="text-center mb-10">
-            <div className="w-16 h-16 gold-gradient rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-primary/20 transition-transform hover:rotate-6">
               <LogIn size={32} className="text-black" />
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">Associate <span className="gold-text-gradient">Login</span></h1>
-            <p className="text-zinc-400">Access your dashboard and manage your network.</p>
+            <h1 className="text-3xl font-black uppercase tracking-tight mb-2">Associate <span className="text-primary">Login</span></h1>
+            <p className="text-muted-foreground font-medium">Access your dashboard and manage your network.</p>
           </div>
 
           {expired && (
-            <div className="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex gap-3 text-amber-200">
+            <div className="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex gap-3 text-amber-600 dark:text-amber-200">
               <AlertCircle className="shrink-0" size={20} />
-              <p className="text-sm">Your session has expired. Please login again.</p>
+              <p className="text-sm font-medium">Your session has expired. Please login again.</p>
             </div>
           )}
 
           {error && (
-            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/50 flex gap-3 text-red-200">
+            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/50 flex gap-3 text-red-600 dark:text-red-200">
               <AlertCircle className="shrink-0" size={20} />
-              <p className="text-sm">{error}</p>
+              <p className="text-sm font-medium">{error}</p>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Phone Number</label>
-              <div className="relative">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
+              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Phone Number</label>
+              <div className="relative flex items-center">
+                <div className="absolute left-4 flex items-center gap-2 text-primary font-bold border-r border-border pr-3">
+                  <Phone size={16} />
+                  <span className="text-sm">+91</span>
+                </div>
                 <input
                   required
                   name="phone"
+                  type="tel"
+                  maxLength={10}
                   value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="91XXXXXXXXXX"
-                  className="w-full bg-black border border-zinc-800 rounded-xl py-3 pl-12 pr-4 text-white focus:border-primary outline-none transition-colors"
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, "");
+                    setFormData({ ...formData, phone: val });
+                  }}
+                  placeholder="Enter 10 digits"
+                  className="w-full bg-background border border-border rounded-xl py-3.5 pl-24 pr-4 text-foreground focus:border-primary outline-none transition-all font-bold placeholder:font-normal placeholder:text-muted-foreground/50"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
               <div className="flex justify-between items-center ml-1">
-                <label className="text-xs font-bold uppercase tracking-widest text-zinc-500">Password</label>
-                <Link href="#" className="text-xs text-primary hover:underline">Forgot password?</Link>
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Password</label>
+                <Link href="#" className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">Forgot?</Link>
               </div>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" size={18} />
                 <input
                   required
                   name="password"
@@ -133,7 +142,7 @@ function LoginContent() {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className="w-full bg-black border border-zinc-800 rounded-xl py-3 pl-12 pr-4 text-white focus:border-primary outline-none transition-colors"
+                  className="w-full bg-background border border-border rounded-xl py-3.5 pl-12 pr-4 text-foreground focus:border-primary outline-none transition-all font-bold placeholder:font-normal placeholder:text-muted-foreground/50"
                 />
               </div>
             </div>
@@ -141,11 +150,11 @@ function LoginContent() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full gold-gradient py-4 rounded-xl text-black font-bold text-lg hover:scale-[1.02] transition-all shadow-xl flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full bg-primary py-4 rounded-2xl text-black font-black text-xs uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading ? (
                 <>
-                  <Loader2 className="animate-spin" />
+                  <Loader2 className="animate-spin" size={20} />
                   Authenticating...
                 </>
               ) : (
@@ -156,10 +165,10 @@ function LoginContent() {
               )}
             </button>
 
-            <div className="text-center space-y-4">
-              <p className="text-zinc-500 text-sm">
+            <div className="text-center pt-4">
+              <p className="text-muted-foreground text-xs font-medium">
                 Don't have an account?{" "}
-                <Link href="/register" className="text-primary hover:underline font-medium">Join now</Link>
+                <Link href="/register" className="text-primary hover:underline font-black uppercase tracking-widest ml-1">Join now</Link>
               </p>
             </div>
           </form>
@@ -174,9 +183,9 @@ function LoginContent() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
         <Loader2 className="text-primary animate-spin mb-4" size={48} />
-        <p className="text-zinc-500 font-medium animate-pulse">Loading...</p>
+        <p className="text-muted-foreground font-medium animate-pulse">Loading...</p>
       </div>
     }>
       <LoginContent />
