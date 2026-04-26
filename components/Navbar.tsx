@@ -86,11 +86,26 @@ export default function Navbar() {
               <button onClick={toggleTheme} className={`hidden md:block p-2 transition-colors ${shouldForceWhite ? "text-white/70 hover:text-white" : "text-foreground/70 hover:text-primary"}`}>
                 {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
               </button>
-              <div className="hidden md:block">
+              <div className="hidden md:flex items-center gap-3">
                 {isLoggedIn ? (
-                  <Link href="/dashboard" className="px-7 py-2.5 bg-primary text-black rounded-full text-[10px] font-black tracking-widest uppercase shadow-lg shadow-primary/20">Dashboard</Link>
+                  <>
+                    <Link href="/dashboard" className="px-6 py-2.5 bg-primary text-black rounded-full text-[10px] font-black tracking-widest uppercase shadow-lg shadow-primary/20 hover:scale-105 transition-transform">
+                      Dashboard
+                    </Link>
+                    <button 
+                      onClick={handleLogout}
+                      className={`p-2.5 rounded-full transition-colors border ${
+                        shouldForceWhite 
+                          ? "bg-white/10 border-white/20 text-white hover:bg-red-500/20 hover:text-red-400" 
+                          : "bg-foreground/[0.03] border-border text-foreground/70 hover:bg-red-500/10 hover:text-red-500"
+                      }`}
+                      title="Logout"
+                    >
+                      <LogOut size={18} />
+                    </button>
+                  </>
                 ) : (
-                  <Link href="/login" className={`px-7 py-2.5 border rounded-full text-[10px] font-black tracking-widest uppercase ${shouldForceWhite ? "border-white/20 text-white hover:bg-white/10" : "border-border text-foreground hover:bg-foreground/[0.05]"}`}>Login</Link>
+                  <Link href="/login" className={`px-7 py-2.5 border rounded-full text-[10px] font-black tracking-widest uppercase transition-all ${shouldForceWhite ? "border-white/20 text-white hover:bg-white/10" : "border-border text-foreground hover:bg-foreground/[0.05]"}`}>Login</Link>
                 )}
               </div>
 
