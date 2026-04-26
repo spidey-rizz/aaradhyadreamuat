@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
@@ -23,6 +23,25 @@ function LoginContent() {
     phone: "",
     password: "",
   });
+
+  // Pre-fill from query params (e.g. from WhatsApp success link)
+  useEffect(() => {
+    const phoneParam = searchParams.get("phone");
+    const passwordParam = searchParams.get("password");
+
+    if (phoneParam || passwordParam) {
+      let cleanPhone = phoneParam || "";
+      if (cleanPhone.startsWith("91") && cleanPhone.length === 12) {
+        cleanPhone = cleanPhone.slice(2);
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        phone: cleanPhone || prev.phone,
+        password: passwordParam || prev.password
+      }));
+    }
+  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
