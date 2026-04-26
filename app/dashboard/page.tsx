@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import ReferralTree from "@/components/ReferralTree";
 import { useAuth } from "@/lib/useAuth";
 import {
   User,
@@ -18,11 +17,13 @@ import {
   IdCard,
   Target,
   Globe,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Bell,
+  Wallet,
+  Briefcase
 } from "lucide-react";
 
 export default function DashboardPage() {
-  // ── Session verification: redirect to login if JWT is invalid/missing ──
   const { status, profile } = useAuth({ redirectIfInvalid: "/login?expired=true" });
   const [copySuccess, setCopySuccess] = useState(false);
   const router = useRouter();
@@ -42,128 +43,162 @@ export default function DashboardPage() {
     );
   }
 
-  const directReferrals = profile.referral_tree ? profile.referral_tree.length : 0;
+  const referralList = profile.referral_list || [];
+  const directSponsors = referralList.filter((item: any) => item.connection === 'direct');
+  
+  const selfBusiness = profile.total_sales || 0;
+  const teamBusiness = referralList.reduce((acc: number, curr: any) => acc + (curr.total_sales || 0), 0);
+  const totalBusiness = selfBusiness + teamBusiness;
 
   return (
-    <div className="flex flex-col min-h-screen bg-black">
+    <div className="flex flex-col min-h-screen bg-black text-white selection:bg-primary/30">
       <Navbar />
 
-      <main className="flex-grow pt-32 pb-20 px-4">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12">
-            <div>
-              <div className="flex items-center gap-3 text-primary mb-2">
-                <LayoutDashboard size={20} />
-                <span className="text-sm font-bold uppercase tracking-[0.2em]">Associate Portal</span>
+      <main className="flex-grow pt-28 pb-20 px-4 md:px-8">
+        <div className="max-w-7xl mx-auto space-y-6">
+          
+          {/* Header Links Section (Home, Network, Payout/Income) */}
+          <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-2xl p-2 flex items-center justify-center gap-8 md:gap-16 mb-8">
+            <button onClick={() => router.push("/")} className="text-sm font-bold uppercase tracking-widest text-zinc-400 hover:text-white transition-colors py-2 px-4">Home</button>
+            <button onClick={() => router.push("/network")} className="text-sm font-bold uppercase tracking-widest text-zinc-400 hover:text-white transition-colors py-2 px-4">Network</button>
+            <button onClick={() => router.push("/payouts")} className="text-sm font-bold uppercase tracking-widest text-zinc-400 hover:text-white transition-colors py-2 px-4">Payout/Income</button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* LEFT COLUMN */}
+            <div className="lg:col-span-5 space-y-6">
+              
+              {/* Profile Box */}
+              <div className="bg-zinc-950 border-2 border-accent/40 rounded-[2rem] p-8 relative overflow-hidden group min-h-[320px]">
+                <div className="flex gap-8">
+                  <div className="flex flex-col items-center">
+                    <div className="w-32 h-40 border-2 border-white/20 rounded-full flex items-center justify-center relative mb-4 bg-zinc-900/50">
+                       <User size={64} className="text-cyan-400/60" />
+                       <div className="absolute inset-0 rounded-full border border-cyan-400/20 animate-pulse"></div>
+                    </div>
+                  </div>
+                  <div className="flex-grow space-y-3 pt-2">
+                    <div className="flex gap-4 items-baseline">
+                      <span className="text-cyan-400 text-sm font-bold uppercase tracking-wider w-20">name</span>
+                      <span className="text-white text-lg font-bold">{profile.first_name} {profile.last_name}</span>
+                    </div>
+                    <div className="flex gap-4 items-baseline">
+                      <span className="text-cyan-400 text-sm font-bold uppercase tracking-wider w-20">age</span>
+                      <span className="text-white font-medium">—</span>
+                    </div>
+                    <div className="flex gap-4 items-baseline">
+                      <span className="text-cyan-400 text-sm font-bold uppercase tracking-wider w-20">pan</span>
+                      <span className="text-white font-mono">{profile.pan_number || "—"}</span>
+                    </div>
+                    <div className="flex gap-4 items-baseline">
+                      <span className="text-cyan-400 text-sm font-bold uppercase tracking-wider w-20">adhar</span>
+                      <span className="text-white">{profile.adhar_number || "—"}</span>
+                    </div>
+                    <div className="flex gap-4 items-baseline">
+                      <span className="text-cyan-400 text-sm font-bold uppercase tracking-wider w-20">phone no</span>
+                      <span className="text-white">{profile.phone}</span>
+                    </div>
+                    <div className="flex gap-4 items-baseline">
+                      <span className="text-cyan-400 text-sm font-bold uppercase tracking-wider w-20">Level:</span>
+                      <span className="text-white font-bold">1</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <h1 className="text-4xl font-bold text-white">Welcome, <span className="gold-text-gradient">{profile.first_name}</span></h1>
+
+              {/* Referral Code Box */}
+              <div className="bg-zinc-950 border-2 border-red-500/40 rounded-[1.5rem] p-6 relative overflow-hidden">
+                <div className="flex flex-col items-center text-center">
+                  <h3 className="text-cyan-400 text-lg font-bold uppercase tracking-[0.2em] mb-4">Your Referral Code</h3>
+                  <div className="flex items-center gap-4 bg-black/50 border border-zinc-800 p-2 pl-6 rounded-xl w-full">
+                    <div className="text-white font-mono font-black text-2xl flex-grow tracking-widest">{profile.referral_code}</div>
+                    <button
+                      onClick={() => copyToClipboard(profile.referral_code)}
+                      className={`p-3 rounded-lg transition-all ${copySuccess ? "bg-green-500 text-black" : "bg-zinc-900 text-primary hover:bg-zinc-800"}`}
+                    >
+                      {copySuccess ? <Check size={20} /> : <Copy size={20} />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
             </div>
 
-            <div className="flex items-center gap-4 bg-zinc-900/50 border border-zinc-800 p-2 rounded-2xl backdrop-blur-md">
-              <div className="pl-4 pr-2">
-                <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mb-1">Your Referral Code</div>
-                <div className="text-white font-mono font-bold text-lg select-all">{profile.referral_code}</div>
+            {/* RIGHT COLUMN */}
+            <div className="lg:col-span-7 space-y-6">
+              
+              {/* Notice Box */}
+              <div className="bg-zinc-950 border-2 border-red-500/40 rounded-[1.5rem] p-6 min-h-[120px] flex items-center justify-center">
+                <div className="text-center">
+                  <span className="text-red-500 text-2xl font-bold uppercase tracking-[0.3em] flex items-center gap-4">
+                    <Bell className="animate-bounce" />
+                    notice
+                  </span>
+                  <p className="text-zinc-500 text-xs mt-2 italic">No new notifications at this time.</p>
+                </div>
               </div>
-              <button
-                onClick={() => copyToClipboard(profile.referral_code)}
-                className={`p-3 rounded-xl transition-all ${copySuccess ? "bg-green-500 text-black shadow-[0_0_15px_rgba(34,197,94,0.4)]" : "bg-black text-primary hover:bg-zinc-800"}`}
-              >
-                {copySuccess ? <Check size={20} /> : <Copy size={20} />}
-              </button>
+
+              {/* Total Business Box */}
+              <div className="bg-zinc-950 border-2 border-accent/40 rounded-[2rem] p-8 min-h-[320px]">
+                <h3 className="text-cyan-400 text-lg font-bold uppercase tracking-[0.2em] text-center mb-8 border-b border-zinc-800 pb-4">
+                  ---------- Total Business ----------
+                </h3>
+                <div className="space-y-8 max-w-md mx-auto">
+                  <div className="flex justify-between items-end border-b border-zinc-800 border-dashed pb-2">
+                    <span className="text-cyan-400 text-lg font-bold">Self Business :</span>
+                    <span className="text-white text-2xl font-mono font-bold">₹{selfBusiness.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-end border-b border-zinc-800 border-dashed pb-2">
+                    <span className="text-cyan-400 text-lg font-bold">Team Business :</span>
+                    <span className="text-white text-2xl font-mono font-bold">₹{teamBusiness.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-end pb-2">
+                    <span className="text-cyan-400 text-lg font-bold">Total Business :</span>
+                    <span className="text-white text-2xl font-mono font-bold">₹{totalBusiness.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* BOTTOM SECTION: Table */}
+          <div className="bg-zinc-950 border-2 border-accent/40 rounded-[2rem] p-8 overflow-hidden">
+            <h3 className="text-cyan-400 text-xl font-bold uppercase tracking-widest mb-6">My Direct Sponser:-</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b-2 border-accent/20">
+                    <th className="pb-4 text-cyan-400 font-bold uppercase text-sm w-12">No.</th>
+                    <th className="pb-4 text-cyan-400 font-bold uppercase text-sm border-l-2 border-accent/20 pl-4">Associate Name</th>
+                    <th className="pb-4 text-cyan-400 font-bold uppercase text-sm border-l-2 border-accent/20 pl-4">Associate Phone</th>
+                    <th className="pb-4 text-cyan-400 font-bold uppercase text-sm border-l-2 border-accent/20 pl-4">DOJ</th>
+                    <th className="pb-4 text-cyan-400 font-bold uppercase text-sm border-l-2 border-accent/20 pl-4">Associate Business</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/30">
+                  {directSponsors.length > 0 ? (
+                    directSponsors.map((member: any, idx: number) => (
+                      <tr key={idx} className="group hover:bg-zinc-900/30 transition-colors">
+                        <td className="py-4 text-zinc-400 font-mono">{idx + 1}.</td>
+                        <td className="py-4 border-l-2 border-accent/10 pl-4 text-white font-medium">{member.name}</td>
+                        <td className="py-4 border-l-2 border-accent/10 pl-4 text-zinc-400">{member.phone || "—"}</td>
+                        <td className="py-4 border-l-2 border-accent/10 pl-4 text-zinc-400">{member.created_at ? new Date(member.created_at).toLocaleDateString() : "—"}</td>
+                        <td className="py-4 border-l-2 border-accent/10 pl-4 text-primary font-bold">₹{(member.total_sales || 0).toLocaleString()}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="py-12 text-center text-zinc-600 italic">No direct sponsors found in your network.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left Sidebar */}
-            <div className="lg:col-span-4 space-y-8">
-              {/* Profile Card */}
-              <div className="bg-zinc-900/40 border border-zinc-800 rounded-[2.5rem] p-8 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
-                <div className="relative z-10">
-                  <div className="w-20 h-20 gold-gradient rounded-full flex items-center justify-center text-black text-3xl font-black mb-6 shadow-2xl">
-                    {profile.first_name[0]}{profile.last_name[0]}
-                  </div>
-                  <h2 className="text-2xl font-bold text-white mb-2">{profile.first_name} {profile.last_name}</h2>
-                  <p className="text-zinc-500 flex items-center gap-2 mb-6">
-                    <IdCard size={16} className="text-primary" />
-                    Verified Associate
-                  </p>
-
-                  <div className="space-y-4 pt-6 border-t border-zinc-800/50">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-zinc-500">Phone</span>
-                      <span className="text-zinc-300 font-medium">{profile.phone}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-zinc-500">Email</span>
-                      <span className="text-zinc-300 font-medium">{profile.email || "—"}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-zinc-500">PAN</span>
-                      <span className="text-zinc-300 font-medium font-mono">{profile.pan_number}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Referred By Section */}
-              {profile.referred_by_user ? (
-                <div className="bg-zinc-900/40 border border-zinc-800 rounded-3xl p-6 relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-1 gold-gradient opacity-50"></div>
-                  <h3 className="text-zinc-500 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <LinkIcon size={14} className="text-primary" />
-                    Referred By
-                  </h3>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-zinc-400">
-                      {profile.referred_by_user.first_name[0]}{profile.referred_by_user.last_name[0]}
-                    </div>
-                    <div>
-                      <div className="text-white font-semibold">{profile.referred_by_user.first_name} {profile.referred_by_user.last_name}</div>
-                      <div className="text-zinc-500 text-xs mt-0.5">ID: {profile.referred_by_user.referral_code}</div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-zinc-900/10 border border-zinc-800/50 rounded-3xl p-6 text-center italic text-zinc-600 text-sm">
-                  Direct Join (No Referrer)
-                </div>
-              )}
-
-              {/* Stats Cards (Split into two as requested) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-zinc-900/40 border border-zinc-800 rounded-3xl p-6 group hover:border-primary/50 transition-all duration-300">
-                  <UserPlus className="text-primary mb-4 group-hover:scale-110 transition-transform" size={24} />
-                  <div className="text-3xl font-bold text-white">{directReferrals}</div>
-                  <div className="text-xs text-zinc-500 uppercase font-bold tracking-widest mt-1">Direct Referrals</div>
-                </div>
-
-                <div className="bg-zinc-900/40 border border-zinc-800 rounded-3xl p-6 group hover:border-accent/50 transition-all duration-300">
-                  <Globe className="text-accent mb-4 group-hover:rotate-12 transition-transform" size={24} />
-                  <div className="text-3xl font-bold text-white">{profile.total_in_tree}</div>
-                  <div className="text-xs text-zinc-500 uppercase font-bold tracking-widest mt-1">Total Network</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Content */}
-            <div className="lg:col-span-8">
-              <div className="bg-zinc-900/40 border border-zinc-800 rounded-[2.5rem] p-8 min-h-[600px] relative">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-                  <div>
-                    <h3 className="text-2xl font-bold text-white mb-1">Referral Network</h3>
-                    <p className="text-zinc-500 text-sm">Visualize and manage your multi-level network.</p>
-                  </div>
-                  <div className="bg-black/50 border border-zinc-800 px-4 py-2 rounded-full text-xs font-bold text-zinc-400 uppercase tracking-widest self-start md:self-center">
-                    Recursive Hierarchy
-                  </div>
-                </div>
-
-                <ReferralTree tree={profile.referral_tree} />
-              </div>
-            </div>
-          </div>
         </div>
       </main>
 
