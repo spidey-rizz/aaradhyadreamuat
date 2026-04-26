@@ -1,14 +1,18 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
-import { User, LogOut, Menu, X } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useTheme } from "@/lib/ThemeContext";
+import { User, LogOut, Menu, X, Sun, Moon } from "lucide-react";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 60);
@@ -25,13 +29,17 @@ export default function Navbar() {
     window.location.href = "/";
   };
 
+  const isHome = pathname === "/";
+  // Force white text ONLY on home page when not scrolled (over video)
+  const shouldForceWhite = isHome && !isScrolled;
+
   return (
     <>
       <nav
         className={`fixed top-0 w-full z-50 transition-all duration-500 ${
           isScrolled
-            ? "bg-black/40 backdrop-blur-2xl border-b border-white/[0.07] shadow-[0_4px_40px_rgba(0,0,0,0.5)]"
-            : "bg-transparent"
+            ? "bg-background/80 backdrop-blur-2xl border-b border-border shadow-sm"
+            : isHome ? "bg-transparent" : "bg-background/80 backdrop-blur-md border-b border-border/50"
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
@@ -42,12 +50,12 @@ export default function Navbar() {
             {/* ── Logo (circle) ── */}
             <Link href="/" className="flex items-center gap-3 group shrink-0">
               <div
-                className="
+                className={`
                   relative w-12 h-12 rounded-full overflow-hidden
-                  ring-2 ring-white/20
+                  ring-2 transition-all duration-300
+                  ${shouldForceWhite ? "ring-white/20" : "ring-foreground/10"}
                   group-hover:ring-primary/60
-                  transition-all duration-300
-                "
+                `}
               >
                 <Image
                   src="/logo.jpg"
@@ -57,11 +65,11 @@ export default function Navbar() {
                   priority
                 />
               </div>
-              <div className="hidden sm:flex flex-col leading-none">
-                <span className="text-[15px] font-extrabold tracking-tight text-white">
+              <div className="flex flex-col leading-none">
+                <span className={`text-[15px] font-extrabold tracking-tight transition-colors duration-300 ${shouldForceWhite ? "text-white" : "text-foreground"}`}>
                   Aaradhya
                 </span>
-                <span className="text-[10px] font-semibold tracking-[0.2em] text-primary/80 uppercase mt-[3px]">
+                <span className="text-[10px] font-semibold tracking-[0.2em] text-primary uppercase mt-[3px]">
                   Dream City
                 </span>
               </div>
@@ -80,14 +88,14 @@ export default function Navbar() {
                   <Link
                     key={item.label}
                     href={item.href}
-                    className="
+                    className={`
                       relative px-5 py-1.5
                       text-[13px] font-bold tracking-widest
-                      text-white/80 hover:text-white
                       transition-colors duration-200
-                      rounded-md hover:bg-white/[0.05]
+                      rounded-md hover:bg-foreground/[0.05]
                       group
-                    "
+                      ${shouldForceWhite ? "text-white/80 hover:text-white" : "text-foreground/80 hover:text-foreground"}
+                    `}
                   >
                     {item.label}
                     <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-0 h-[1.5px] bg-primary group-hover:w-3/4 transition-all duration-300" />
@@ -105,14 +113,14 @@ export default function Navbar() {
                   <Link
                     key={item.label}
                     href={item.href}
-                    className="
+                    className={`
                       relative px-5 py-1
                       text-[12px] font-medium tracking-wider
-                      text-white/50 hover:text-white/85
                       transition-colors duration-200
-                      rounded-md hover:bg-white/[0.04]
+                      rounded-md hover:bg-foreground/[0.04]
                       group
-                    "
+                      ${shouldForceWhite ? "text-white/50 hover:text-white/85" : "text-foreground/50 hover:text-foreground/85"}
+                    `}
                   >
                     {item.label}
                     <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-0 h-px bg-primary/70 group-hover:w-3/4 transition-all duration-300" />
@@ -121,20 +129,37 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* ── Auth (right side) ── */}
-            <div className="hidden md:flex items-center gap-2 shrink-0">
+            <div className="hidden md:flex items-center gap-4 shrink-0">
+              <button 
+                onClick={toggleTheme}
+                className={`p-2.5 rounded-xl transition-colors border ${
+                  shouldForceWhite 
+                    ? "bg-white/5 border-white/10 text-white/70 hover:bg-white/10" 
+                    : "bg-foreground/[0.03] border-border text-foreground/70 hover:bg-foreground/[0.06]" 
+                }`}
+                aria-label="Toggle theme"
+              >
+                {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
+              </button>
+
+              <div className={`h-8 w-px mx-2 transition-colors ${shouldForceWhite ? "bg-white/10" : "bg-border"}`} />
+
               {isLoggedIn ? (
                 <>
                   <Link
                     href="/dashboard"
-                    className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-white rounded-lg hover:bg-white/[0.05] transition-colors"
+                    className={`flex items-center gap-1.5 px-4 py-2 text-sm font-bold rounded-lg transition-colors uppercase tracking-widest ${
+                      shouldForceWhite ? "text-white/70 hover:text-white hover:bg-white/10" : "text-foreground/70 hover:text-foreground hover:bg-foreground/[0.05]"
+                    }`}
                   >
                     <User size={14} className="text-primary" />
                     Dashboard
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/50 hover:text-red-400 rounded-lg hover:bg-red-500/[0.07] transition-colors cursor-pointer"
+                    className={`flex items-center gap-1.5 px-4 py-2 text-sm font-bold rounded-lg transition-colors cursor-pointer uppercase tracking-widest ${
+                      shouldForceWhite ? "text-white/40 hover:text-red-400 hover:bg-red-500/10" : "text-foreground/40 hover:text-red-500 hover:bg-red-500/[0.07]"
+                    }`}
                   >
                     <LogOut size={14} />
                     Logout
@@ -143,13 +168,13 @@ export default function Navbar() {
               ) : (
                 <Link
                   href="/login"
-                  className="
-                    px-5 py-2 rounded-md
-                    border border-white/25 hover:border-white/50
-                    text-sm font-semibold tracking-wide text-white/80 hover:text-white
-                    hover:bg-white/[0.05]
-                    transition-all duration-200
-                  "
+                  className={`
+                    px-5 py-2 rounded-md border transition-all uppercase
+                    text-sm font-bold tracking-widest
+                    ${shouldForceWhite 
+                      ? "border-white/20 text-white/80 hover:text-white hover:border-white/50 hover:bg-white/10"
+                      : "border-foreground/20 text-foreground/80 hover:text-foreground hover:border-foreground/50 hover:bg-foreground/[0.05]" }
+                  `}
                 >
                   Login / Sign up
                 </Link>
@@ -158,7 +183,7 @@ export default function Navbar() {
 
             {/* ── Mobile Toggle ── */}
             <button
-              className="md:hidden text-white/80 p-2 rounded-lg hover:bg-white/[0.06] transition-colors"
+              className={`md:hidden p-2 rounded-lg transition-colors ${shouldForceWhite ? "text-white hover:bg-white/10" : "text-foreground hover:bg-foreground/[0.05]"}`}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle menu"
             >
@@ -169,10 +194,10 @@ export default function Navbar() {
 
         {/* ── Mobile Menu ── */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-black/85 backdrop-blur-2xl border-t border-white/[0.07]">
+          <div className={`md:hidden backdrop-blur-2xl border-t transition-colors ${shouldForceWhite ? "bg-black/85 border-white/[0.07]" : "bg-background/95 border-border"}`}>
             <div className="px-6 pt-5 pb-8 space-y-1">
 
-              <p className="text-[10px] font-bold tracking-[0.25em] text-white/30 uppercase px-4 pb-2">
+              <p className={`text-[10px] font-bold tracking-[0.25em] uppercase px-4 pb-2 ${shouldForceWhite ? "text-white/30" : "text-foreground/30"}`}>
                 Main
               </p>
               {[
@@ -183,16 +208,16 @@ export default function Navbar() {
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="block px-4 py-3 text-sm font-bold tracking-widest text-white/80 rounded-xl hover:bg-white/[0.05]"
+                  className={`block px-4 py-3 text-sm font-bold tracking-widest rounded-xl transition-colors ${shouldForceWhite ? "text-white/80 hover:bg-white/[0.05]" : "text-foreground/80 hover:bg-foreground/[0.05]"}`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.label}
                 </Link>
               ))}
 
-              <div className="h-px bg-white/[0.06] my-3" />
+              <div className={`h-px my-3 ${shouldForceWhite ? "bg-white/[0.06]" : "bg-border"}`} />
 
-              <p className="text-[10px] font-bold tracking-[0.25em] text-white/30 uppercase px-4 pb-2">
+              <p className={`text-[10px] font-bold tracking-[0.25em] uppercase px-4 pb-2 ${shouldForceWhite ? "text-white/30" : "text-foreground/30"}`}>
                 Explore
               </p>
               {[
@@ -203,20 +228,20 @@ export default function Navbar() {
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="block px-4 py-3 text-sm font-medium text-white/60 rounded-xl hover:bg-white/[0.05]"
+                  className={`block px-4 py-3 text-sm font-medium rounded-xl transition-colors ${shouldForceWhite ? "text-white/60 hover:bg-white/[0.05]" : "text-foreground/60 hover:bg-foreground/[0.05]"}`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.label}
                 </Link>
               ))}
 
-              <div className="h-px bg-white/[0.06] my-3" />
+              <div className={`h-px my-3 ${shouldForceWhite ? "bg-white/[0.06]" : "bg-border"}`} />
 
               {isLoggedIn ? (
                 <>
                   <Link
                     href="/dashboard"
-                    className="block px-4 py-3 text-sm font-medium text-white/80 rounded-xl hover:bg-white/[0.05]"
+                    className={`block px-4 py-3 text-sm font-medium rounded-xl transition-colors ${shouldForceWhite ? "text-white/80 hover:bg-white/[0.05]" : "text-foreground/80 hover:bg-foreground/[0.05]"}`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Dashboard
@@ -231,7 +256,7 @@ export default function Navbar() {
               ) : (
                 <Link
                   href="/login"
-                  className="block mt-2 mx-2 px-4 py-3 text-center text-sm font-semibold text-white border border-white/20 rounded-xl hover:bg-white/[0.05]"
+                  className={`block mt-2 mx-2 px-4 py-3 text-center text-sm font-semibold border rounded-xl transition-all ${shouldForceWhite ? "text-white border-white/20 hover:bg-white/[0.05]" : "text-foreground border-border hover:bg-foreground/[0.05]"}`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Login / Sign up

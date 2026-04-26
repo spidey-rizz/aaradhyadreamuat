@@ -1,31 +1,33 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #111827;
-  --primary: #d4af37; /* Golden */
+  --background: #faf9f6; /* Off-white/Cream for premium feel */
+  --foreground: #1a1a1a;
+  --primary: #d4af37;
   --primary-hover: #b8962e;
-  --secondary: #f3f4f6;
-  --accent: #22c55e; /* Green */
-  --muted: #f9fafb;
-  --muted-foreground: #6b7280;
+  --secondary: #f3f2ef;
+  --accent: #22c55e;
+  --muted: #f5f4f0;
+  --muted-foreground: #737373;
   --card: #ffffff;
-  --card-foreground: #111827;
-  --border: #e5e7eb;
+  --card-foreground: #1a1a1a;
+  --border: #e8e6e1;
+  --selection: rgba(212, 175, 55, 0.2);
 }
 
 .dark {
-  --background: #000000;
+  --background: #0a0a0a;
   --foreground: #ffffff;
-  --primary: #d4af37; /* Golden */
+  --primary: #d4af37;
   --primary-hover: #b8962e;
-  --secondary: #1f2937;
-  --accent: #22c55e; /* Green */
-  --muted: #111827;
-  --muted-foreground: #9ca3af;
-  --card: #0a0a0a;
+  --secondary: #171717;
+  --accent: #22c55e;
+  --muted: #121212;
+  --muted-foreground: #a3a3a3;
+  --card: #0d0d0d;
   --card-foreground: #ffffff;
-  --border: #262626;
+  --border: #1f1f1f;
+  --selection: rgba(212, 175, 55, 0.3);
 }
 
 @theme inline {

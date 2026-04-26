@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Outfit } from "next/font/google";
+import { Geist, Geist_Mono, Outfit, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,11 +17,18 @@ const outfit = Outfit({
   subsets: ["latin"],
 });
 
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "Estate | Premium Associate Network",
   description: "Join the most exclusive real estate Associate network in Aaradhya Dream City. Register, verify, and grow your referral network.",
   keywords: ["Real Estate", "Associate", "Aaradhya", "Referral Network", "Dream City"],
 };
+
+import { ThemeProvider } from "@/lib/ThemeContext";
 
 export default function RootLayout({
   children,
@@ -31,11 +38,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} ${playfair.variable} h-full antialiased`}
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col font-sans">
-        {children}
+      <body className="min-h-full flex flex-col font-sans transition-colors duration-300">
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

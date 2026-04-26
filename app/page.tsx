@@ -5,7 +5,7 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { MoveRight, MapPin, Home as HomeIcon, LayoutGrid, ChevronDown, Sparkles } from "lucide-react";
 
 /* ─── Intersection Observer hook for scroll reveals ─── */
 function useInView(threshold = 0.15, initialVisible = false) {
@@ -33,243 +33,211 @@ function useInView(threshold = 0.15, initialVisible = false) {
   return { ref, visible };
 }
 
-/* ═══════════════════════════════════════════════════════ */
-/*                     MAIN COMPONENT                    */
-/* ═══════════════════════════════════════════════════════ */
-
 export default function Home() {
-  const heroSection   = useInView(0.1, true);
-  const missionSection = useInView(0.2);
-  const offerHeader   = useInView(0.15);
-  const offer1        = useInView(0.1);
-  const offer2        = useInView(0.1);
-  const offer3        = useInView(0.1);
+  const heroSection = useInView(0.1, true);
+  const visionSection = useInView(0.15);
+  const section1 = useInView(0.15);
+  const section2 = useInView(0.15);
+  const section3 = useInView(0.15);
+  const statsSection = useInView(0.1);
 
   return (
-    <div className="flex flex-col min-h-screen bg-black">
+    <div className="flex flex-col min-h-screen bg-background text-foreground transition-colors duration-500">
       <Navbar />
 
       <main className="flex-grow">
-
-        {/* ───────── HERO ───────── */}
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* ───────── HERO (ALWAYS DARK/IMPACTFUL) ───────── */}
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
           <div className="absolute inset-0 z-0">
             <video
               autoPlay
               loop
               muted
               playsInline
-              className="absolute inset-0 w-full h-full object-cover brightness-[0.45]"
+              className="absolute inset-0 w-full h-full object-cover brightness-[0.4]"
             >
               <source src="/landingpagev1.mp4" type="video/mp4" />
             </video>
-            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30" />
-            <div className="absolute inset-0 grid-pattern opacity-30" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black" />
           </div>
 
-          {/* Content */}
           <div
             ref={heroSection.ref}
-            className={`relative z-10 max-w-6xl mx-auto px-6 text-center ${heroSection.visible ? "animate-fade-in-up" : ""}`}
+            className={`relative z-10 max-w-6xl mx-auto px-6 text-center transition-all duration-[1.5s] ${
+              heroSection.visible ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-10 scale-95"
+            }`}
           >
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white mb-8 tracking-tight leading-[1.05]">
-              Aaradhya
-              <br />
+            <div className="inline-flex items-center gap-2 mb-8 px-4 py-1.5 rounded-full border border-white/20 bg-white/5 backdrop-blur-md">
+               <Sparkles size={14} className="text-primary" />
+               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/80">Premium Estate Network</span>
+            </div>
+            <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-[10rem] font-black text-white mb-8 tracking-tighter leading-[0.9] font-serif">
+              Aaradhya<br />
               <span className="text-primary">Dream City</span>
             </h1>
-            <p className="text-lg md:text-xl text-zinc-400 mb-12 max-w-2xl mx-auto leading-relaxed font-light">
-              Discover Plots, Homes, and Commercial Spaces Designed for Your Aspirations.
+            <p className="text-lg md:text-xl text-white/60 mb-12 max-w-2xl mx-auto leading-relaxed font-light italic">
+              Crafting legacy, one brick at a time.
             </p>
           </div>
 
-          {/* Scroll indicator */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-            <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 font-bold">Explore</span>
-            <ChevronDown size={16} className="text-primary/60 animate-bounce" />
+          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4">
+            <div className="w-px h-12 bg-gradient-to-b from-primary to-transparent" />
+            <ChevronDown size={20} className="text-primary animate-bounce" />
           </div>
         </section>
 
-        
-        {/* ═══════════ What We Offer ═══════════ */}
-        <section className="relative py-28 bg-black border-t border-zinc-900/60 overflow-hidden">
-          {/* subtle ambient glows */}
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute -top-40 left-1/3 w-[500px] h-[500px] bg-primary/4 rounded-full blur-[160px]" />
-            <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-primary/4 rounded-full blur-[140px]" />
-          </div>
-
-          <div className="max-w-7xl mx-auto px-6">
-
-            {/* ── Section header ── */}
-            <div
-              ref={offerHeader.ref}
-              className={`text-center mb-24 transition-all duration-700 ${
-                offerHeader.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-              }`}
-            >
-              <div className="inline-flex items-center gap-2 bg-primary/10 px-5 py-1.5 rounded-full border border-primary/25 mb-6">
-                <span className="text-[10px] font-bold text-primary uppercase tracking-[0.25em]">What We Offer</span>
-              </div>
-              <h2 className="text-4xl md:text-5xl lg:text-[3.5rem] font-black text-white tracking-tight leading-[1.1]">
-                Your Dream,{" "}
-                <span className="text-primary">Our Mission</span>
-              </h2>
-              <p className="mt-5 text-zinc-500 text-lg max-w-2xl mx-auto font-light leading-relaxed">
-                Three carefully crafted offerings — one unwavering commitment to excellence.
-              </p>
-            </div>
-
-            {/* ══ ROW 1 — Duplex House  (image LEFT, text RIGHT) ══ */}
-            <div
-              ref={offer1.ref}
-              className={`group grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-24 items-center mb-32 transition-all duration-1000 ${
-                offer1.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-14"
-              }`}
-            >
-              {/* Image */}
-              <div className={`relative transition-all duration-1000 ${offer1.visible ? "animate-slide-in-left" : "opacity-0"}`}>
-                <div className="relative aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl ring-1 ring-white/5">
-                  <Image
-                    src="/house-home.jpg"
-                    alt="Duplex House at Aaradhya Dream City"
-                    fill
-                    className="object-cover transition-transform duration-1000 group-hover:scale-105"
-                    sizes="(max-width:1024px) 100vw, 50vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                </div>
-                {/* Floating badge */}
-                <div className="absolute -bottom-6 -left-6 bg-zinc-900 border border-zinc-800 px-6 py-4 rounded-2xl shadow-2xl z-20">
-                  <p className="text-primary font-black text-xl leading-none">150+</p>
-                  <p className="text-white font-black text-[11px] uppercase tracking-widest mt-1">Duplex House</p>
-                </div>
+        {/* ───────── THE VISION (LUXURY MAGAZINE STYLE) ───────── */}
+        <section ref={visionSection.ref} className="relative py-32 sm:py-48 overflow-hidden bg-background">
+          <div className="max-w-7xl mx-auto px-6 lg:px-12">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+              
+              {/* Left Side: Large Serif Heading */}
+              <div className={`lg:col-span-7 transition-all duration-1000 ${visionSection.visible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-12"}`}>
+                 <h2 className="text-4xl sm:text-6xl lg:text-7xl font-serif font-medium leading-tight mb-12 tracking-tight">
+                    Beyond <span className="italic">Standard</span> Architecture. <br /> 
+                    We build <span className="text-primary italic">Aspirations</span>.
+                 </h2>
+                 <div className="max-w-md ml-auto">
+                    <p className="text-muted-foreground text-lg sm:text-xl leading-relaxed mb-8 font-light">
+                       In a world of mass production, we choose the artisanal path. Every project in Aaradhya Dream City is a study in light, space, and the human spirit.
+                    </p>
+                    <div className="h-px w-20 bg-primary mb-8" />
+                 </div>
               </div>
 
-              {/* Text */}
-              <div className={`flex flex-col transition-all duration-1000 delay-200 ${offer1.visible ? "animate-slide-in-right" : "opacity-0"}`}>
-                <h3 className="text-4xl md:text-5xl font-black leading-[1.1] tracking-tight mb-8">
-                  <span className="text-white">Live the Life</span><br />
-                  <span className="text-primary">You Always Imagined</span>
-                </h3>
-                <p className="text-zinc-400 text-base md:text-[17px] leading-relaxed mb-6">
-                  A duplex is not just a house — it&apos;s a statement. Designed for families who refuse to compromise on space,
-                  style, or comfort. At <span className="text-white font-semibold">Aaradhya Dream City</span>, our duplex homes
-                  are crafted with premium architecture, spacious rooms, private gardens, and modern interiors that make every
-                  corner feel like yours. Whether it&apos;s your parents upstairs or your growing family downstairs — our duplexes
-                  are built for real Indian families, with love and precision.
-                </p>
-                <p className="text-zinc-500 text-base md:text-[17px] leading-relaxed mb-10">
-                  Your dream home is already designed.{" "}
-                  <span className="text-primary font-bold italic">It&apos;s waiting for you.</span>
-                </p>
-                <Link href="/contact" className="inline-flex items-center gap-3 text-white font-bold group/link self-start">
-                  <span className="border-b-2 border-primary pb-1 group-hover/link:text-primary transition-colors">Enquire Now</span>
-                  <ArrowRight size={18} className="text-primary group-hover/link:translate-x-2 transition-transform" />
-                </Link>
+              {/* Right Side: Abstract Image Offset */}
+              <div className={`lg:col-span-5 relative transition-all duration-1000 delay-300 ${visionSection.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"}`}>
+                 <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] ring-1 ring-black/5 dark:ring-white/5">
+                    <Image src="/house-home.jpg" alt="Visionary Architecture" fill className="object-cover" />
+                 </div>
+                 <div className="absolute -bottom-10 -left-10 bg-primary p-12 rounded-2xl hidden lg:block" />
               </div>
             </div>
-
-            {/* ══ ROW 2 — Plotting  (text LEFT, image RIGHT) ══ */}
-            <div
-              ref={offer2.ref}
-              className={`group grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-24 items-center mb-32 transition-all duration-1000 ${
-                offer2.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-14"
-              }`}
-            >
-              {/* Text */}
-              <div className={`flex flex-col order-2 lg:order-1 transition-all duration-1000 ${offer2.visible ? "animate-slide-in-left" : "opacity-0"}`}>
-                <h3 className="text-4xl md:text-5xl font-black leading-[1.1] tracking-tight mb-8">
-                  <span className="text-white">Own the Land.</span><br />
-                  <span className="text-primary">Own the Future.</span>
-                </h3>
-                <p className="text-zinc-400 text-base md:text-[17px] leading-relaxed mb-6">
-                  There is no better investment than land — and there is no better time than now.{" "}
-                  <span className="text-white font-semibold">Aaradhya Dream City</span> offers prime residential plots in
-                  strategically located areas with full legal clearance, wide roads, and all basic amenities in place. Buy a
-                  plot today, build tomorrow, or simply hold it and watch your investment multiply. The choice is yours — the
-                  land is ours to offer.
-                </p>
-                <p className="text-zinc-500 text-base md:text-[17px] leading-relaxed mb-10">
-                  Plant your roots where the city is growing.{" "}
-                  <span className="text-primary font-bold italic">The future belongs here.</span>
-                </p>
-                <Link href="/contact" className="inline-flex items-center gap-3 text-white font-bold group/link self-start">
-                  <span className="border-b-2 border-primary pb-1 group-hover/link:text-primary transition-colors">Enquire Now</span>
-                  <ArrowRight size={18} className="text-primary group-hover/link:translate-x-2 transition-transform" />
-                </Link>
-              </div>
-
-              {/* Image */}
-              <div className={`relative order-1 lg:order-2 transition-all duration-1000 delay-200 ${offer2.visible ? "animate-slide-in-right" : "opacity-0"}`}>
-                <div className="relative aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl ring-1 ring-white/5">
-                  <Image
-                    src="/land-plot.jpg"
-                    alt="Residential Plot at Aaradhya Dream City"
-                    fill
-                    className="object-cover transition-transform duration-1000 group-hover:scale-105"
-                    sizes="(max-width:1024px) 100vw, 50vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                </div>
-                <div className="absolute -bottom-6 -left-6 bg-zinc-900 border border-zinc-800 px-6 py-4 rounded-2xl shadow-2xl z-20">
-                  <p className="text-primary font-black text-xl leading-none">600+</p>
-                  <p className="text-white font-black text-[11px] uppercase tracking-widest mt-1">Plotting</p>
-                </div>
-              </div>
-            </div>
-
-            {/* ══ ROW 3 — Flat  (image LEFT, text RIGHT) ══ */}
-            <div
-              ref={offer3.ref}
-              className={`group grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-24 items-center transition-all duration-1000 ${
-                offer3.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-14"
-              }`}
-            >
-              {/* Image */}
-              <div className={`relative transition-all duration-1000 ${offer3.visible ? "animate-slide-in-left" : "opacity-0"}`}>
-                <div className="relative aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl ring-1 ring-white/5">
-                  <Image
-                    src="/flats.jpg"
-                    alt="Modern Flat at Aaradhya Dream City"
-                    fill
-                    className="object-cover transition-transform duration-1000 group-hover:scale-105"
-                    sizes="(max-width:1024px) 100vw, 50vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                </div>
-                <div className="absolute -bottom-6 -left-6 bg-zinc-900 border border-zinc-800 px-6 py-4 rounded-2xl shadow-2xl z-20">
-                  <p className="text-primary font-black text-xl leading-none">1000+</p>
-                  <p className="text-white font-black text-[11px] uppercase tracking-widest mt-1">Happy Families</p>
-                </div>
-              </div>
-
-              {/* Text */}
-              <div className={`flex flex-col transition-all duration-1000 delay-200 ${offer3.visible ? "animate-slide-in-right" : "opacity-0"}`}>
-                <h3 className="text-4xl md:text-5xl font-black leading-[1.1] tracking-tight mb-8">
-                  <span className="text-white">Smart Living for</span><br />
-                  <span className="text-primary">the Modern Family</span>
-                </h3>
-                <p className="text-zinc-400 text-base md:text-[17px] leading-relaxed mb-6">
-                  Life moves fast — your home should keep up. Our thoughtfully designed flats offer the perfect blend of comfort,
-                  convenience, and affordability. With modern layouts, quality construction, gated security, and prime locations
-                  close to schools, markets, and highways — an <span className="text-white font-semibold">Aaradhya flat</span> is
-                  the smartest decision for young families, working professionals, and first-time buyers alike.
-                </p>
-                <p className="text-zinc-500 text-base md:text-[17px] leading-relaxed mb-10">
-                  Everything you need.{" "}
-                  <span className="text-primary font-bold italic">Nothing you don&apos;t.</span>
-                </p>
-                <Link href="/contact" className="inline-flex items-center gap-3 text-white font-bold group/link self-start">
-                  <span className="border-b-2 border-primary pb-1 group-hover/link:text-primary transition-colors">Enquire Now</span>
-                  <ArrowRight size={18} className="text-primary group-hover/link:translate-x-2 transition-transform" />
-                </Link>
-              </div>
-            </div>
-
           </div>
         </section>
 
+        {/* ───────── THE OFFERINGS (ASYMMETRIC LUXURY) ───────── */}
+        <div className="space-y-40 sm:space-y-64 pb-48">
+
+            {/* SECTION 1: DUPLEX */}
+            <div ref={section1.ref} className="max-w-7xl mx-auto px-6 lg:px-12">
+              <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+                <div className={`relative w-full lg:w-3/5 transition-all duration-1000 ${section1.visible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-20"}`}>
+                  <div className="relative aspect-[16/10] rounded-[2.5rem] overflow-hidden group shadow-2xl">
+                    <Image src="/house-home.jpg" alt="Duplex House" fill className="object-cover transition-transform duration-1000 group-hover:scale-110" />
+                  </div>
+                  {/* Floating Detail */}
+                  <div className="absolute top-1/2 -translate-y-1/2 -right-12 hidden lg:block">
+                     <div className="bg-background border border-border p-8 rounded-2xl shadow-xl backdrop-blur-md">
+                        <div className="text-primary font-serif italic text-4xl mb-1 italic">150+</div>
+                        <div className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em]">Bespoke Homes</div>
+                     </div>
+                  </div>
+                </div>
+
+                <div className={`w-full lg:w-2/5 transition-all duration-1000 delay-300 ${section1.visible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-20"}`}>
+                  <div className="inline-flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-[0.4em] mb-8">
+                    <HomeIcon size={14} />
+                    The Duplex Collection
+                  </div>
+                  <h3 className="text-4xl sm:text-6xl font-serif mb-8 leading-[1.1] tracking-tight">
+                    Living as an <span className="italic text-primary">Art Form</span>.
+                  </h3>
+                  <p className="text-muted-foreground text-lg leading-relaxed mb-10 font-light">
+                    Where every corridor tells a story. Our duplexes combine grand volumes with intimate spaces, 
+                    designed for those who appreciate the finer details of existence.
+                  </p>
+                  <Link href="/register" className="group flex items-center gap-6 text-foreground font-black text-xs uppercase tracking-[0.3em] hover:text-primary transition-colors">
+                    View Catalogue 
+                    <MoveRight size={20} className="text-primary group-hover:translate-x-3 transition-transform" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION 2: PLOTS (CLEAN MINIMALISM) */}
+            <div ref={section2.ref} className="bg-secondary/50 py-32 sm:py-48">
+              <div className="max-w-7xl mx-auto px-6 lg:px-12">
+                <div className="flex flex-col lg:flex-row-reverse items-center gap-16 lg:gap-32">
+                  <div className={`relative w-full lg:w-1/2 transition-all duration-1000 ${section2.visible ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}>
+                    <div className="relative aspect-square rounded-full overflow-hidden border-8 border-background shadow-2xl">
+                      <Image src="/land-plot.jpg" alt="Plots" fill className="object-cover transition-transform duration-1000 hover:scale-105" />
+                    </div>
+                  </div>
+
+                  <div className={`w-full lg:w-1/2 transition-all duration-1000 delay-300 ${section2.visible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-20"}`}>
+                    <div className="inline-flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-[0.4em] mb-8">
+                      <MapPin size={14} />
+                      Land Ownership
+                    </div>
+                    <h3 className="text-4xl sm:text-6xl font-serif mb-8 leading-[1.1] tracking-tight">
+                      The Ground <br /><span className="italic">of Your</span> <span className="text-primary italic">Legacy</span>.
+                    </h3>
+                    <p className="text-muted-foreground text-lg leading-relaxed mb-10 font-light max-w-md">
+                      Land is the only thing they aren&apos;t making more of. Secure your family&apos;s future with prime residential plots in our most sought-after locations.
+                    </p>
+                    <Link href="/register" className="inline-block border-b-2 border-primary pb-2 font-black text-xs uppercase tracking-[0.4em] hover:text-primary transition-all">
+                      Check Availability
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION 3: FLATS (MODERN MOSAIC) */}
+            <div ref={section3.ref} className="max-w-7xl mx-auto px-6 lg:px-12">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+                <div className={`grid grid-cols-2 gap-4 transition-all duration-1000 ${section3.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"}`}>
+                   <div className="aspect-[4/5] rounded-2xl overflow-hidden mt-12 shadow-xl ring-1 ring-black/5">
+                      <Image src="/flats.jpg" alt="Flat Detail" fill className="object-cover" />
+                   </div>
+                   <div className="aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5">
+                      <Image src="/logo.jpg" alt="Flat View" fill className="object-cover" />
+                   </div>
+                </div>
+
+                <div className={`transition-all duration-1000 delay-300 ${section3.visible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-20"}`}>
+                  <div className="inline-flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-[0.4em] mb-8">
+                    <LayoutGrid size={14} />
+                    High-Rise Living
+                  </div>
+                  <h3 className="text-4xl sm:text-6xl font-serif mb-8 leading-[1.1] tracking-tight">
+                    Smart Spaces. <br /><span className="text-primary italic">Smarter</span> Living.
+                  </h3>
+                  <p className="text-muted-foreground text-lg leading-relaxed mb-10 font-light">
+                    Designed for the modern pace. Our flats offer seamless functionality without compromising on the aesthetic grace that defines an Aaradhya home.
+                  </p>
+                  <div className="p-8 border border-border rounded-2xl bg-secondary/30 backdrop-blur-sm">
+                     <p className="text-sm font-medium italic text-foreground mb-4">&ldquo;The most comfortable living experience I&apos;ve had in the city.&rdquo;</p>
+                     <div className="flex items-center gap-3">
+                        <div className="w-10 h-px bg-primary" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Satisfied Resident</span>
+                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+        </div>
+
+        {/* ───────── STATS (PREMIUM STRIP) ───────── */}
+        <section ref={statsSection.ref} className={`bg-foreground text-background py-24 transition-all duration-1000 ${statsSection.visible ? "opacity-100" : "opacity-0"}`}>
+          <div className="max-w-7xl mx-auto px-6 lg:px-12">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-12 sm:gap-24 text-center">
+              {[
+                { val: "₹100Cr+", label: "Portfolio" },
+                { val: "2500+", label: "Associates" },
+                { val: "15+", label: "Live Sites" },
+                { val: "100%", label: "Legal Clear" }
+              ].map((stat, i) => (
+                <div key={i} className="flex flex-col items-center">
+                  <div className="text-4xl sm:text-6xl font-serif mb-4 italic text-primary">{stat.val}</div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.5em] opacity-40">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
 
       <Footer />

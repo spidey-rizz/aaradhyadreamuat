@@ -37,9 +37,9 @@ export default function NetworkPage() {
 
   if (status === "loading" || !profile) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
         <Loader2 className="text-primary animate-spin mb-4" size={48} />
-        <p className="text-zinc-500 font-medium animate-pulse">Loading your network...</p>
+        <p className="text-muted-foreground font-medium animate-pulse">Loading your network...</p>
       </div>
     );
   }
@@ -48,71 +48,71 @@ export default function NetworkPage() {
   const indirectCount = referralList.length - directCount;
 
   return (
-    <div className="flex flex-col min-h-screen bg-black text-white selection:bg-primary/30">
+    <div className="flex flex-col min-h-screen bg-background text-foreground transition-colors duration-300 selection:bg-primary/30">
       <Navbar />
 
-      <main className="flex-grow pt-28 pb-20 px-4 md:px-8">
-        <div className="max-w-7xl mx-auto space-y-8">
+      <main className="flex-grow pt-24 pb-20 px-3 sm:px-6">
+        <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
           
           {/* Breadcrumbs / Back Link */}
-          <div className="flex items-center gap-2 text-zinc-500 text-sm">
+          <div className="flex items-center gap-2 text-zinc-500 text-xs sm:text-sm px-1">
             <button onClick={() => router.push("/dashboard")} className="hover:text-primary transition-colors">Dashboard</button>
-            <ChevronRight size={14} />
+            <ChevronRight size={12} />
             <span className="text-zinc-300 font-medium">My Network</span>
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div>
-              <h1 className="text-4xl font-black text-white mb-2 uppercase tracking-tight">Your <span className="text-primary">Network</span></h1>
-              <p className="text-zinc-500 max-w-lg text-sm">Visualize and manage your multi-level associate hierarchy. View all direct and indirect partners in one place.</p>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-1">
+            <div className="text-center md:text-left">
+              <h1 className="text-3xl sm:text-4xl font-black text-white mb-2 uppercase tracking-tight">Your <span className="text-primary">Network</span></h1>
+              <p className="text-zinc-500 max-w-lg text-xs sm:text-sm mx-auto md:mx-0">Visualize and manage your multi-level associate hierarchy. View all direct and indirect partners in one place.</p>
             </div>
 
             {/* Stats Summary */}
-            <div className="flex gap-4">
-              <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl px-6 py-4 text-center">
-                <div className="text-2xl font-black text-white">{referralList.length}</div>
-                <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mt-1">Total Members</div>
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 w-full md:w-auto">
+              <div className="bg-card border border-border rounded-xl sm:rounded-2xl px-2 sm:px-6 py-3 sm:py-4 text-center">
+                <div className="text-lg sm:text-2xl font-black text-foreground">{referralList.length}</div>
+                <div className="text-[8px] sm:text-[10px] text-muted-foreground uppercase font-bold tracking-widest mt-1">Total</div>
               </div>
-              <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl px-6 py-4 text-center">
-                <div className="text-2xl font-black text-accent">{directCount}</div>
-                <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mt-1">Direct</div>
+              <div className="bg-card border border-border rounded-xl sm:rounded-2xl px-2 sm:px-6 py-3 sm:py-4 text-center">
+                <div className="text-lg sm:text-2xl font-black text-accent">{directCount}</div>
+                <div className="text-[8px] sm:text-[10px] text-muted-foreground uppercase font-bold tracking-widest mt-1">Direct</div>
               </div>
-              <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl px-6 py-4 text-center">
-                <div className="text-2xl font-black text-primary">{indirectCount}</div>
-                <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mt-1">Indirect</div>
+              <div className="bg-card border border-border rounded-xl sm:rounded-2xl px-2 sm:px-6 py-3 sm:py-4 text-center">
+                <div className="text-lg sm:text-2xl font-black text-primary">{indirectCount}</div>
+                <div className="text-[8px] sm:text-[10px] text-muted-foreground uppercase font-bold tracking-widest mt-1">Indirect</div>
               </div>
             </div>
           </div>
 
           {/* Controls Bar */}
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-zinc-950 border border-zinc-800 p-4 rounded-3xl">
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-card border border-border p-3 sm:p-4 rounded-2xl sm:rounded-3xl shadow-sm">
             <div className="relative w-full md:w-96">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
               <input 
                 type="text" 
-                placeholder="Search by name or phone..."
+                placeholder="Search name or phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-black border border-zinc-800 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-primary/50 transition-all"
+                className="w-full bg-background border border-border rounded-xl sm:rounded-2xl py-2.5 sm:py-3 pl-11 sm:pl-12 pr-4 text-xs sm:text-sm focus:outline-none focus:border-primary/50 transition-all text-foreground"
               />
             </div>
 
-            <div className="flex items-center gap-2 bg-black border border-zinc-800 p-1 rounded-2xl w-full md:w-auto">
+            <div className="flex items-center gap-1 bg-background border border-border p-1 rounded-xl sm:rounded-2xl w-full md:w-auto">
               <button 
                 onClick={() => setFilterType("all")}
-                className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${filterType === "all" ? "bg-primary text-black" : "text-zinc-500 hover:text-white"}`}
+                className={`flex-1 md:flex-none px-4 sm:px-6 py-2 rounded-lg sm:rounded-xl text-[9px] sm:text-xs font-bold uppercase tracking-widest transition-all ${filterType === "all" ? "bg-primary text-black" : "text-muted-foreground hover:text-foreground"}`}
               >
                 All
               </button>
               <button 
                 onClick={() => setFilterType("direct")}
-                className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${filterType === "direct" ? "bg-accent text-black" : "text-zinc-500 hover:text-white"}`}
+                className={`flex-1 md:flex-none px-4 sm:px-6 py-2 rounded-lg sm:rounded-xl text-[9px] sm:text-xs font-bold uppercase tracking-widest transition-all ${filterType === "direct" ? "bg-accent text-black" : "text-muted-foreground hover:text-foreground"}`}
               >
                 Direct
               </button>
               <button 
                 onClick={() => setFilterType("indirect")}
-                className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${filterType === "indirect" ? "bg-zinc-800 text-white" : "text-zinc-500 hover:text-white"}`}
+                className={`flex-1 md:flex-none px-4 sm:px-6 py-2 rounded-lg sm:rounded-xl text-[9px] sm:text-xs font-bold uppercase tracking-widest transition-all ${filterType === "indirect" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`}
               >
                 Indirect
               </button>
@@ -120,20 +120,20 @@ export default function NetworkPage() {
           </div>
 
           {/* Table Container */}
-          <div className="bg-zinc-950 border border-zinc-800 rounded-[2rem] overflow-hidden">
+          <div className="bg-card border border-border rounded-[2rem] overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-zinc-800 bg-zinc-900/20">
-                    <th className="py-6 px-8 text-[10px] text-zinc-500 font-black uppercase tracking-[0.2em]">Associate</th>
-                    <th className="py-6 px-8 text-[10px] text-zinc-500 font-black uppercase tracking-[0.2em]">Contact</th>
-                    <th className="py-6 px-8 text-[10px] text-zinc-500 font-black uppercase tracking-[0.2em]">Level</th>
-                    <th className="py-6 px-8 text-[10px] text-zinc-500 font-black uppercase tracking-[0.2em]">Connection</th>
-                    <th className="py-6 px-8 text-[10px] text-zinc-500 font-black uppercase tracking-[0.2em]">Joined Date</th>
-                    <th className="py-6 px-8 text-[10px] text-zinc-500 font-black uppercase tracking-[0.2em]">Sales</th>
+                  <tr className="border-b border-border bg-muted/50">
+                    <th className="py-6 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Associate</th>
+                    <th className="py-6 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Contact</th>
+                    <th className="py-6 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Level</th>
+                    <th className="py-6 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Connection</th>
+                    <th className="py-6 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Joined Date</th>
+                    <th className="py-6 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Sales</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-900">
+                <tbody className="divide-y divide-border">
                   {filteredList.length > 0 ? (
                     filteredList.map((member: any, idx: number) => (
                       <tr key={idx} className="group hover:bg-zinc-900/30 transition-all duration-300">
@@ -146,7 +146,7 @@ export default function NetworkPage() {
                           </div>
                         </td>
                         <td className="py-6 px-8">
-                          <div className="flex items-center gap-2 text-zinc-400 text-sm">
+                          <div className="flex items-center gap-2 text-primary/80 text-sm">
                             <Phone size={14} className="text-zinc-600" />
                             {member.phone}
                           </div>

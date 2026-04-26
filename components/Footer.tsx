@@ -137,7 +137,7 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} Aaradhya Dream City. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <a href="#" className="text-zinc-500 text-sm hover:text-zinc-300 transition-colors">Privacy Policy</a>
+            <Link href="/privacy" className="text-zinc-500 text-sm hover:text-zinc-300 transition-colors">Privacy Policy</Link>
             <a href="#" className="text-zinc-500 text-sm hover:text-zinc-300 transition-colors">Terms of Service</a>
           </div>
         </div>
