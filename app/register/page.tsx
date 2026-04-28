@@ -99,13 +99,17 @@ function RegisterContent() {
       sanitizedPhone = "91" + sanitizedPhone;
     }
 
+    const payload = {
+      ...formData,
+      phone: sanitizedPhone,
+      email: formData.email.trim() || null,
+      referred_by: formData.referred_by.trim() || null,
+    };
+
     try {
       const response = await apiFetch(endpoints.register, {
         method: "POST",
-        body: JSON.stringify({
-          ...formData,
-          phone: sanitizedPhone
-        }),
+        body: JSON.stringify(payload),
       });
 
       sessionStorage.setItem("verify_token", response.verify_token);
