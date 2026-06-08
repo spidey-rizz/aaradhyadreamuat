@@ -49,6 +49,22 @@ export function useAuth(options?: {
 
       try {
         const data = await apiFetch(endpoints.me);
+        
+        // Merge client-side profile overrides if they exist
+        if (typeof window !== "undefined") {
+          const overrides = localStorage.getItem("local_profile_overrides");
+          if (overrides) {
+            try {
+              const parsed = JSON.parse(overrides);
+              if (parsed && typeof parsed === "object") {
+                Object.assign(data, parsed);
+              }
+            } catch (e) {
+              console.error("Error parsing local profile overrides:", e);
+            }
+          }
+        }
+
         setProfile(data);
         setStatus("authenticated");
 

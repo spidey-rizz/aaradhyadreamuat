@@ -54,6 +54,8 @@ export default function Home() {
               loop
               muted
               playsInline
+              crossOrigin="anonymous"
+              suppressHydrationWarning
               className="absolute inset-0 w-full h-full object-cover brightness-[0.4]"
             >
               <source src="/landingpagev1.mp4" type="video/mp4" />
@@ -188,10 +190,10 @@ export default function Home() {
             <div ref={section3.ref} className="max-w-7xl mx-auto px-6 lg:px-12">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
                 <div className={`grid grid-cols-2 gap-4 transition-all duration-1000 ${section3.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"}`}>
-                   <div className="aspect-[4/5] rounded-2xl overflow-hidden mt-12 shadow-xl ring-1 ring-black/5">
+                   <div className="relative aspect-[4/5] rounded-2xl overflow-hidden mt-12 shadow-xl ring-1 ring-black/5">
                       <Image src="/flats.jpg" alt="Flat Detail" fill className="object-cover" />
                    </div>
-                   <div className="aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5">
+                   <div className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5">
                       <Image src="/logo.jpg" alt="Flat View" fill className="object-cover" />
                    </div>
                 </div>

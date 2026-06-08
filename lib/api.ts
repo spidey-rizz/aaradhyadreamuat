@@ -56,4 +56,8 @@ export const endpoints = {
   register: "/broker/register",
   login: "/broker/login",
   me: "/broker/me",
+  addSale: "/sales/add",
+  monthlyReport: "/sales/monthly-report",
+  userLookup: "/broker/admin/user",
+  setPrivilege: "/broker/admin/set-privilege",
 };
