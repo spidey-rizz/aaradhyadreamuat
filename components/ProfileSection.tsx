@@ -1,14 +1,27 @@
 import { useState } from "react";
-import { User, Edit2, Key, Check, X, ShieldAlert } from "lucide-react";
+import { User, Edit2, Key, Check, X, ShieldAlert, Copy } from "lucide-react";
+import { copyToClipboard } from "@/lib/clipboard";
 
 export default function ProfileSection({ profile }: { profile: any }) {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(profile?.name || "");
+  const [copied, setCopied] = useState(false);
 
   const handleSave = async () => {
     // In the future, this will call the PUT /broker/me endpoint
     alert("Profile update API will be integrated here.");
     setIsEditing(false);
+  };
+
+  const handleCopy = async () => {
+    const code = profile?.referral_code || "";
+    if (code) {
+      const success = await copyToClipboard(code);
+      if (success) {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    }
   };
 
   return (
@@ -55,11 +68,11 @@ export default function ProfileSection({ profile }: { profile: any }) {
               {profile?.referral_code || "N/A"}
             </div>
             <button 
-              onClick={() => navigator.clipboard.writeText(profile?.referral_code || "")}
-              className="bg-muted p-3 rounded-xl hover:bg-amber-500/20 hover:text-amber-500 transition-colors"
+              onClick={handleCopy}
+              className="bg-muted p-3 rounded-xl hover:bg-amber-500/20 hover:text-amber-500 transition-colors flex items-center justify-center shrink-0 cursor-pointer"
               title="Copy Referral Code"
             >
-              <Key size={18} />
+              {copied ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
             </button>
           </div>
           <p className="text-[10px] text-muted-foreground mt-1">* Referral code cannot be changed.</p>

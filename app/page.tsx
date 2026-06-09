@@ -110,7 +110,7 @@ export default function Home() {
               {/* Right Side: Abstract Image Offset */}
               <div className={`lg:col-span-5 relative transition-all duration-1000 delay-300 ${visionSection.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"}`}>
                  <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] ring-1 ring-black/5 dark:ring-white/5">
-                    <Image src="/house-home.jpg" alt="Visionary Architecture" fill className="object-cover" />
+                    <Image src="/house-home.jpg" alt="Visionary Architecture" fill sizes="(max-width: 1024px) 100vw, 530px" className="object-cover" />
                  </div>
                  <div className="absolute -bottom-10 -left-10 bg-primary p-12 rounded-2xl hidden lg:block" />
               </div>
@@ -126,7 +126,7 @@ export default function Home() {
               <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
                 <div className={`relative w-full lg:w-3/5 transition-all duration-1000 ${section1.visible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-20"}`}>
                   <div className="relative aspect-[16/10] rounded-[2.5rem] overflow-hidden group shadow-2xl">
-                    <Image src="/house-home.jpg" alt="Duplex House" fill className="object-cover transition-transform duration-1000 group-hover:scale-110" />
+                     <Image src="/house-home.jpg" alt="Duplex House" fill sizes="(max-width: 1024px) 100vw, 768px" className="object-cover transition-transform duration-1000 group-hover:scale-110" />
                   </div>
                   {/* Floating Detail */}
                   <div className="absolute top-1/2 -translate-y-1/2 -right-12 hidden lg:block">
@@ -163,7 +163,7 @@ export default function Home() {
                 <div className="flex flex-col lg:flex-row-reverse items-center gap-16 lg:gap-32">
                   <div className={`relative w-full lg:w-1/2 transition-all duration-1000 ${section2.visible ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}>
                     <div className="relative aspect-square rounded-full overflow-hidden border-8 border-background shadow-2xl">
-                      <Image src="/land-plot.jpg" alt="Plots" fill className="object-cover transition-transform duration-1000 hover:scale-105" />
+                      <Image src="/land-plot.jpg" alt="Plots" fill sizes="(max-width: 1024px) 100vw, 640px" className="object-cover transition-transform duration-1000 hover:scale-105" />
                     </div>
                   </div>
 
@@ -191,10 +191,10 @@ export default function Home() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
                 <div className={`grid grid-cols-2 gap-4 transition-all duration-1000 ${section3.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"}`}>
                    <div className="relative aspect-[4/5] rounded-2xl overflow-hidden mt-12 shadow-xl ring-1 ring-black/5">
-                      <Image src="/flats.jpg" alt="Flat Detail" fill className="object-cover" />
+                      <Image src="/flats.jpg" alt="Flat Detail" fill sizes="(max-width: 1024px) 50vw, 320px" className="object-cover" />
                    </div>
                    <div className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5">
-                      <Image src="/logo.jpg" alt="Flat View" fill className="object-cover" />
+                      <Image src="/logo.jpg" alt="Flat View" fill sizes="(max-width: 1024px) 50vw, 320px" className="object-cover" />
                    </div>
                 </div>
 

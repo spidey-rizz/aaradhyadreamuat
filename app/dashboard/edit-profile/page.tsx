@@ -22,10 +22,14 @@ export default function EditProfilePage() {
   // Load initial values from profile once fetched
   useEffect(() => {
     if (profile) {
+      let cleanPhone = profile.phone || "";
+      if (cleanPhone.startsWith("91") && cleanPhone.length === 12) {
+        cleanPhone = cleanPhone.slice(2);
+      }
       setFormData({
         first_name: profile.first_name || "",
         last_name: profile.last_name || "",
-        phone: profile.phone || ""
+        phone: cleanPhone
       });
     }
   }, [profile]);
@@ -52,8 +56,10 @@ export default function EditProfilePage() {
     }
 
     // Validate phone number (should be 10 digits or sanitised)
-    const rawPhone = formData.phone.replace(/\D/g, "");
-    if (rawPhone.length < 10) {
+    let rawPhone = formData.phone.replace(/\D/g, "");
+    if (rawPhone.length === 10) {
+      rawPhone = "91" + rawPhone;
+    } else if (rawPhone.length < 10) {
       setMessage({ type: "error", text: "Please enter a valid 10-digit phone number." });
       setLoading(false);
       return;
@@ -152,16 +158,22 @@ export default function EditProfilePage() {
 
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Phone Number *</label>
-            <div className="relative">
-              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+            <div className="relative flex items-center">
+              <div className="absolute left-4 flex items-center gap-2 text-primary font-bold border-r border-border pr-3">
+                <Phone size={16} />
+                <span className="text-sm">+91</span>
+              </div>
               <input
                 required
                 type="tel"
-                maxLength={12}
-                placeholder="Enter 10-digit number"
+                maxLength={10}
+                placeholder="10 Digits"
                 value={formData.phone}
-                onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                className="w-full bg-background border border-border rounded-xl py-3 pl-12 pr-4 text-foreground focus:border-primary outline-none transition-all text-sm font-medium"
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                  setFormData({...formData, phone: val});
+                }}
+                className="w-full bg-background border border-border rounded-xl py-3.5 pl-24 pr-4 text-foreground focus-border-primary outline-none transition-all text-sm font-medium"
               />
             </div>
             <p className="text-[10px] text-muted-foreground ml-1">

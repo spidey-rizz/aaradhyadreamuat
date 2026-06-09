@@ -1,0 +1,77 @@
+================================================================================
+Aaradhya Dream City — Frontend Requirements & Dashboard Structure
+================================================================================
+
+Aaradhya Dream City ke frontend me 3 type ke roles/dashboards aur unke relative tasks 
+neeche detail me diye gaye hain. Har section ke aage design theme (bracket me) suggested hai.
+
+--------------------------------------------------------------------------------
+PART 1: DASHBOARDS JO BANANE HAIN
+--------------------------------------------------------------------------------
+
+1. Broker / Agent Dashboard
+   -------------------------
+   [Theme: Premium Emerald & Champagne Gold — Emerald Green (#0B6623) primary, Soft Gold (#D4AF37) secondary, Off-White (#F9F9FB) cards. Ye real estate aur trust feel ke liye design theme hai.]
+   
+   Ye dashboard har registered aur WhatsApp-verified broker ke liye hoga.
+   * Key Features:
+     - Profile Summary: Broker ka naam, status, email, phone number, PAN, aur Aadhaar.
+     - Referral Center: Unique Referral Code ("ADC_XXXX") aur shareable link copy-paste option (e.g., /register?ref=ADC_XXXX).
+     - Referral Tree (Network Visualization): 
+       - Tree Structure (Interactive): Nested tree structure jisme collapsed/expanded form me broker dekh sake ki uske niche kisne kisko refer kiya (sub-tree network count ke sath).
+       - Flat List View: Searchable aur filterable table list jo total sales count aur level system (Direct / Indirect connection) dikhaye (from API: referral_list).
+     - Performance / Earnings Report:
+       - Monthly report option (select month & year) jo uski monthly performance aur records retrieve kare.
+
+2. Sales / Lead Admin Dashboard
+   -----------------------------
+   
+   Ye dashboard sirf un brokers ke liye khulega jinke pass "admin" ya "super_admin" privileges honge.
+   * Key Features:
+     - New Sale / Booking Entry Form:
+       - Inputs: User ID, Plot ID, Total Amount, Paid Amount, Buyer Name, Aadhaar Number, Phone, Address, Payment Method, Type (NEW / SETTLEMENT), and Prepaid amount.
+       - Admin/Sales manager is form se direct system me real-estate sales entries add kar sakega (API: /sales/add).
+     - Multi-Agent Reports:
+       - Kisi bhi agent/broker ki ID daalkar uska monthly performance report download/view karna.
+
+3. Super Admin Control Center
+   --------------------------
+   [Theme: Midnight Indigo & Crimson Purple — Dark mode UI with Indigo (#4F46E5) primary and Purple/Violet gradients, indicating highest authority and configuration settings.]
+   
+   Super Admins ke liye global control panel.
+   * Key Features:
+     - User Lookup: Phone ya Email se pure system me kisi bhi user/broker ko search karna (API: /broker/admin/user).
+     - Role & Privilege Management: Kisi bhi normal broker ko "Admin" privilege dena ya remove karna toggle switches ke sath (API: /broker/admin/set-privilege).
+
+--------------------------------------------------------------------------------
+PART 2: FRONTEND ME KYA KYA KAAM HAI (TASK LIST)
+--------------------------------------------------------------------------------
+
+1. User Authentication & Onboarding Flow
+   - Registration Page:
+     - Form Inputs: First Name, Last Name, Gender, Phone (Sanitized 91XXXXXXXXXX format check), Password, PAN Number, Aadhaar Number, Email.
+     - URL referral link parser (Agar URL me ?ref=XXXX hai, toh automatically "Referred By" field me pre-fill ho jaye).
+   - WhatsApp Verification Screen (Intermediary Screen):
+     - Register hone ke baad frontend user ko ek custom UI dikhayega.
+     - Ek bada green button hoga: "Verify via WhatsApp" (wa_link trigger karega).
+     - Ek instruction card jo samjhayega ki WhatsApp par send click karte hi account active hoga, aur verification ke baad screen automatically login par redirect karegi.
+   - Login Page:
+     - Phone aur Password entry.
+     - Redirect to Dashboard if verified.
+
+2. State Management & Protected Routes
+   - JWT storage in LocalStorage/Cookies.
+   - Auth Guard: Agar user logged in nahi hai ya token expired hai, toh `/login` par redirect karega.
+   - Admin Guard: Agar route admin-only hai (jaise sales entries aur settings), toh privilege check karega.
+
+3. API Integration Handlers
+   - Auth Interceptor: Har API request me `Authorization: Bearer <token>` automatically attach hona chahiye.
+   - Auto Log-out: Response code 401 aane par token discard karke login screen par pathana.
+   - API error parser: Response code 400 ke errors (multiple fields separated by semicolons) ko custom alert box ya red labels me specific form fields ke neeche render karna.
+
+4. UI/UX Elements & Micro-Animations
+   - Responsive Mobile-First Design: Brokers zyadatar mobile WhatsApp se aayenge, isliye pages pure mobile-friendly hone chahiye.
+   - Lottie animations / custom loaders WhatsApp verification response ka wait karte samay.
+   - Cool animations when drawing/opening the Referral Tree.
+
+================================================================================

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useAuth } from "@/lib/useAuth";
+import { useRouter } from "next/navigation";
 import { apiFetch, endpoints } from "@/lib/api";
 import {
   Loader2,
@@ -62,7 +63,7 @@ function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" }) {
 
   // Auto-lookup associate by phone as user types
   const handleAssociatePhone = (val: string) => {
-    const cleaned = val.replace(/\D/g, "");
+    const cleaned = val.replace(/\D/g, "").slice(0, 10);
     setForm((f) => ({
       ...f,
       associate_phone: cleaned,
@@ -71,11 +72,12 @@ function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" }) {
       user_id: "",
     }));
     if (phoneDebounce.current) clearTimeout(phoneDebounce.current);
-    if (cleaned.length >= 10) {
+    if (cleaned.length === 10) {
       setForm((f) => ({ ...f, associate_loading: true }));
       phoneDebounce.current = setTimeout(async () => {
         try {
-          const data = await apiFetch(`${endpoints.userLookup}?phone=${cleaned}`);
+          const phoneToSend = "91" + cleaned;
+          const data = await apiFetch(`${endpoints.userLookup}?phone=${phoneToSend}`);
           const user = Array.isArray(data) ? data[0] : data;
           if (user && (user._id || user.id)) {
             setForm((f) => ({
@@ -128,6 +130,11 @@ function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" }) {
     }
     setLoading(true);
     setMsg(null);
+    let sanitizedBuyerPhone = form.phone.replace(/\D/g, "");
+    if (sanitizedBuyerPhone.length === 10) {
+      sanitizedBuyerPhone = "91" + sanitizedBuyerPhone;
+    }
+
     try {
       await apiFetch(endpoints.addSale, {
         method: "POST",
@@ -138,7 +145,7 @@ function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" }) {
           paid_amount: parseFloat(form.paid_amount),
           name: form.name.trim(),
           aadhar: parseInt(form.aadhar) || 0,
-          phone: form.phone,
+          phone: sanitizedBuyerPhone,
           address: form.address.trim(),
           payment: form.payment,
           type: saleType,
@@ -177,15 +184,18 @@ function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" }) {
         </p>
         <div className="space-y-2">
           <label className={labelCls}>Associate Phone Number *</label>
-          <div className="relative">
-            <Phone size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <div className="relative flex items-center">
+            <div className="absolute left-4 flex items-center gap-2 text-primary font-bold border-r border-border pr-3">
+              <Phone size={15} />
+              <span className="text-sm">+91</span>
+            </div>
             <input
               type="tel"
-              maxLength={12}
-              placeholder="Enter 10-digit phone (e.g. 919876543210)"
+              maxLength={10}
+              placeholder="10 Digits"
               value={form.associate_phone}
               onChange={(e) => handleAssociatePhone(e.target.value)}
-              className={`${inputCls} pl-10 pr-10`}
+              className={`${inputCls} pl-24 pr-10`}
             />
             {form.associate_phone && (
               <button type="button" onClick={clearAssociate} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
@@ -280,8 +290,18 @@ function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" }) {
           </div>
           <div className="space-y-1">
             <label className={labelCls}>Buyer Phone *</label>
-            <input required type="tel" maxLength={12} placeholder="Phone number" value={form.phone}
-              onChange={(e) => set("phone", e.target.value.replace(/\D/g, ""))} className={inputCls} />
+            <div className="relative flex items-center">
+              <div className="absolute left-4 flex items-center gap-2 text-primary font-bold border-r border-border pr-3">
+                <Phone size={15} />
+                <span className="text-sm">+91</span>
+              </div>
+              <input required type="tel" maxLength={10} placeholder="10 Digits" value={form.phone}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                  setForm((f) => ({ ...f, phone: val }));
+                }}
+                className={`${inputCls} pl-24 pr-4`} />
+            </div>
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -319,37 +339,70 @@ function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" }) {
 function AssociateList() {
   const [query, setQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState("all");
-  const [results, setResults] = useState<any[]>([]);
+  const [rawResults, setRawResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
 
+  const fetchAllAssociates = async () => {
+    setLoading(true);
+    setError(null);
+    setSearched(false);
+    try {
+      const data = await apiFetch(`${endpoints.allUsers}?page=1&page_size=100`);
+      setRawResults(data.users || []);
+    } catch (err: any) {
+      setError(err.detail || "Failed to fetch associates.");
+      setRawResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllAssociates();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!query.trim()) return;
+    const cleanQuery = query.trim();
+    if (!cleanQuery) {
+      fetchAllAssociates();
+      return;
+    }
     setLoading(true);
     setError(null);
     setSearched(true);
     try {
       const params = new URLSearchParams();
-      if (query.includes("@")) {
-        params.append("email", query.trim());
+      if (cleanQuery.includes("@")) {
+        params.append("email", cleanQuery);
       } else {
-        params.append("phone", query.trim());
+        const sanitizedPhone = cleanQuery.replace(/\D/g, "");
+        const phoneToSend = sanitizedPhone.length === 10 ? "91" + sanitizedPhone : sanitizedPhone;
+        params.append("phone", phoneToSend);
       }
       const data = await apiFetch(`${endpoints.userLookup}?${params.toString()}`);
       let list = Array.isArray(data) ? data : [data].filter(Boolean);
-      if (levelFilter !== "all") {
-        list = list.filter((u: any) => String(u.level || 1) === levelFilter);
-      }
-      setResults(list);
+      setRawResults(list);
     } catch (err: any) {
       setError(err.detail || "No associate found.");
-      setResults([]);
+      setRawResults([]);
     } finally {
       setLoading(false);
     }
   };
+
+  const handleClearSearch = () => {
+    setQuery("");
+    fetchAllAssociates();
+  };
+
+  const displayedResults = useMemo(() => {
+    if (levelFilter === "all") return rawResults;
+    return rawResults.filter((u: any) => String(u.level || 1) === levelFilter);
+  }, [rawResults, levelFilter]);
 
   return (
     <div className="space-y-5 max-w-5xl mx-auto">
@@ -359,11 +412,16 @@ function AssociateList() {
           <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search by phone (e.g. 919876543210) or email..."
+            placeholder="Search by phone or email..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className={`${inputCls} pl-10`}
+            className={`${inputCls} pl-10 pr-10`}
           />
+          {query && (
+            <button type="button" onClick={handleClearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+              <X size={15} />
+            </button>
+          )}
         </div>
         {/* Level Filter */}
         <select
@@ -380,7 +438,7 @@ function AssociateList() {
         </select>
         <button
           type="submit"
-          disabled={loading || !query.trim()}
+          disabled={loading}
           className="bg-primary text-black px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/10 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 cursor-pointer"
         >
           {loading ? <Loader2 className="animate-spin" size={15} /> : <Search size={15} />}
@@ -401,12 +459,12 @@ function AssociateList() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Name</th>
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Phone</th>
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Email</th>
                 <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Joining Date</th>
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-right">Self Business</th>
+                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Name</th>
+                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Referral Code</th>
+                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Phone</th>
                 <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-center">Level</th>
+                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-right">Business (Self / Team / Total)</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -414,51 +472,54 @@ function AssociateList() {
                 <tr>
                   <td colSpan={6} className="py-16 text-center">
                     <Loader2 className="text-primary animate-spin mx-auto" size={28} />
-                    <p className="text-muted-foreground text-xs mt-3 font-medium">Searching associates...</p>
+                    <p className="text-muted-foreground text-xs mt-3 font-medium">Loading associates...</p>
                   </td>
                 </tr>
-              ) : results.length > 0 ? (
-                results.map((user: any, idx: number) => (
-                  <tr key={user._id || idx} className="hover:bg-muted/30 transition-colors group">
-                    <td className="py-5 px-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-xs shrink-0 group-hover:scale-110 transition-transform">
-                          {user.first_name?.[0]}{user.last_name?.[0]}
+              ) : displayedResults.length > 0 ? (
+                displayedResults.map((user: any, idx: number) => {
+                  const selfBusiness = user.direct_sale || user.total_sales || 0;
+                  const teamBusiness = user.team_sale || 0;
+                  const totalBusiness = user.lifetime_sale || (selfBusiness + teamBusiness);
+                  return (
+                    <tr key={user._id || idx} className="hover:bg-muted/30 transition-colors group">
+                      <td className="py-5 px-6 text-sm text-muted-foreground">
+                        {user.created_at
+                          ? new Date(user.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+                          : "—"}
+                      </td>
+                      <td className="py-5 px-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-xs shrink-0 group-hover:scale-110 transition-transform">
+                            {user.first_name?.[0]}{user.last_name?.[0]}
+                          </div>
+                          <span className="font-bold text-foreground text-sm">
+                            {user.first_name || user.name ? `${user.first_name || ""} ${user.last_name || ""}`.trim() || user.name : "—"}
+                          </span>
                         </div>
-                        <span className="font-bold text-foreground text-sm">
-                          {user.first_name} {user.last_name}
+                      </td>
+                      <td className="py-5 px-6 text-sm text-muted-foreground font-mono">{user.referral_code || "—"}</td>
+                      <td className="py-5 px-6 text-sm text-muted-foreground font-mono">{user.phone || "—"}</td>
+                      <td className="py-5 px-6 text-center">
+                        <span className="px-3 py-1 bg-muted border border-border text-foreground rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
+                          LvL-{user.level || 1}
                         </span>
-                      </div>
-                    </td>
-                    <td className="py-5 px-6 text-sm text-muted-foreground font-mono">{user.phone || "—"}</td>
-                    <td className="py-5 px-6 text-sm text-muted-foreground">{user.email || "—"}</td>
-                    <td className="py-5 px-6 text-sm text-muted-foreground">
-                      {user.created_at
-                        ? new Date(user.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
-                        : "—"}
-                    </td>
-                    <td className="py-5 px-6 text-sm font-black font-mono text-primary text-right">
-                      {user.total_sales != null ? `₹${Number(user.total_sales).toLocaleString("en-IN")}` : "—"}
-                    </td>
-                    <td className="py-5 px-6 text-center">
-                      <span className="px-3 py-1 bg-muted border border-border text-foreground rounded-full text-[10px] font-black uppercase tracking-widest">
-                        LVL {user.level || 1}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              ) : searched && !loading && !error ? (
-                <tr>
-                  <td colSpan={6} className="py-16 text-center">
-                    <Users size={32} className="mx-auto mb-3 opacity-20 text-primary" />
-                    <p className="text-muted-foreground text-xs font-semibold">No associates matched your search.</p>
-                  </td>
-                </tr>
+                      </td>
+                      <td className="py-5 px-6 text-right">
+                        <div className="flex flex-col items-end">
+                          <span className="text-sm font-black text-primary font-mono">₹{Number(totalBusiness).toLocaleString("en-IN")}</span>
+                          <span className="text-[9px] text-muted-foreground font-mono mt-0.5">
+                            Self: ₹{Number(selfBusiness).toLocaleString("en-IN")} | Team: ₹{Number(teamBusiness).toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan={6} className="py-16 text-center">
-                    <Search size={32} className="mx-auto mb-3 opacity-20 text-primary" />
-                    <p className="text-muted-foreground text-xs font-semibold">Search by phone or email to find associates.</p>
+                    <Users size={32} className="mx-auto mb-3 opacity-20 text-primary" />
+                    <p className="text-muted-foreground text-xs font-semibold">No associates found.</p>
                   </td>
                 </tr>
               )}
@@ -481,12 +542,33 @@ function BookedPlotList() {
   const [error, setError] = useState<string | null>(null);
   const [fetched, setFetched] = useState(false);
 
-  const fetchPlots = async (m = month, y = year) => {
+  // Associate mapping and filter states
+  const [associates, setAssociates] = useState<any[]>([]);
+  const [associatePhone, setAssociatePhone] = useState("");
+  const [associateFound, setAssociateFound] = useState<any>(null);
+  const [associateLoading, setAssociateLoading] = useState(false);
+  const [associateError, setAssociateError] = useState("");
+  const [userId, setUserId] = useState("");
+  const phoneDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const fetchAssociatesMap = async () => {
+    try {
+      const data = await apiFetch(`${endpoints.allUsers}?page=1&page_size=100`);
+      setAssociates(data.users || []);
+    } catch (err) {
+      console.error("Failed to fetch associates map", err);
+    }
+  };
+
+  const fetchPlots = async (m = month, y = year, uid = userId) => {
     setLoading(true);
     setError(null);
     setFetched(true);
     try {
-      const data = await apiFetch(`${endpoints.monthlyReport}?month=${m}&year=${y}`);
+      const url = uid 
+        ? `${endpoints.monthlyReport}?month=${m}&year=${y}&user_id=${uid}`
+        : `${endpoints.monthlyReport}?month=${m}&year=${y}`;
+      const data = await apiFetch(url);
       // Extract sales/transactions from report
       const list: any[] =
         data?.sales ||
@@ -504,13 +586,68 @@ function BookedPlotList() {
     }
   };
 
+  useEffect(() => {
+    fetchAssociatesMap();
+    fetchPlots(month, year, userId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleAssociatePhone = (val: string) => {
+    const cleaned = val.replace(/\D/g, "");
+    setAssociatePhone(cleaned);
+    setAssociateFound(null);
+    setAssociateError("");
+    setUserId("");
+    
+    if (phoneDebounce.current) clearTimeout(phoneDebounce.current);
+    if (cleaned.length >= 10) {
+      setAssociateLoading(true);
+      phoneDebounce.current = setTimeout(async () => {
+        try {
+          const phoneToSend = "91" + cleaned;
+          const data = await apiFetch(`${endpoints.userLookup}?phone=${phoneToSend}`);
+          const user = Array.isArray(data) ? data[0] : data;
+          if (user && (user._id || user.id)) {
+            setAssociateFound(user);
+            setAssociateLoading(false);
+            setAssociateError("");
+            const uid = user._id || user.id;
+            setUserId(uid);
+            fetchPlots(month, year, uid);
+          } else {
+            setAssociateFound(null);
+            setAssociateLoading(false);
+            setAssociateError("No associate found with this phone.");
+            setUserId("");
+          }
+        } catch (err: any) {
+          setAssociateFound(null);
+          setAssociateLoading(false);
+          setAssociateError(err.detail || "Associate not found.");
+          setUserId("");
+        }
+      }, 600);
+    } else {
+      setAssociateLoading(false);
+    }
+  };
+
+  const clearAssociate = () => {
+    setAssociatePhone("");
+    setAssociateFound(null);
+    setAssociateError("");
+    setAssociateLoading(false);
+    setUserId("");
+    fetchPlots(month, year, "");
+  };
+
   const handleMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     if (!val) return;
     const [y, m] = val.split("-").map(Number);
     setMonth(m);
     setYear(y);
-    fetchPlots(m, y);
+    fetchPlots(m, y, userId);
   };
 
   const monthValue = `${year}-${String(month).padStart(2, "0")}`;
@@ -523,6 +660,65 @@ function BookedPlotList() {
 
   return (
     <div className="space-y-5 max-w-5xl mx-auto">
+      {/* Associate Filter Lookup */}
+      <div className="bg-muted/30 border border-border/80 rounded-2xl p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-primary flex items-center gap-2">
+            <Users size={14} /> Filter by Associate (Optional)
+          </p>
+          {userId && (
+            <span className="text-[9px] font-bold text-green-500 uppercase tracking-widest bg-green-500/10 px-2 py-0.5 rounded border border-green-500/20">
+              Active Filter
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3 items-center">
+          <div className="relative flex items-center w-full sm:max-w-xs">
+            <div className="absolute left-4 flex items-center gap-2 text-primary font-bold border-r border-border pr-3">
+              <Phone size={14} />
+              <span className="text-sm">+91</span>
+            </div>
+            <input
+              type="tel"
+              maxLength={10}
+              placeholder="10 Digits"
+              value={associatePhone}
+              onChange={(e) => handleAssociatePhone(e.target.value)}
+              className={`${inputCls} pl-24 pr-10`}
+            />
+            {associatePhone && (
+              <button type="button" onClick={clearAssociate} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <X size={14} />
+              </button>
+            )}
+          </div>
+          
+          {associateLoading && (
+            <div className="flex items-center gap-2 text-xs text-primary font-semibold shrink-0">
+              <Loader2 size={13} className="animate-spin" /> Looking up associate...
+            </div>
+          )}
+          {associateError && (
+            <p className="text-xs text-red-500 font-semibold flex items-center gap-1.5 shrink-0">
+              <AlertCircle size={13} /> {associateError}
+            </p>
+          )}
+          {associateFound && (
+            <div className="flex items-center gap-3 bg-primary/5 border border-primary/20 p-3 rounded-xl">
+              <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary">
+                {associateFound.first_name?.[0]}{associateFound.last_name?.[0]}
+              </div>
+              <div className="text-xs">
+                <span className="font-bold text-foreground">
+                  {associateFound.first_name} {associateFound.last_name}
+                </span>
+                <span className="text-muted-foreground ml-2">({associateFound.phone})</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Controls */}
       <div className="flex flex-col sm:flex-row gap-3 items-center">
         {/* Plot filter */}
@@ -530,7 +726,7 @@ function BookedPlotList() {
           <Home size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Filter by Plot Number..."
+            placeholder="Filter loaded list by Plot Number..."
             value={plotFilter}
             onChange={(e) => setPlotFilter(e.target.value)}
             className={`${inputCls} pl-10`}
@@ -550,7 +746,7 @@ function BookedPlotList() {
           className={`${inputCls} sm:w-44 cursor-pointer`}
         />
         <button
-          onClick={() => fetchPlots()}
+          onClick={() => fetchPlots(month, year, userId)}
           disabled={loading}
           className="bg-primary text-black px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/10 flex items-center justify-center gap-2 shrink-0 cursor-pointer disabled:opacity-50"
         >
@@ -576,47 +772,78 @@ function BookedPlotList() {
                 <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Plot Number</th>
                 <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Buyer Name</th>
                 <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Buyer Phone</th>
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Sold By (Associate)</th>
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-right">Total Price</th>
+                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Associate Name</th>
+                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Associate Phone</th>
+                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Booked Date</th>
+                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-right">Pricing (Total / Paid / Remaining)</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center">
+                  <td colSpan={8} className="py-16 text-center">
                     <Loader2 className="text-primary animate-spin mx-auto" size={28} />
                     <p className="text-muted-foreground text-xs mt-3 font-medium">Loading plot data...</p>
                   </td>
                 </tr>
               ) : filtered.length > 0 ? (
-                filtered.map((plot: any, idx: number) => (
-                  <tr key={plot.plot_id || idx} className="hover:bg-muted/30 transition-colors">
-                    <td className="py-5 px-6 text-xs font-mono text-muted-foreground">{idx + 1}.</td>
-                    <td className="py-5 px-6 text-sm font-black text-foreground font-mono">{plot.plot_id || "—"}</td>
-                    <td className="py-5 px-6 text-sm font-semibold text-foreground">{plot.name || plot.buyer_name || "—"}</td>
-                    <td className="py-5 px-6 text-sm text-muted-foreground font-mono">{plot.phone || plot.buyer_phone || "—"}</td>
-                    <td className="py-5 px-6 text-sm text-muted-foreground">
-                      {plot.associate_name || plot.sold_by || plot.user_name || "—"}
-                    </td>
-                    <td className="py-5 px-6 text-sm font-black text-primary font-mono text-right">
-                      ₹{Number(plot.total_amount || 0).toLocaleString("en-IN")}
-                    </td>
-                  </tr>
-                ))
+                filtered.map((plot: any, idx: number) => {
+                  const assoc = associates.find(
+                    (a: any) => (a._id || a.id) === plot.user_id
+                  );
+                  const assocName = assoc
+                    ? `${assoc.first_name} ${assoc.last_name}`.trim()
+                    : (plot.associate_name || plot.sold_by || plot.user_name || "—");
+                  const assocPhone = assoc ? assoc.phone : "—";
+                  const remainingAmount = plot.remaining_amount != null 
+                    ? plot.remaining_amount 
+                    : (plot.total_amount - plot.paid_amount || 0);
+                  return (
+                    <tr key={plot.plot_id || idx} className="hover:bg-muted/30 transition-colors">
+                      <td className="py-5 px-6 text-xs font-mono text-muted-foreground">{idx + 1}.</td>
+                      <td className="py-5 px-6 text-sm font-black text-foreground font-mono">{plot.plot_id || "—"}</td>
+                      <td className="py-5 px-6 text-sm font-semibold text-foreground">
+                        {plot.sale_data?.name || plot.name || plot.buyer_name || "—"}
+                      </td>
+                      <td className="py-5 px-6 text-sm text-muted-foreground font-mono">
+                        {plot.sale_data?.phone || plot.phone || plot.buyer_phone || "—"}
+                      </td>
+                      <td className="py-5 px-6 text-sm text-muted-foreground">
+                        {assocName}
+                      </td>
+                      <td className="py-5 px-6 text-sm text-muted-foreground font-mono">
+                        {assocPhone}
+                      </td>
+                      <td className="py-5 px-6 text-sm text-muted-foreground">
+                        {plot.created_at
+                          ? new Date(plot.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+                          : "—"}
+                      </td>
+                      <td className="py-5 px-6 text-right">
+                        <div className="flex flex-col items-end">
+                          <span className="text-sm font-black text-primary font-mono">₹{Number(plot.total_amount || 0).toLocaleString("en-IN")}</span>
+                          <span className="text-[9px] text-muted-foreground font-mono mt-0.5">
+                            Paid: ₹{Number(plot.paid_amount || 0).toLocaleString("en-IN")} | Rem: ₹{Number(remainingAmount).toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : fetched && !loading ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center">
+                  <td colSpan={8} className="py-16 text-center">
                     <Home size={32} className="mx-auto mb-3 opacity-20 text-primary" />
                     <p className="text-muted-foreground text-xs font-semibold">
-                      {plotFilter ? `No plots found matching "${plotFilter}".` : "No booked plots for this period. Click Load to fetch."}
+                      {plotFilter ? `No plots found matching "${plotFilter}".` : "No booked plots for this period."}
                     </p>
                   </td>
                 </tr>
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center">
+                  <td colSpan={8} className="py-16 text-center">
                     <Home size={32} className="mx-auto mb-3 opacity-20 text-primary" />
-                    <p className="text-muted-foreground text-xs font-semibold">Select a month and click Load to view booked plots.</p>
+                    <p className="text-muted-foreground text-xs font-semibold">No bookings found for this period. Modify filters to search.</p>
                   </td>
                 </tr>
               )}
@@ -640,12 +867,36 @@ const TABS: { id: Tab; label: string; icon: React.ElementType; desc: string }[] 
 export default function AdminPanelPage() {
   const { status, profile } = useAuth({ redirectIfInvalid: "/login?expired=true" });
   const [activeTab, setActiveTab] = useState<Tab>("booking");
+  const router = useRouter();
+
+  // Role guard — only admin or super_admin can access this page
+  const isAuthorized =
+    profile?.role === "admin" ||
+    profile?.role === "super_admin" ||
+    profile?.is_admin === true ||
+    profile?.is_super_admin === true;
+
+  useEffect(() => {
+    if (status === "authenticated" && !isAuthorized) {
+      router.replace("/dashboard");
+    }
+  }, [status, isAuthorized, router]);
 
   if (status === "loading" || !profile) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center">
         <Loader2 className="text-primary animate-spin mb-4" size={48} />
         <p className="text-muted-foreground font-medium animate-pulse">Loading Admin Panel...</p>
+      </div>
+    );
+  }
+
+  // Block render while redirecting
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+        <Loader2 className="text-primary animate-spin mb-4" size={48} />
+        <p className="text-muted-foreground font-medium animate-pulse">Redirecting...</p>
       </div>
     );
   }

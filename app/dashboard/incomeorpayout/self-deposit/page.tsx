@@ -64,7 +64,7 @@ export default function SelfDepositPage() {
         date: s.date || s.created_at || `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-01`,
         amount: s.paid_amount || s.amount || 0,
         plot_id: s.plot_id || "—",
-        type: s.type || "NEW",
+        type: s.sale_data?.type || s.type || "NEW",
       }));
     }
     // Fallback: use summary total_sales from report

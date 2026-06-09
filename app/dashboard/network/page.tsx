@@ -215,7 +215,7 @@ export default function NetworkPage() {
                       <td className="py-6 px-8">
                         <div className="flex items-center gap-2">
                            <Layers size={14} className="text-primary/60" />
-                           <span className="bg-zinc-900 text-zinc-400 px-3 py-1 rounded-full text-[10px] font-black border border-zinc-800">LVL {member.level}</span>
+                           <span className="bg-zinc-900 text-zinc-400 px-3 py-1 rounded-full text-[10px] font-black border border-zinc-800 whitespace-nowrap">LvL-{member.level || 1}</span>
                         </div>
                       </td>
                       <td className="py-6 px-8">
@@ -234,7 +234,7 @@ export default function NetworkPage() {
                         </div>
                       </td>
                       <td className="py-6 px-8">
-                        <div className="text-white font-black font-mono">₹{(member.total_sales || 0).toLocaleString()}</div>
+                        <div className="text-white font-black font-mono">₹{(member.direct_sale || member.total_sales || member.lifetime_sale || 0).toLocaleString()}</div>
                       </td>
                     </tr>
                   ))

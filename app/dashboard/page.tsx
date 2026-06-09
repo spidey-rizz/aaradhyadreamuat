@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
+import { copyToClipboard } from "@/lib/clipboard";
 import {
   User,
   Copy,
@@ -18,11 +19,13 @@ export default function DashboardPage() {
   const { status, profile } = useAuth({ redirectIfInvalid: "/login?expired=true" });
   const [copied, setCopied] = useState(false);
 
-  const copyReferral = () => {
+  const copyReferral = async () => {
     if (profile?.referral_code) {
-      navigator.clipboard.writeText(profile.referral_code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      const success = await copyToClipboard(profile.referral_code);
+      if (success) {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
     }
   };
 
@@ -39,9 +42,9 @@ export default function DashboardPage() {
   const referralList: any[] = profile.referral_list || [];
   const directSponsors = referralList.filter((item: any) => item.connection === 'direct' || item.level === 1);
   
-  const selfBusiness = profile.total_sales || 0;
-  const teamBusiness = referralList.reduce((acc: number, curr: any) => acc + (curr.total_sales || 0), 0);
-  const totalBusiness = selfBusiness + teamBusiness;
+  const selfBusiness = profile.direct_sale || profile.total_sales || 0;
+  const teamBusiness = profile.team_sale || referralList.reduce((acc: number, curr: any) => acc + (curr.direct_sale || curr.total_sales || 0), 0);
+  const totalBusiness = profile.lifetime_sale || (selfBusiness + teamBusiness);
 
 
   return (
@@ -64,8 +67,8 @@ export default function DashboardPage() {
                 <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight">
                   {profile.first_name} {profile.last_name}
                 </h1>
-                <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-widest">
-                  Level {profile.level || 1}
+                <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">
+                  LvL-{profile.level || 1}
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-muted-foreground font-medium text-sm">
@@ -233,7 +236,7 @@ export default function DashboardPage() {
                       </div>
                     </td>
                     <td className="px-8 py-6 text-muted-foreground font-medium text-sm">{ref.phone || "—"}</td>
-                    <td className="px-8 py-6 font-black text-primary italic font-mono">₹{(ref.total_sales || 0).toLocaleString()}</td>
+                    <td className="px-8 py-6 font-black text-primary italic font-mono">₹{(ref.direct_sale || ref.total_sales || 0).toLocaleString()}</td>
                     <td className="px-8 py-6 text-muted-foreground text-sm">
                       {ref.created_at ? new Date(ref.created_at).toLocaleDateString('en-IN', {
                         day: '2-digit',

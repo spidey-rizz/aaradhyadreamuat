@@ -62,8 +62,8 @@ export default function DashboardLayout({
     window.location.href = "/";
   };
 
-  const isAdmin = profile?.role === "admin" || profile?.role === "super_admin" || profile?.is_admin || profile?.is_super_admin;
-  const isSuperAdmin = profile?.role === "super_admin" || profile?.is_super_admin;
+  const isAdmin = profile?.role === "admin" || profile?.role === "super_admin" || profile?.is_admin === true || profile?.is_super_admin === true;
+  const isSuperAdmin = profile?.role === "super_admin" || profile?.is_super_admin === true;
 
   const menuItems = [
     {
@@ -88,9 +88,9 @@ export default function DashboardLayout({
     },
   ];
 
-  if (isAdmin || isSuperAdmin) {
+  if (isAdmin) {
     menuItems.push({
-      label: "admin pannel",
+      label: "Admin Panel",
       href: "/dashboard/admin",
       icon: Shield,
     });
@@ -98,7 +98,7 @@ export default function DashboardLayout({
 
   if (isSuperAdmin) {
     menuItems.push({
-      label: "supper admin pannel",
+      label: "Super Admin Panel",
       href: "/dashboard/super",
       icon: ShieldAlert,
     });
@@ -110,7 +110,7 @@ export default function DashboardLayout({
       <div className="p-6 border-b border-border/60">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative w-10 h-10 rounded-full overflow-hidden ring-2 ring-primary/40 group-hover:ring-primary/60 transition-all">
-            <Image src="/logo.jpg" alt="Logo" fill className="object-cover" />
+            <Image src="/logo.jpg" alt="Logo" fill sizes="40px" className="object-cover" />
           </div>
           <div className="flex flex-col leading-none">
             <span className="text-base font-black tracking-tight text-foreground">Aaradhya</span>
@@ -262,7 +262,7 @@ export default function DashboardLayout({
       <header className="md:hidden flex items-center justify-between px-6 py-4 bg-card border-b border-border/80 sticky top-0 z-40">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative w-8 h-8 rounded-full overflow-hidden ring-2 ring-primary/40">
-            <Image src="/logo.jpg" alt="Logo" fill className="object-cover" />
+            <Image src="/logo.jpg" alt="Logo" fill sizes="32px" className="object-cover" />
           </div>
           <div className="flex flex-col leading-none">
             <span className="text-sm font-black tracking-tight text-foreground">Aaradhya</span>

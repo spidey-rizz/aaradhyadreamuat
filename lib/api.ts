@@ -60,4 +60,5 @@ export const endpoints = {
   monthlyReport: "/sales/monthly-report",
   userLookup: "/broker/admin/user",
   setPrivilege: "/broker/admin/set-privilege",
+  allUsers: "/broker/admin/users",
 };

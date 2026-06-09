@@ -75,7 +75,7 @@ export default function PayoutDetailPage() {
         date: r.date || r.created_at || r.payout_date || `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-01`,
         amount: r.payout_amount || r.amount || r.paid_amount || 0,
         status: r.status || r.payout_status || "PAID",
-        type: r.type || r.payout_type || r.income_type || "sell income",
+        type: r.sale_data?.type || r.type || r.payout_type || r.income_type || "sell income",
         plot_id: r.plot_id || "—",
       }));
     }

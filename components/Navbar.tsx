@@ -71,7 +71,7 @@ export default function Navbar() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group shrink-0">
               <div className={`relative w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden ring-2 transition-all duration-300 ${shouldForceWhite ? "ring-white/20" : "ring-primary/40"} group-hover:ring-primary/60`}>
-                <Image src="/logo.jpg" alt="Logo" fill className="object-cover" priority />
+                <Image src="/logo.jpg" alt="Logo" fill sizes="48px" className="object-cover" priority />
               </div>
               <div className="flex flex-col leading-none">
                 <span className={`text-[15px] sm:text-[16px] font-black tracking-tight transition-colors ${shouldForceWhite ? "text-white" : "text-foreground"}`}>Aaradhya</span>

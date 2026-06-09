@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/useAuth";
 import { apiFetch, endpoints } from "@/lib/api";
 import {
@@ -11,7 +12,8 @@ import {
 } from "lucide-react";
 
 export default function SuperAdminPanelPage() {
-  const { status, profile } = useAuth();
+  const { status, profile } = useAuth({ redirectIfInvalid: "/login?expired=true" });
+  const router = useRouter();
 
   // ── Super Admin Control States ──
   const [userSearchQuery, setUserSearchQuery] = useState("");
@@ -19,6 +21,16 @@ export default function SuperAdminPanelPage() {
   const [userSearchLoading, setUserSearchLoading] = useState(false);
   const [userSearchError, setUserSearchError] = useState<string | null>(null);
   const [privilegeUpdatingId, setPrivilegeUpdatingId] = useState<string | null>(null);
+
+  // Superadmin role check — computed before any hooks that depend on it
+  const isSuperAdmin = profile?.role === "super_admin" || profile?.is_super_admin === true;
+
+  // Role guard — only super_admin can access this page (must be before early returns)
+  useEffect(() => {
+    if (status === "authenticated" && !isSuperAdmin) {
+      router.replace("/dashboard");
+    }
+  }, [status, isSuperAdmin, router]);
 
   const handleUserSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,10 +41,13 @@ export default function SuperAdminPanelPage() {
     try {
       // Find user by phone or email query parameters
       const params = new URLSearchParams();
-      if (userSearchQuery.includes("@")) {
-        params.append("email", userSearchQuery.trim());
+      const query = userSearchQuery.trim();
+      if (query.includes("@")) {
+        params.append("email", query);
       } else {
-        params.append("phone", userSearchQuery.trim());
+        const sanitizedPhone = query.replace(/\D/g, "");
+        const phoneToSend = sanitizedPhone.length === 10 ? "91" + sanitizedPhone : sanitizedPhone;
+        params.append("phone", phoneToSend);
       }
 
       const data = await apiFetch(`${endpoints.userLookup}?${params.toString()}`);
@@ -66,7 +81,8 @@ export default function SuperAdminPanelPage() {
     }
   };
 
-  if (status === "loading") {
+  // ── Early returns after all hooks ──
+  if (status === "loading" || !profile) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center">
         <Loader2 className="text-primary animate-spin mb-4" size={48} />
@@ -75,8 +91,15 @@ export default function SuperAdminPanelPage() {
     );
   }
 
-  // Superadmin role check for role modifications
-  const isSuperAdmin = profile?.role === "super_admin" || profile?.is_super_admin;
+  // Block render while redirecting unauthorized users
+  if (!isSuperAdmin) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+        <Loader2 className="text-primary animate-spin mb-4" size={48} />
+        <p className="text-muted-foreground font-medium animate-pulse">Redirecting...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
@@ -104,7 +127,7 @@ export default function SuperAdminPanelPage() {
             <input
               required
               type="text"
-              placeholder="Search by phone number (e.g. 91XXXXXXXXXX) or email address..."
+              placeholder="Search by 10-digit phone number or email address..."
               value={userSearchQuery}
               onChange={(e) => setUserSearchQuery(e.target.value)}
               className="w-full bg-background border border-border rounded-xl py-3.5 pl-12 pr-4 text-foreground focus:border-primary outline-none transition-all text-sm font-medium"
