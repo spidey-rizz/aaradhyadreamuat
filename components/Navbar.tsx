@@ -40,18 +40,16 @@ export default function Navbar() {
   const isHome = pathname === "/";
   const shouldForceWhite = isHome && !isScrolled;
 
-  const navLinks = isLoggedIn ? [
-    { label: "Profile",       href: "/dashboard" },
-    { label: "Network",       href: "/dashboard/network" },
-    { label: "Payout/Income", href: "/dashboard/incomeorpayout" },
-  ] : [
+  const navLinks = [
     { label: "Home",             href: "/" },
-    { label: "About",            href: "/about" },
+    { label: "About",            href: "/#about" },
     { label: "Projects",         href: "/projects" },
     { label: "Gallery",          href: "/gallery" },
-    { label: "Become Associate", href: "/register" },
+    { label: "Become Associate", href: "/associate" },
     { label: "Contact",          href: "/contact" },
   ];
+
+  if (isDashboardRoute) return null;
 
   return (
     <>
