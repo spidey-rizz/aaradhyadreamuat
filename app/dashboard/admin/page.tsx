@@ -870,9 +870,10 @@ export default function AdminPanelPage() {
   const router = useRouter();
 
   // Role guard — only admin or super_admin can access this page
+  const userRole = profile?.role?.toUpperCase();
   const isAuthorized =
-    profile?.role === "admin" ||
-    profile?.role === "super_admin" ||
+    userRole === "ADMIN" ||
+    userRole === "SUPERADMIN" ||
     profile?.is_admin === true ||
     profile?.is_super_admin === true;
 

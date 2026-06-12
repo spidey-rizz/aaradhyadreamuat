@@ -135,7 +135,7 @@ export default function AssociatePage() {
   const cities = ["Varanasi", "Prayagraj", "Ghazipur", "Mirzapur", "Jaunpur", "Bhadohi", "Chandauli", "Azamgarh"];
 
   return (
-    <div className="min-h-screen bg-[#faf9f7] text-[#1a1a1a] selection:bg-[#c9a96e]/30 overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 overflow-x-hidden">
       <Navbar />
 
       <style dangerouslySetInnerHTML={{ __html: `
@@ -162,16 +162,16 @@ export default function AssociatePage() {
           font-family: 'Times New Roman', 'Georgia', serif;
         }
         .text-gold {
-          color: #b8954e;
+          color: var(--primary);
         }
         .bg-gold {
-          background-color: #b8954e;
+          background-color: var(--primary);
         }
         .border-gold {
-          border-color: #b8954e;
+          border-color: var(--primary);
         }
         .hover\\:bg-gold:hover {
-          background-color: #b8954e;
+          background-color: var(--primary-hover);
         }
       `}} />
 
@@ -202,8 +202,8 @@ export default function AssociatePage() {
           >
             {/* Overline */}
             <div className="flex items-center gap-4 mb-8">
-              <div className="h-px w-12 bg-[#c9a96e]" />
-              <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#c9a96e]">
+              <div className="h-px w-12 bg-primary" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-primary">
                 Aaradhya Dream City — Elite Partner Program
               </span>
             </div>
@@ -211,7 +211,7 @@ export default function AssociatePage() {
             {/* Headline — Editorial Style */}
             <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-[5.5rem] font-black uppercase tracking-tight text-white mb-8 leading-[0.95] max-w-4xl">
               More Than A Broker.
-              <span className="block text-[#c9a96e] mt-2">An Associate.</span>
+              <span className="block text-primary mt-2">An Associate.</span>
             </h1>
 
             <p className="text-lg md:text-xl text-white/60 max-w-xl mb-12 leading-relaxed font-medium">
@@ -222,7 +222,7 @@ export default function AssociatePage() {
             <div className="flex flex-col sm:flex-row items-start gap-5">
               <Link 
                 href="/register" 
-                className="group px-10 py-5 bg-[#c9a96e] text-[#1a1a1a] rounded-full font-black text-xs uppercase tracking-[0.2em] hover:bg-[#d4b97a] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-3 shadow-2xl shadow-[#c9a96e]/20"
+                className="group px-10 py-5 bg-primary text-black rounded-full font-black text-xs uppercase tracking-[0.2em] hover:bg-primary-hover transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-3 shadow-2xl shadow-primary/20"
               >
                 Register Now
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -240,13 +240,13 @@ export default function AssociatePage() {
             {/* Trust pills */}
             <div className="flex flex-wrap items-center gap-6 mt-16 text-white/30 text-[10px] font-bold uppercase tracking-[0.2em]">
               <span className="flex items-center gap-2">
-                <Check className="w-3 h-3 text-[#c9a96e]" /> Zero Registration Fee
+                <Check className="w-3 h-3 text-primary" /> Zero Registration Fee
               </span>
               <span className="flex items-center gap-2">
-                <Check className="w-3 h-3 text-[#c9a96e]" /> 2-Min Application
+                <Check className="w-3 h-3 text-primary" /> 2-Min Application
               </span>
               <span className="flex items-center gap-2">
-                <Check className="w-3 h-3 text-[#c9a96e]" /> 4.9/5 Rating
+                <Check className="w-3 h-3 text-primary" /> 4.9/5 Rating
               </span>
             </div>
           </div>
@@ -279,16 +279,16 @@ export default function AssociatePage() {
               { value: 500, suffix: "+", label: "Properties Sold", sub: "And Counting", prefix: "" },
             ].map((stat, i) => (
               <div key={i} className="text-center md:text-left group">
-                <div className="text-6xl md:text-7xl font-black tracking-tighter text-[#1a1a1a] mb-2">
+                <div className="text-6xl md:text-7xl font-black tracking-tighter text-foreground mb-2">
                   <AnimatedCounter target={stat.value} suffix={stat.suffix} prefix={stat.prefix} />
                 </div>
-                <div className="text-sm font-bold uppercase tracking-[0.15em] text-[#1a1a1a]/60 mb-1">
+                <div className="text-sm font-bold uppercase tracking-[0.15em] text-muted-foreground mb-1">
                   {stat.label}
                 </div>
-                <div className="text-xs text-[#1a1a1a]/30 font-medium uppercase tracking-wider">
+                <div className="text-xs text-foreground/30 font-medium uppercase tracking-wider">
                   {stat.sub}
                 </div>
-                <div className="h-px w-0 group-hover:w-full bg-[#c9a96e] transition-all duration-700 mt-4 mx-auto md:mx-0" />
+                <div className="h-px w-0 group-hover:w-full bg-primary transition-all duration-700 mt-4 mx-auto md:mx-0" />
               </div>
             ))}
           </div>
@@ -297,10 +297,10 @@ export default function AssociatePage() {
         {/* ═══════════════════════════════════════
             HOW IT WORKS — Clean Steps, NO Boxes
             ═══════════════════════════════════════ */}
-        <section id="how-it-works" className="bg-[#f0eeea] py-24">
+        <section id="how-it-works" className="bg-secondary py-24">
           <div className="max-w-5xl mx-auto px-6">
             <div className="text-center mb-20">
-              <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#c9a96e] mb-4 block">The Process</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-primary mb-4 block">The Process</span>
               <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight">
                 Simple Onboarding
               </h2>
@@ -313,19 +313,19 @@ export default function AssociatePage() {
                 { num: "03", title: "Leverage Inventory", desc: "Showcase premium plots, duplexes, and flats in Varanasi's fastest-growing township." },
                 { num: "04", title: "Earn & Scale", desc: "Receive weekly payouts, milestone bonuses, and lifetime royalties from your network." },
               ].map((step, i) => (
-                <div key={i} className="group flex items-start gap-8 py-10 border-t border-[#1a1a1a]/10 first:border-t-0">
-                  <span className="text-5xl md:text-6xl font-black text-[#1a1a1a]/5 leading-none shrink-0 w-20 text-right">
+                <div key={i} className="group flex items-start gap-8 py-10 border-t border-border first:border-t-0">
+                  <span className="text-5xl md:text-6xl font-black text-foreground/5 leading-none shrink-0 w-20 text-right">
                     {step.num}
                   </span>
                   <div className="pt-2">
-                    <h3 className="text-2xl font-black uppercase tracking-tight mb-2 group-hover:text-[#b8954e] transition-colors duration-300">
+                    <h3 className="text-2xl font-black uppercase tracking-tight mb-2 group-hover:text-primary transition-colors duration-300">
                       {step.title}
                     </h3>
-                    <p className="text-[#1a1a1a]/50 leading-relaxed max-w-md">
+                    <p className="text-muted-foreground leading-relaxed max-w-md">
                       {step.desc}
                     </p>
                   </div>
-                  <div className="ml-auto hidden md:flex items-center gap-2 text-[#1a1a1a]/20 group-hover:text-[#b8954e] transition-colors">
+                  <div className="ml-auto hidden md:flex items-center gap-2 text-foreground/20 group-hover:text-primary transition-colors">
                     <ArrowRight className="w-5 h-5" />
                   </div>
                 </div>
@@ -339,9 +339,9 @@ export default function AssociatePage() {
             ═══════════════════════════════════════ */}
         <section ref={benefits.ref} className={`max-w-7xl mx-auto px-6 lg:px-12 py-32 transition-all duration-1000 ${benefits.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}>
           <div className="text-center mb-24">
-            <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#c9a96e] mb-4 block">Why Choose Us</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-primary mb-4 block">Why Choose Us</span>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight">
-              The Associate <span className="text-[#b8954e]">Advantage</span>
+              The Associate <span className="text-primary">Advantage</span>
             </h2>
           </div>
 
@@ -349,18 +349,18 @@ export default function AssociatePage() {
             {/* Benefit 1 — Left aligned */}
             <div ref={b1.ref} className={`flex flex-col lg:flex-row items-center gap-16 transition-all duration-1000 ${b1.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}>
               <div className="w-full lg:w-1/2">
-                <div className="text-[120px] md:text-[180px] font-black text-[#1a1a1a]/[0.03] leading-none -mb-16 select-none">
+                <div className="text-[120px] md:text-[180px] font-black text-foreground/[0.03] leading-none -mb-16 select-none">
                   01
                 </div>
                 <h3 className="text-3xl md:text-4xl font-black uppercase tracking-tight mb-6">
                   Unmatched Cuts
                 </h3>
-                <p className="text-lg text-[#1a1a1a]/50 leading-relaxed mb-8 max-w-md">
+                <p className="text-lg text-muted-foreground leading-relaxed mb-8 max-w-md">
                   Enjoy the highest direct commission on every successful closing. Your hard work directly translates to massive earnings without middleman deductions.
                 </p>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-black text-[#b8954e]">5%</span>
-                  <span className="text-sm font-bold uppercase tracking-wider text-[#1a1a1a]/40">Commission Rate</span>
+                  <span className="text-5xl font-black text-primary">5%</span>
+                  <span className="text-sm font-bold uppercase tracking-wider text-foreground/40">Commission Rate</span>
                 </div>
               </div>
               <div className="w-full lg:w-1/2">
@@ -378,24 +378,24 @@ export default function AssociatePage() {
             {/* Benefit 2 — Right aligned */}
             <div ref={b2.ref} className={`flex flex-col lg:flex-row-reverse items-center gap-16 transition-all duration-1000 ${b2.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}>
               <div className="w-full lg:w-1/2">
-                <div className="text-[120px] md:text-[180px] font-black text-[#1a1a1a]/[0.03] leading-none -mb-16 select-none text-right">
+                <div className="text-[120px] md:text-[180px] font-black text-foreground/[0.03] leading-none -mb-16 select-none text-right">
                   02
                 </div>
                 <h3 className="text-3xl md:text-4xl font-black uppercase tracking-tight mb-6 text-right">
                   Performance Bonuses
                 </h3>
-                <p className="text-lg text-[#1a1a1a]/50 leading-relaxed mb-8 max-w-md ml-auto text-right">
+                <p className="text-lg text-muted-foreground leading-relaxed mb-8 max-w-md ml-auto text-right">
                   Hit your milestones and get rewarded. We offer spectacular performance-based bonuses ranging from cash prizes to luxury trips and vehicles.
                 </p>
                 <div className="flex items-baseline gap-2 justify-end">
-                  <span className="text-5xl font-black text-[#b8954e]">₹50L+</span>
-                  <span className="text-sm font-bold uppercase tracking-wider text-[#1a1a1a]/40">Annual Bonuses</span>
+                  <span className="text-5xl font-black text-primary">₹50L+</span>
+                  <span className="text-sm font-bold uppercase tracking-wider text-foreground/40">Annual Bonuses</span>
                 </div>
               </div>
               <div className="w-full lg:w-1/2">
                 <div className="relative aspect-[4/3] rounded-3xl overflow-hidden">
                   <Image 
-                    src="/indian fam.png" 
+                    src="/Performance Bonus.jfif" 
                     alt="Performance Rewards" 
                     fill 
                     className="object-cover grayscale-0 md:grayscale md:hover:grayscale-0 transition-all duration-700"
@@ -407,24 +407,24 @@ export default function AssociatePage() {
             {/* Benefit 3 — Left aligned */}
             <div ref={b3.ref} className={`flex flex-col lg:flex-row items-center gap-16 transition-all duration-1000 ${b3.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}>
               <div className="w-full lg:w-1/2">
-                <div className="text-[120px] md:text-[180px] font-black text-[#1a1a1a]/[0.03] leading-none -mb-16 select-none">
+                <div className="text-[120px] md:text-[180px] font-black text-foreground/[0.03] leading-none -mb-16 select-none">
                   03
                 </div>
                 <h3 className="text-3xl md:text-4xl font-black uppercase tracking-tight mb-6">
                   Lifetime Royalty
                 </h3>
-                <p className="text-lg text-[#1a1a1a]/50 leading-relaxed mb-8 max-w-md">
+                <p className="text-lg text-muted-foreground leading-relaxed mb-8 max-w-md">
                   Build your own network of associates under you and earn a continuous royalty stream from their sales. Secure passive income for life.
                 </p>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-black text-[#b8954e]">2%</span>
-                  <span className="text-sm font-bold uppercase tracking-wider text-[#1a1a1a]/40">Royalty Rate</span>
+                  <span className="text-5xl font-black text-primary">2%</span>
+                  <span className="text-sm font-bold uppercase tracking-wider text-foreground/40">Royalty Rate</span>
                 </div>
               </div>
               <div className="w-full lg:w-1/2">
                 <div className="relative aspect-[4/3] rounded-3xl overflow-hidden">
                   <Image 
-                    src="/Hand holding house keys.jfif" 
+                    src="/Hand holding house key.jfif" 
                     alt="Lifetime Royalty" 
                     fill 
                     className="object-cover grayscale-0 md:grayscale md:hover:grayscale-0 transition-all duration-700"
@@ -438,7 +438,7 @@ export default function AssociatePage() {
         {/* ═══════════════════════════════════════
             TOOLS SECTION — Clean, No AI Mention
             ═══════════════════════════════════════ */}
-        <section ref={tech.ref} className={`bg-[#1a1a1a] text-white py-32 transition-all duration-1000 ${tech.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}>
+        <section ref={tech.ref} className="bg-[#1a1a1a] text-white py-32 transition-all duration-1000">
           <div className="max-w-7xl mx-auto px-6 lg:px-12">
             <div className="flex flex-col lg:flex-row items-center gap-20">
               {/* Video */}
@@ -459,15 +459,15 @@ export default function AssociatePage() {
               {/* Content */}
               <div className="w-full lg:w-1/2">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="h-px w-8 bg-[#c9a96e]" />
-                  <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#c9a96e]">
+                  <div className="h-px w-8 bg-primary" />
+                  <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-primary">
                     Smart Tools
                   </span>
                 </div>
 
                 <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight mb-8 leading-[1.1]">
                   Selling Made<br />
-                  <span className="text-[#c9a96e]">Effortless</span>
+                  <span className="text-primary">Effortless</span>
                 </h2>
 
                 <p className="text-lg text-white/40 leading-relaxed mb-10">
@@ -482,7 +482,7 @@ export default function AssociatePage() {
                     "Real-time Dashboard",
                   ].map((item, i) => (
                     <div key={i} className="flex items-center gap-3 group">
-                      <div className="w-2 h-2 rounded-full bg-[#c9a96e] group-hover:scale-150 transition-transform" />
+                      <div className="w-2 h-2 rounded-full bg-primary group-hover:scale-150 transition-transform" />
                       <span className="text-sm font-bold text-white/60 group-hover:text-white transition-colors">
                         {item}
                       </span>
@@ -501,23 +501,23 @@ export default function AssociatePage() {
           <div className="flex flex-col-reverse lg:flex-row items-center gap-20">
             <div className="w-full lg:w-1/2 space-y-8">
               <div className="flex items-center gap-3">
-                <div className="h-px w-8 bg-[#c9a96e]" />
-                <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#c9a96e]">
+                <div className="h-px w-8 bg-primary" />
+                <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-primary">
                   Our Mission
                 </span>
               </div>
 
               <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight leading-[1.1]">
                 Building Dreams,<br />
-                <span className="text-[#1a1a1a]/30">Securing Futures</span>
+                <span className="text-foreground/30">Securing Futures</span>
               </h2>
 
-              <p className="text-lg text-[#1a1a1a]/50 leading-relaxed">
+              <p className="text-lg text-muted-foreground leading-relaxed">
                 Real estate isn't just about selling properties; it's about helping families find their safe haven. Every time you hand over a key, you're not just making a sale — you're changing a life.
               </p>
 
-              <blockquote className="border-l-2 border-[#c9a96e] pl-6 py-2">
-                <p className="text-lg font-bold text-[#1a1a1a]/80 italic">
+              <blockquote className="border-l-2 border-primary pl-6 py-2">
+                <p className="text-lg font-bold text-foreground/80 italic">
                   "And while you build their dreams, our unmatched royalty and bonus structure ensures your own family's future is rock solid."
                 </p>
               </blockquote>
@@ -534,9 +534,9 @@ export default function AssociatePage() {
               </div>
 
               {/* Floating accent */}
-              <div className="absolute -bottom-8 -left-8 w-48 h-48 rounded-full overflow-hidden border-[10px] border-[#faf9f7] shadow-2xl hidden md:block">
+              <div className="absolute -bottom-8 -left-8 w-48 h-48 rounded-full overflow-hidden border-[10px] border-background shadow-2xl hidden md:block">
                 <Image 
-                  src="/Hand holding house keys.jfif" 
+                  src="/Hand holding house key.jfif" 
                   alt="Keys" 
                   fill 
                   className="object-cover"
@@ -549,9 +549,9 @@ export default function AssociatePage() {
         {/* ═══════════════════════════════════════
             TESTIMONIALS — Minimal Carousel
             ═══════════════════════════════════════ */}
-        <section ref={trust.ref} className={`bg-[#f0eeea] py-24 transition-all duration-1000 ${trust.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}>
+        <section ref={trust.ref} className={`bg-secondary py-24 transition-all duration-1000 ${trust.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}>
           <div className="max-w-4xl mx-auto px-6 text-center">
-            <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#c9a96e] mb-8 block">Success Stories</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-primary mb-8 block">Success Stories</span>
 
             <div className="relative min-h-[200px]">
               {testimonials.map((t, i) => (
@@ -563,15 +563,15 @@ export default function AssociatePage() {
                 >
                   <div className="flex items-center gap-1 mb-6">
                     {[...Array(5)].map((_, j) => (
-                      <Star key={j} className="w-4 h-4 text-[#c9a96e] fill-[#c9a96e]" />
+                      <Star key={j} className="w-4 h-4 text-primary fill-primary" />
                     ))}
                   </div>
-                  <p className="text-2xl md:text-3xl font-serif-display text-[#1a1a1a]/80 leading-relaxed mb-8 max-w-2xl">
+                  <p className="text-2xl md:text-3xl font-serif-display text-foreground/80 leading-relaxed mb-8 max-w-2xl">
                     "{t.quote}"
                   </p>
                   <div>
-                    <div className="font-bold text-[#1a1a1a]">{t.name}</div>
-                    <div className="text-sm text-[#1a1a1a]/40 font-medium">{t.role}</div>
+                    <div className="font-bold text-foreground">{t.name}</div>
+                    <div className="text-sm text-muted-foreground font-medium">{t.role}</div>
                   </div>
                 </div>
               ))}
@@ -584,7 +584,7 @@ export default function AssociatePage() {
                   key={i}
                   onClick={() => setActiveTestimonial(i)}
                   className={`h-1.5 rounded-full transition-all duration-500 ${
-                    i === activeTestimonial ? "w-8 bg-[#c9a96e]" : "w-1.5 bg-[#1a1a1a]/10 hover:bg-[#1a1a1a]/30"
+                    i === activeTestimonial ? "w-8 bg-primary" : "w-1.5 bg-foreground/10 hover:bg-foreground/30"
                   }`}
                 />
               ))}
@@ -596,7 +596,7 @@ export default function AssociatePage() {
             CTA — Bold, Clean
             ═══════════════════════════════════════ */}
         <section ref={cta.ref} className={`max-w-5xl mx-auto px-6 py-32 transition-all duration-1000 ${cta.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}>
-          <div className="bg-[#c9a96e] rounded-[2.5rem] p-12 md:p-20 text-center relative overflow-hidden">
+          <div className="bg-primary rounded-[2.5rem] p-12 md:p-20 text-center relative overflow-hidden">
             {/* Subtle pattern */}
             <div className="absolute inset-0 opacity-5">
               <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl" />
@@ -604,23 +604,23 @@ export default function AssociatePage() {
             </div>
 
             <div className="relative z-10">
-              <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-[#1a1a1a] mb-6 leading-[0.95]">
+              <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-black mb-6 leading-[0.95]">
                 Ready To Change<br />Your Life?
               </h2>
 
-              <p className="text-[#1a1a1a]/60 font-medium text-lg max-w-xl mx-auto mb-10">
+              <p className="text-black/60 font-medium text-lg max-w-xl mx-auto mb-10">
                 Stop being just a broker. Become an Associate today and step into the most rewarding real estate network.
               </p>
 
               <Link 
                 href="/register" 
-                className="inline-flex items-center gap-3 px-12 py-5 bg-[#1a1a1a] text-[#c9a96e] rounded-full font-black text-sm uppercase tracking-[0.15em] hover:bg-[#2a2a2a] transition-all hover:scale-105 active:scale-95 shadow-2xl"
+                className="inline-flex items-center gap-3 px-12 py-5 bg-black text-primary rounded-full font-black text-sm uppercase tracking-[0.15em] hover:bg-neutral-900 transition-all hover:scale-105 active:scale-95 shadow-2xl"
               >
                 Join Now
                 <ArrowRight className="w-5 h-5" />
               </Link>
 
-              <div className="flex flex-wrap items-center justify-center gap-8 mt-12 text-[#1a1a1a]/40 text-xs font-bold uppercase tracking-wider">
+              <div className="flex flex-wrap items-center justify-center gap-8 mt-12 text-black/40 text-xs font-bold uppercase tracking-wider">
                 <span className="flex items-center gap-2">
                   <Check className="w-3 h-3" /> Zero Onboarding Fees
                 </span>

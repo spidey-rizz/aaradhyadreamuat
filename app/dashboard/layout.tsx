@@ -62,8 +62,9 @@ export default function DashboardLayout({
     window.location.href = "/";
   };
 
-  const isAdmin = profile?.role === "admin" || profile?.role === "super_admin" || profile?.is_admin === true || profile?.is_super_admin === true;
-  const isSuperAdmin = profile?.role === "super_admin" || profile?.is_super_admin === true;
+  const userRole = profile?.role?.toUpperCase();
+  const isAdmin = userRole === "ADMIN" || userRole === "SUPERADMIN" || profile?.is_admin === true || profile?.is_super_admin === true;
+  const isSuperAdmin = userRole === "SUPERADMIN" || profile?.is_super_admin === true;
 
   const menuItems = [
     {

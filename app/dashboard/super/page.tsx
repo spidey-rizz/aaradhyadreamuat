@@ -23,7 +23,8 @@ export default function SuperAdminPanelPage() {
   const [privilegeUpdatingId, setPrivilegeUpdatingId] = useState<string | null>(null);
 
   // Superadmin role check — computed before any hooks that depend on it
-  const isSuperAdmin = profile?.role === "super_admin" || profile?.is_super_admin === true;
+  const userRole = profile?.role?.toUpperCase();
+  const isSuperAdmin = userRole === "SUPERADMIN" || profile?.is_super_admin === true;
 
   // Role guard — only super_admin can access this page (must be before early returns)
   useEffect(() => {
