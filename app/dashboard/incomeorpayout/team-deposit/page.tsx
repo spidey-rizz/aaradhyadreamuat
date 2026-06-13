@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/useAuth";
 import { useRouter } from "next/navigation";
-import { apiFetch, endpoints } from "@/lib/api";
 import { Loader2, ChevronLeft, ShieldCheck, ChevronRight, Eye, AlertCircle, RefreshCw } from "lucide-react";
 
 interface TeamMember {
@@ -28,8 +27,6 @@ export default function TeamDepositPage() {
   const { status, profile } = useAuth({ redirectIfInvalid: "/login?expired=true" });
   const router = useRouter();
 
-  const now = new Date();
-
   // Navigation history: array of {userId, userName}
   const [history, setHistory] = useState<{ userId: string; userName: string }[]>([]);
   const [levelData, setLevelData] = useState<LevelData | null>(null);
@@ -43,83 +40,121 @@ export default function TeamDepositPage() {
 
   const mainUserId = profile?._id || profile?.id || "";
 
-  // Build level data from the broker/me referral_list for root level
-  const buildRootData = useCallback((): LevelData => {
-    const referralList: any[] = profile?.referral_list || [];
-    const selfSales = profile?.total_sales || 0;
-    const teamTotal = referralList.reduce((acc: number, m: any) => acc + (m.total_sales || 0), 0);
+  // 1. Create a computed tree of associates with their sales
+  const computedTree = useMemo(() => {
+    if (!profile) return null;
 
-    const members: TeamMember[] = referralList.map((m: any, idx: number) => ({
-      refId: m.referral_code || `ADC_${1000 + idx}`,
-      memberName: m.name || `${m.first_name || ""} ${m.last_name || ""}`.trim() || "Associate",
-      selfAmount: m.total_sales || 0,
-      teamDepositAmount: m.team_sales || 0,
-      hasDownline: (m.team_sales || 0) > 0 || m.has_downline || false,
-      userId: m._id || m.id || m.phone || String(idx),
-    }));
+    // Create a map of phone -> total_sales from the flat referral_list
+    const salesMap: Record<string, number> = {};
+    const flatList: any[] = profile.referral_list || [];
+    for (const m of flatList) {
+      if (m.phone) {
+        salesMap[m.phone] = m.total_sales || 0;
+      }
+    }
+
+    // Helper to calculate self sales and recursively sum up team sales
+    const computeSales = (node: any): { self: number; team: number } => {
+      const self = salesMap[node.phone] || 0;
+      let team = 0;
+      if (node.direct_referrals && node.direct_referrals.length > 0) {
+        for (const child of node.direct_referrals) {
+          const childSales = computeSales(child);
+          team += childSales.self + childSales.team;
+        }
+      }
+      node.selfSales = self;
+      node.teamSales = team;
+      return { self, team };
+    };
+
+    // Deep clone the referral tree to avoid direct mutation of profile
+    const treeClone = JSON.parse(JSON.stringify(profile.referral_tree || []));
+    
+    let totalTeamSales = 0;
+    for (const rootNode of treeClone) {
+      const rootSales = computeSales(rootNode);
+      totalTeamSales += rootSales.self + rootSales.team;
+    }
 
     return {
-      userId: mainUserId,
-      userName: mainUserName,
-      self: selfSales,
-      team: teamTotal,
-      total: selfSales + teamTotal,
-      members,
+      tree: treeClone,
+      totalTeamSales,
     };
-  }, [profile, mainUserId, mainUserName]);
+  }, [profile]);
 
-  // Fetch monthly report for a specific user_id to get their team data
-  const fetchUserTeamData = async (userId: string, userName: string): Promise<LevelData> => {
-    const data = await apiFetch(
-      `${endpoints.monthlyReport}?month=${now.getMonth() + 1}&year=${now.getFullYear()}&user_id=${userId}`
-    );
-
-    // Extract referral/team members from the report
-    const referralList: any[] = data?.referral_list || data?.team_members || data?.members || [];
-    const selfSales = data?.self_total || data?.summary?.self_sales || data?.total_sales || 0;
-    const teamTotal = data?.team_total || data?.summary?.team_sales || 0;
-
-    const members: TeamMember[] = referralList.map((m: any, idx: number) => ({
-      refId: m.referral_code || `ADC_${1000 + idx}`,
-      memberName: m.name || `${m.first_name || ""} ${m.last_name || ""}`.trim() || "Associate",
-      selfAmount: m.total_sales || m.self_sales || 0,
-      teamDepositAmount: m.team_sales || 0,
-      hasDownline: (m.team_sales || 0) > 0 || false,
-      userId: m._id || m.id || m.phone || String(idx),
-    }));
-
-    return {
-      userId,
-      userName,
-      self: selfSales,
-      team: teamTotal,
-      total: selfSales + teamTotal,
-      members,
-    };
-  };
+  // Helper to find a specific node by ID in the tree
+  const findNodeById = useCallback((nodes: any[], id: string): any => {
+    for (const node of nodes) {
+      if (node._id === id || node.phone === id) return node;
+      if (node.direct_referrals && node.direct_referrals.length > 0) {
+        const found = findNodeById(node.direct_referrals, id);
+        if (found) return found;
+      }
+    }
+    return null;
+  }, []);
 
   // Load data for current level
   useEffect(() => {
-    if (!profile) return;
+    if (!profile || !computedTree) return;
+
+    const selfSales = profile.direct_sale || profile.total_sales || 0;
 
     if (history.length === 0) {
-      // Root level — use profile data directly
-      setLevelData(buildRootData());
+      // Root level — use computed tree directly
+      const members: TeamMember[] = computedTree.tree.map((node: any, idx: number) => ({
+        refId: node.referral_code || `ADC_${1000 + idx}`,
+        memberName: `${node.first_name || ""} ${node.last_name || ""}`.trim() || "Associate",
+        selfAmount: node.selfSales || 0,
+        teamDepositAmount: node.teamSales || 0,
+        hasDownline: node.direct_referrals && node.direct_referrals.length > 0,
+        userId: node._id || node.phone || String(idx),
+      }));
+
+      setLevelData({
+        userId: mainUserId,
+        userName: mainUserName,
+        self: selfSales,
+        team: computedTree.totalTeamSales,
+        total: selfSales + computedTree.totalTeamSales,
+        members,
+      });
     } else {
-      // Drill-down level — fetch from API
+      // Drill-down level
       const current = history[history.length - 1];
-      setLoading(true);
-      setError(null);
-      fetchUserTeamData(current.userId, current.userName)
-        .then(setLevelData)
-        .catch((err) => {
-          setError(err.detail || "Failed to fetch team data for this member.");
-          // Stay on current data
-        })
-        .finally(() => setLoading(false));
+      const currentNode = findNodeById(computedTree.tree, current.userId);
+
+      if (!currentNode) {
+        setLevelData({
+          userId: current.userId,
+          userName: current.userName,
+          self: 0,
+          team: 0,
+          total: 0,
+          members: [],
+        });
+      } else {
+        const members: TeamMember[] = (currentNode.direct_referrals || []).map((node: any, idx: number) => ({
+          refId: node.referral_code || `ADC_${2000 + idx}`,
+          memberName: `${node.first_name || ""} ${node.last_name || ""}`.trim() || "Associate",
+          selfAmount: node.selfSales || 0,
+          teamDepositAmount: node.teamSales || 0,
+          hasDownline: node.direct_referrals && node.direct_referrals.length > 0,
+          userId: node._id || node.phone || String(idx),
+        }));
+
+        setLevelData({
+          userId: currentNode._id,
+          userName: `${currentNode.first_name || ""} ${currentNode.last_name || ""}`.trim(),
+          self: currentNode.selfSales || 0,
+          team: currentNode.teamSales || 0,
+          total: (currentNode.selfSales || 0) + (currentNode.teamSales || 0),
+          members,
+        });
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile, history]);
+  }, [profile, computedTree, history, mainUserId, mainUserName, findNodeById]);
 
   const currentUserName = history.length > 0 ? history[history.length - 1].userName : mainUserName;
 

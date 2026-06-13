@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useAuth } from "@/lib/useAuth";
 import { useRouter } from "next/navigation";
 import { apiFetch, endpoints } from "@/lib/api";
+import { getAssociatePolicy, addAdminLog } from "@/lib/adminStore";
 import {
   Loader2,
   Shield,
@@ -54,6 +55,7 @@ const labelCls =
 
 // ─── Sale Form (shared by Booking & Settlement) ──────────────────────────────
 function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" }) {
+  const { profile } = useAuth();
   const [form, setForm] = useState(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -128,6 +130,22 @@ function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" }) {
       setMsg({ type: "error", text: "Please enter a valid associate phone to auto-fetch User ID." });
       return;
     }
+
+    // Validate Aadhar contains exactly 12 digits
+    if (!/^\d{12}$/.test(form.aadhar)) {
+      setMsg({ type: "error", text: "Aadhar 12 digits ka hona chahiye" });
+      return;
+    }
+
+    const policy = getAssociatePolicy(form.user_id);
+    if (policy.limit !== null) {
+      const saleAmount = parseFloat(form.total_amount);
+      if (saleAmount > policy.limit) {
+        setMsg({ type: "error", text: `Limit Exceeded: The associate has an active limit of ₹${policy.limit.toLocaleString()}. This transaction is for ₹${saleAmount.toLocaleString()}.` });
+        return;
+      }
+    }
+
     setLoading(true);
     setMsg(null);
     let sanitizedBuyerPhone = form.phone.replace(/\D/g, "");
@@ -144,7 +162,7 @@ function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" }) {
           total_amount: parseFloat(form.total_amount),
           paid_amount: parseFloat(form.paid_amount),
           name: form.name.trim(),
-          aadhar: parseInt(form.aadhar) || 0,
+          aadhar: String(form.aadhar).trim(),
           phone: sanitizedBuyerPhone,
           address: form.address.trim(),
           payment: form.payment,
@@ -152,6 +170,10 @@ function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" }) {
           prepaid: parseInt(form.prepaid || "0") || 0,
         }),
       });
+      
+      const adminName = profile ? `${profile.first_name} ${profile.last_name}` : "Admin";
+      addAdminLog(adminName, `Submitted ${saleType === "NEW" ? "new booking" : "settlement"} for Plot ${form.plot_id.trim()} (Associate: ${form.associate_found?.first_name || "Unknown"})`);
+      
       setMsg({ type: "success", text: `${saleType === "NEW" ? "New Booking" : "Settlement"} submitted successfully!` });
       setForm(EMPTY_FORM);
     } catch (err: any) {

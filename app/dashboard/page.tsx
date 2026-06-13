@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
 import { copyToClipboard } from "@/lib/clipboard";
+import { getAssociatePolicy, clearAssociateWarnings } from "@/lib/adminStore";
 import {
   User,
   Copy,
@@ -12,7 +13,9 @@ import {
   TrendingUp,
   Loader2,
   Megaphone,
-  ChevronRight
+  ChevronRight,
+  AlertTriangle,
+  XCircle
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -46,9 +49,40 @@ export default function DashboardPage() {
   const teamBusiness = profile.team_sale || referralList.reduce((acc: number, curr: any) => acc + (curr.direct_sale || curr.total_sales || 0), 0);
   const totalBusiness = profile.lifetime_sale || (selfBusiness + teamBusiness);
 
+  const policy = getAssociatePolicy(profile._id || profile.id);
+  const warnings = policy?.warnings || [];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
+      {/* WARNING NOTICES */}
+      {warnings.length > 0 && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-sm animate-in fade-in slide-in-from-top-4">
+          <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+             <AlertTriangle size={120} className="text-amber-500" />
+          </div>
+          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+             <div>
+                <h3 className="text-xl font-black uppercase tracking-tight text-amber-500 mb-2 flex items-center gap-3">
+                   <AlertTriangle className="text-amber-500" size={24} /> Official Warning Notice
+                </h3>
+                <div className="space-y-3 mt-4">
+                   {warnings.map((w, i) => (
+                      <p key={i} className="text-foreground font-medium text-sm border-l-2 border-amber-500/50 pl-3">
+                         "{w}"
+                      </p>
+                   ))}
+                </div>
+             </div>
+             <button 
+                onClick={() => { clearAssociateWarnings(profile._id || profile.id); window.location.reload(); }}
+                className="shrink-0 bg-background border border-border text-foreground px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-muted transition-colors flex items-center gap-2 cursor-pointer"
+             >
+                <XCircle size={16} /> Acknowledge
+             </button>
+          </div>
+        </div>
+      )}
+
       {/* TOP ROW: Profile & Notice */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
@@ -179,6 +213,13 @@ export default function DashboardPage() {
                   <span className="text-xs font-black text-primary uppercase tracking-widest">Total Business</span>
                   <span className="text-base font-black text-primary font-mono">₹{totalBusiness.toLocaleString()}</span>
                 </div>
+                
+                {policy?.limit !== null && (
+                   <div className="flex justify-between items-center py-2 mt-2 px-3 rounded-xl border border-amber-500/30 bg-amber-500/5">
+                      <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Active Limit</span>
+                      <span className="text-xs font-black text-amber-600 font-mono">₹{policy.limit.toLocaleString()}</span>
+                   </div>
+                )}
               </div>
             </div>
           </div>

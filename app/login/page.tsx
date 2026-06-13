@@ -68,6 +68,9 @@ function LoginContent() {
       });
 
       localStorage.setItem("access_token", response.access_token);
+      if (typeof window !== "undefined") {
+        document.cookie = `access_token=${response.access_token}; path=/; max-age=3600; SameSite=Lax; Secure`;
+      }
       const role = response.role || 'ASSOCIATE';
       if (role === 'SUPERADMIN') router.push('/superadmin');
       else if (role === 'ADMIN') router.push('/admin');

@@ -29,13 +29,6 @@ export function useAuth(options?: {
     hasRun.current = true;
 
     const verifySession = async () => {
-      if (typeof window !== "undefined") {
-        const urlParams = new URLSearchParams(window.location.search);
-        const bypassParam = urlParams.get("bypass_role");
-        if (bypassParam) {
-          localStorage.setItem("bypass_role", bypassParam);
-        }
-      }
 
       const token = localStorage.getItem("access_token");
 
@@ -50,20 +43,6 @@ export function useAuth(options?: {
       try {
         const data = await apiFetch(endpoints.me);
         
-        // Merge client-side profile overrides if they exist
-        if (typeof window !== "undefined") {
-          const overrides = localStorage.getItem("local_profile_overrides");
-          if (overrides) {
-            try {
-              const parsed = JSON.parse(overrides);
-              if (parsed && typeof parsed === "object") {
-                Object.assign(data, parsed);
-              }
-            } catch (e) {
-              console.error("Error parsing local profile overrides:", e);
-            }
-          }
-        }
 
         setProfile(data);
         setStatus("authenticated");
@@ -74,7 +53,7 @@ export function useAuth(options?: {
             ? options.requiredRole
             : [options.requiredRole];
           const allowedUpper = allowed.map((r) => r.toUpperCase());
-          const userRoleRaw = (typeof window !== "undefined" && localStorage.getItem("bypass_role")) || data.role || "ASSOCIATE";
+          const userRoleRaw = data.role || "ASSOCIATE";
           const userRole = userRoleRaw.toUpperCase();
           if (!allowedUpper.includes(userRole)) {
             // Redirect to their correct dashboard instead of just /login
@@ -88,7 +67,7 @@ export function useAuth(options?: {
 
         // Role-based redirect (e.g. on the login page)
         if (options?.redirectBasedOnRole) {
-          const roleRaw = (typeof window !== "undefined" && localStorage.getItem("bypass_role")) || data.role || "ASSOCIATE";
+          const roleRaw = data.role || "ASSOCIATE";
           const role = roleRaw.toUpperCase();
           if (role === "SUPERADMIN") router.replace("/superadmin");
           else if (role === "ADMIN") router.replace("/admin");
@@ -99,6 +78,9 @@ export function useAuth(options?: {
         }
       } catch {
         localStorage.removeItem("access_token");
+        if (typeof window !== "undefined") {
+          document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        }
         setStatus("unauthenticated");
         if (options?.redirectIfInvalid) {
           router.replace(options.redirectIfInvalid);

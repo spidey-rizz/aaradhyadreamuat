@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "@/lib/ThemeContext";
 import { useAuth } from "@/lib/useAuth";
+import { getAssociatePolicy, incrementWebsiteVisits } from "@/lib/adminStore";
 import {
   User,
   Users,
@@ -36,6 +37,11 @@ export default function DashboardLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [payoutSubmenuOpen, setPayoutSubmenuOpen] = useState(false);
 
+  // Increment website visits on mount
+  useEffect(() => {
+    incrementWebsiteVisits();
+  }, []);
+
   // Close mobile sidebar on route change
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -57,8 +63,34 @@ export default function DashboardLayout({
     );
   }
 
+  const policy = getAssociatePolicy(profile._id || profile.id);
+  if (policy.suspended) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+        <div className="bg-red-500/10 border border-red-500/20 p-8 rounded-[2rem] max-w-lg w-full shadow-2xl">
+          <ShieldAlert size={80} className="text-red-500 mx-auto mb-6" />
+          <h1 className="text-2xl font-black uppercase tracking-tight text-red-500 mb-2">Account Suspended</h1>
+          <p className="text-muted-foreground text-sm font-medium mb-8">
+            Your access to the dashboard has been temporarily suspended due to administrative action or policy violation. Please contact support or your administrator for assistance.
+          </p>
+          <button 
+            onClick={() => { 
+              localStorage.removeItem("access_token"); 
+              document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+              window.location.href = "/login"; 
+            }}
+            className="w-full bg-red-500 text-white font-black text-xs uppercase tracking-widest py-4 rounded-xl hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20"
+          >
+            Sign Out
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const handleLogout = () => {
     localStorage.removeItem("access_token");
+    document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     window.location.href = "/";
   };
 

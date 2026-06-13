@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/useAuth";
 import { apiFetch, endpoints } from "@/lib/api";
-import { Loader2, ChevronLeft, Calendar, DollarSign, AlertCircle, RefreshCw, CalendarRange } from "lucide-react";
+import { Loader2, ChevronLeft, Calendar, IndianRupee, AlertCircle, RefreshCw, CalendarRange } from "lucide-react";
 import { useTheme } from "@/lib/ThemeContext";
 
 export default function SelfDepositPage() {
@@ -154,7 +154,7 @@ export default function SelfDepositPage() {
             )}
           </div>
           <div className="p-3 bg-primary/20 text-primary rounded-2xl">
-            <DollarSign size={24} />
+            <IndianRupee size={24} />
           </div>
         </div>
       </div>
@@ -213,7 +213,7 @@ export default function SelfDepositPage() {
                 <tr>
                   <td colSpan={5} className="py-16 text-center text-muted-foreground text-xs italic">
                     <div className="flex flex-col items-center gap-2">
-                      <DollarSign size={28} className="opacity-20 text-primary" />
+                      <IndianRupee size={28} className="opacity-20 text-primary" />
                       <p>No self deposits found for {new Date(selectedYear, selectedMonth - 1).toLocaleString('en-IN', { month: 'long', year: 'numeric' })}.</p>
                     </div>
                   </td>

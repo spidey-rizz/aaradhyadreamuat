@@ -9,7 +9,7 @@ import {
   TrendingUp, 
   Users, 
   FileText,
-  DollarSign,
+  IndianRupee,
   ChevronRight,
   ArrowUpRight,
   CheckCircle2
@@ -41,7 +41,7 @@ export default function PayoutsPage() {
       title: "Self Deposit Amount",
       description: "Detailed list of your self deposits and date-wise audit logs.",
       href: "/dashboard/incomeorpayout/self-deposit",
-      icon: DollarSign,
+      icon: IndianRupee,
       color: "text-emerald-500 bg-emerald-500/10"
     },
     {

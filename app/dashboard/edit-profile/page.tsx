@@ -70,23 +70,11 @@ export default function EditProfilePage() {
       // we save the overrides locally in localStorage so that useAuth merges it.
       // This will instantly reflect the updated name and phone number across the frontend.
       
-      const overrides = {
-        first_name: formData.first_name.trim(),
-        last_name: formData.last_name.trim(),
-        phone: rawPhone
-      };
-
-      // Mock backend update delay for realistic UX
+      // Since backend endpoints do not support profile editing yet, we will display a mock simulation message
+      // without storing insecure data overrides in localStorage (resolving client-side profile pollution).
       await new Promise((resolve) => setTimeout(resolve, 800));
 
-      localStorage.setItem("local_profile_overrides", JSON.stringify(overrides));
-      
-      setMessage({ type: "success", text: "Profile details updated successfully! (Local Preview)" });
-      
-      // Refresh window/router state after a brief moment to update dashboard layouts
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+      setMessage({ type: "success", text: "Profile details updated successfully! (Simulation only, backend integration pending)" });
 
     } catch (err: any) {
       setMessage({ type: "error", text: err.message || "Failed to update profile." });

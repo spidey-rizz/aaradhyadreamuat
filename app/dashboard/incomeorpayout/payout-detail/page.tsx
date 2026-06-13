@@ -13,13 +13,11 @@ export default function PayoutDetailPage() {
   const { theme } = useTheme();
 
   const now = new Date();
-  const [selectedDate, setSelectedDate] = useState("");
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [reportData, setReportData] = useState<any>(null);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
-  const dateInputRef = useRef<HTMLInputElement>(null);
   const monthInputRef = useRef<HTMLInputElement>(null);
 
   const fetchReport = async (month: number, year: number) => {
@@ -52,7 +50,6 @@ export default function PayoutDetailPage() {
     const [y, m] = val.split("-").map(Number);
     setSelectedMonth(m);
     setSelectedYear(y);
-    setSelectedDate(""); // reset date filter on month change
     fetchReport(m, y);
   };
 
@@ -96,11 +93,11 @@ export default function PayoutDetailPage() {
     return [];
   }, [reportData, selectedMonth, selectedYear]);
 
-  // Apply date filter (optional secondary filter on top of month)
-  const filteredPayouts = useMemo(() => {
-    if (!selectedDate) return payouts;
-    return payouts.filter((p: any) => p.date === selectedDate);
-  }, [selectedDate, payouts]);
+  const totalPaidAmountSum = useMemo(() => {
+    return payouts
+      .filter((p: any) => p.status === "PAID")
+      .reduce((acc: number, curr: any) => acc + (curr.amount || 0), 0);
+  }, [payouts]);
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "—";
@@ -172,33 +169,6 @@ export default function PayoutDetailPage() {
               <RefreshCw size={13} className={reportLoading ? "animate-spin" : ""} />
             </button>
           </div>
-
-          {/* Day filter picker (optional) */}
-          <div 
-            onClick={() => dateInputRef.current?.showPicker()}
-            className="flex items-center gap-3 bg-background border border-border px-3 py-2 rounded-xl w-full sm:w-auto cursor-pointer select-none hover:border-primary/45 transition-colors"
-          >
-            <Calendar size={14} className="text-muted-foreground shrink-0" />
-            <input 
-              ref={dateInputRef}
-              type="date" 
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              style={{ colorScheme: theme }}
-              className="bg-transparent border-none text-xs text-foreground focus:outline-none w-full sm:w-auto cursor-pointer font-bold uppercase select-none outline-none"
-            />
-            {selectedDate && (
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedDate("");
-                }}
-                className="text-[9px] font-black uppercase text-red-500 hover:text-red-400 px-2 py-1 rounded bg-red-500/10 border border-red-500/20 shrink-0 cursor-pointer"
-              >
-                Clear
-              </button>
-            )}
-          </div>
         </div>
       </div>
 
@@ -210,59 +180,90 @@ export default function PayoutDetailPage() {
         </div>
       )}
 
+      {/* Total Paid Amount */}
+      {!reportLoading && payouts.length > 0 && (
+        <div className="text-xs font-black uppercase tracking-widest text-muted-foreground bg-muted/40 border border-border px-5 py-3 rounded-2xl w-fit">
+          Total Paid Amount : <span className="font-mono font-black text-primary ml-1">₹{totalPaidAmountSum.toLocaleString('en-IN')}</span>
+        </div>
+      )}
+
       {/* Payouts Table */}
       <div className="bg-card border border-border rounded-[2rem] overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="py-5 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em] w-20">No.</th>
-                <th className="py-5 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Payout Date</th>
-                <th className="py-5 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Plot ID</th>
-                <th className="py-5 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Payout Type</th>
-                <th className="py-5 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Status</th>
-                <th className="py-5 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-right">Payout Amount</th>
+                <th className="py-5 px-5 text-[10px] text-primary font-black uppercase tracking-[0.2em] w-16">No.</th>
+                <th className="py-5 px-5 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Payout Date</th>
+                <th className="py-5 px-5 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Plot ID</th>
+                <th className="py-5 px-5 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Payout Type</th>
+                <th className="py-5 px-5 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Status</th>
+                <th className="py-5 px-5 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-right">Total Amt.</th>
+                <th className="py-5 px-5 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-right">TDS (5%)</th>
+                <th className="py-5 px-5 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-right">Processsing (5%)</th>
+                <th className="py-5 px-5 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-right">Payout Amount</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {reportLoading ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center">
+                  <td colSpan={9} className="py-16 text-center">
                     <Loader2 className="text-primary animate-spin mx-auto" size={28} />
                     <p className="text-muted-foreground text-xs mt-3 font-medium">Loading payout data...</p>
                   </td>
                 </tr>
-              ) : filteredPayouts.length > 0 ? (
-                filteredPayouts.map((payout: any, index: number) => (
-                  <tr key={index} className="hover:bg-muted/30 transition-colors">
-                    <td className="py-5 px-8 text-xs font-mono text-muted-foreground">{index + 1}.</td>
-                    <td className="py-5 px-8 text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Calendar size={14} className="text-muted-foreground" />
-                      {formatDate(payout.date)}
-                    </td>
-                    <td className="py-5 px-8 text-sm text-muted-foreground font-mono">{payout.plot_id}</td>
-                    <td className="py-5 px-8 text-xs font-bold uppercase tracking-wider text-muted-foreground">{payout.type}</td>
-                    <td className="py-5 px-8">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border ${
-                        payout.status === "PAID"
-                          ? "bg-green-500/10 border-green-500/20 text-green-500"
-                          : "bg-amber-500/10 border-amber-500/20 text-amber-500"
-                      }`}>
-                        {payout.status === "PAID" ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
-                        {payout.status}
-                      </span>
-                    </td>
-                    <td className="py-5 px-8 text-sm text-foreground font-black font-mono text-right">
-                      ₹{(payout.amount || 0).toLocaleString('en-IN')}
-                    </td>
-                  </tr>
-                ))
+              ) : payouts.length > 0 ? (
+                payouts.map((payout: any, index: number) => {
+                  const totalAmt = payout.amount || 0;
+                  const tds = Math.round(totalAmt * 0.05);
+                  
+                  // Processing fee logic (default empty to match screenshot)
+                  const processingVal = payout.processing_fee !== undefined ? payout.processing_fee : payout.processing !== undefined ? payout.processing : null;
+                  const processingFee = processingVal !== null ? Number(processingVal) : 0;
+                  const processingDisplay = processingVal !== null && processingVal !== "" ? `₹${processingFee.toLocaleString('en-IN')}` : "—";
+                  
+                  const netPayoutAmt = totalAmt - tds - processingFee;
+
+                  return (
+                    <tr key={index} className="hover:bg-muted/30 transition-colors">
+                      <td className="py-5 px-5 text-xs font-mono text-muted-foreground">{index + 1}.</td>
+                      <td className="py-5 px-5 text-sm font-semibold text-foreground flex items-center gap-2 whitespace-nowrap">
+                        <Calendar size={14} className="text-muted-foreground" />
+                        {formatDate(payout.date)}
+                      </td>
+                      <td className="py-5 px-5 text-sm text-muted-foreground font-mono">{payout.plot_id}</td>
+                      <td className="py-5 px-5 text-xs font-bold uppercase tracking-wider text-muted-foreground">{payout.type}</td>
+                      <td className="py-5 px-5">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border ${
+                          payout.status === "PAID"
+                            ? "bg-green-500/10 border-green-500/20 text-green-500"
+                            : "bg-amber-500/10 border-amber-500/20 text-amber-500"
+                        }`}>
+                          {payout.status === "PAID" ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
+                          {payout.status}
+                        </span>
+                      </td>
+                      <td className="py-5 px-5 text-sm text-foreground font-black font-mono text-right whitespace-nowrap">
+                        ₹{totalAmt.toLocaleString('en-IN')}
+                      </td>
+                      <td className="py-5 px-5 text-sm text-red-500 font-bold font-mono text-right whitespace-nowrap">
+                        ₹{tds.toLocaleString('en-IN')}
+                      </td>
+                      <td className="py-5 px-5 text-sm text-muted-foreground font-bold font-mono text-right whitespace-nowrap">
+                        {processingDisplay}
+                      </td>
+                      <td className="py-5 px-5 text-sm text-primary font-black font-mono text-right whitespace-nowrap">
+                        ₹{netPayoutAmt.toLocaleString('en-IN')}
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center text-muted-foreground text-xs italic">
+                  <td colSpan={9} className="py-16 text-center text-muted-foreground text-xs italic">
                     <div className="flex flex-col items-center gap-2">
                       <FileText size={28} className="opacity-20 text-primary" />
-                      <p>No payouts found for {new Date(selectedYear, selectedMonth - 1).toLocaleString('en-IN', { month: 'long', year: 'numeric' })}{selectedDate ? ` on ${formatDate(selectedDate)}` : ""}.</p>
+                      <p>No payouts found for {new Date(selectedYear, selectedMonth - 1).toLocaleString('en-IN', { month: 'long', year: 'numeric' })}.</p>
                     </div>
                   </td>
                 </tr>
