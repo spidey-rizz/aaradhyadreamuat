@@ -41,6 +41,7 @@ export default function Footer() {
                   src="/logo.jpg"
                   alt="Aaradhya Dream City"
                   fill
+                  sizes="40px"
                   className="object-cover"
                 />
               </div>

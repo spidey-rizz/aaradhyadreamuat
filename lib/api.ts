@@ -34,6 +34,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   if (response.status === 401 && typeof window !== "undefined") {
     // Session expired or unauthorized
     localStorage.removeItem("access_token");
+    document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     if (!window.location.pathname.includes("/login")) {
       window.location.href = "/login?expired=true";
     }
@@ -56,4 +57,9 @@ export const endpoints = {
   register: "/broker/register",
   login: "/broker/login",
   me: "/broker/me",
+  addSale: "/sales/add",
+  monthlyReport: "/sales/monthly-report",
+  userLookup: "/broker/admin/user",
+  setPrivilege: "/broker/admin/set-privilege",
+  allUsers: "/broker/admin/users",
 };

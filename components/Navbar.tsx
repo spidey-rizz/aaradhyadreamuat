@@ -9,17 +9,22 @@ import { Menu, X, Sun, Moon, LogOut, User } from "lucide-react";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const pathname = usePathname();
+  const isDashboardRoute = pathname?.startsWith("/dashboard");
+  const [isLoggedIn, setIsLoggedIn] = useState(isDashboardRoute);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
-  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 60);
     window.addEventListener("scroll", handleScroll);
-    setIsLoggedIn(!!localStorage.getItem("access_token"));
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    const hasToken = typeof window !== "undefined" && !!localStorage.getItem("access_token");
+    setIsLoggedIn(hasToken || isDashboardRoute);
+  }, [pathname, isDashboardRoute]);
 
   // Scroll lock when menu is open
   useEffect(() => {
@@ -29,11 +34,23 @@ export default function Navbar() {
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
+    document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     window.location.href = "/";
   };
 
   const isHome = pathname === "/";
   const shouldForceWhite = isHome && !isScrolled;
+
+  const navLinks = [
+    { label: "Home",             href: "/" },
+    { label: "About",            href: "/#about" },
+    { label: "Projects",         href: "/projects" },
+    { label: "Gallery",          href: "/gallery" },
+    { label: "Become Associate", href: "/associate" },
+    { label: "Contact",          href: "/contact" },
+  ];
+
+  if (isDashboardRoute) return null;
 
   return (
     <>
@@ -53,7 +70,7 @@ export default function Navbar() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group shrink-0">
               <div className={`relative w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden ring-2 transition-all duration-300 ${shouldForceWhite ? "ring-white/20" : "ring-primary/40"} group-hover:ring-primary/60`}>
-                <Image src="/logo.jpg" alt="Logo" fill className="object-cover" priority />
+                <Image src="/logo.jpg" alt="Logo" fill sizes="48px" className="object-cover" priority />
               </div>
               <div className="flex flex-col leading-none">
                 <span className={`text-[15px] sm:text-[16px] font-black tracking-tight transition-colors ${shouldForceWhite ? "text-white" : "text-foreground"}`}>Aaradhya</span>
@@ -63,24 +80,16 @@ export default function Navbar() {
 
             {/* Desktop Links */}
             <div className="hidden md:flex items-center gap-8">
-              {[
-                { label: "HOME",     href: "/" },
-                { label: "ABOUT",    href: "/about" },
-                { label: "PROJECTS", href: "/#projects" },
-                { label: "CONTACT",  href: "/contact" },
-                { label: "CAREER",   href: "/career" },
-                { label: "INVESTOR", href: "/investor" },
-              ].map((item) => (
+              {navLinks.map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
                   className={`text-[11px] font-black tracking-[0.2em] transition-colors ${shouldForceWhite ? "text-white/70 hover:text-white" : "text-foreground/70 hover:text-primary"}`}
                 >
-                  {item.label}
+                  {item.label.toUpperCase()}
                 </Link>
               ))}
             </div>
-
             {/* Desktop Right Actions */}
             <div className="flex items-center gap-4">
               <button onClick={toggleTheme} className={`hidden md:block p-2 transition-colors ${shouldForceWhite ? "text-white/70 hover:text-white" : "text-foreground/70 hover:text-primary"}`}>
@@ -89,9 +98,11 @@ export default function Navbar() {
               <div className="hidden md:flex items-center gap-3">
                 {isLoggedIn ? (
                   <>
-                    <Link href="/dashboard" className="px-6 py-2.5 bg-primary text-black rounded-full text-[10px] font-black tracking-widest uppercase shadow-lg shadow-primary/20 hover:scale-105 transition-transform">
-                      Dashboard
-                    </Link>
+                    {!isDashboardRoute && (
+                      <Link href="/dashboard" className="px-6 py-2.5 bg-primary text-black rounded-full text-[10px] font-black tracking-widest uppercase shadow-lg shadow-primary/20 hover:scale-105 transition-transform">
+                        Dashboard
+                      </Link>
+                    )}
                     <button 
                       onClick={handleLogout}
                       className={`p-2.5 rounded-full transition-colors border ${
@@ -136,14 +147,7 @@ export default function Navbar() {
           {/* Nav Links */}
           <div className="flex-grow overflow-y-auto pt-28 px-8 space-y-1">
             <p className="text-[10px] font-black tracking-[0.5em] text-primary uppercase opacity-50 mb-8">Navigate</p>
-            {[
-              { label: "Home",       href: "/" },
-              { label: "About Us",   href: "/about" },
-              { label: "Projects",   href: "/#projects" },
-              { label: "Contact",    href: "/contact" },
-              { label: "Career",     href: "/career" },
-              { label: "Investor",   href: "/investor" },
-            ].map((item) => (
+            {navLinks.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
@@ -160,10 +164,12 @@ export default function Navbar() {
           <div className="shrink-0 px-8 pb-12 space-y-4">
             {isLoggedIn ? (
               <>
-                <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-3 w-full py-5 bg-primary text-black rounded-3xl font-black text-xs tracking-widest uppercase shadow-xl shadow-primary/30">
-                  <User size={18} /> Dashboard
-                </Link>
+                {!isDashboardRoute && (
+                  <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-center gap-3 w-full py-5 bg-primary text-black rounded-3xl font-black text-xs tracking-widest uppercase shadow-xl shadow-primary/30">
+                    <User size={18} /> Dashboard
+                  </Link>
+                )}
                 <button onClick={handleLogout}
                   className="w-full py-4 text-xs font-black tracking-widest uppercase text-red-500 border border-red-500/20 rounded-3xl">
                   Logout

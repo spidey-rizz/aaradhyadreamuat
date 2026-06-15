@@ -1,0 +1,88 @@
+======================================================================
+         AARADHYA DREAM CITY - GOOGLE SHEETS FORM SETUP GUIDE
+======================================================================
+
+Yeh guide aapko step-by-step batayegi ki aap apne contact form ke data ko
+Google Sheet me kaise save kar sakte hain. Yeh bilkul simple aur automatic hai!
+
+----------------------------------------------------------------------
+STEP 1: GOOGLE SHEET BANAYEIN
+----------------------------------------------------------------------
+1. Apne browser me https://sheets.google.com par jayein.
+2. Ek Blank sheet (naya spreadsheet) banayein.
+3. Sheet ka naam jo chahein rakh sakte hain (jaise: Aaradhya Leads).
+4. Pehli line (Row 1) me ye columns ke naam likhein (ek line me, columns A se G tak):
+   A1: Date
+   B1: Time
+   C1: Full Name
+   D1: Phone Number
+   E1: Email
+   F1: Option
+   G1: Message
+
+----------------------------------------------------------------------
+STEP 2: APPS SCRIPT CODE COOPY-PASTE KAREIN
+----------------------------------------------------------------------
+1. Google Sheet ke menu me upar "Extensions" par click karein.
+2. Uske andar "Apps Script" option ko select karein.
+3. Jo naya window khulega, wahan par pehle se likha hua code delete kar dein.
+4. Niche diya gaya code copy karke wahan paste kar dein:
+
+//////////////////////////////////////////////////////////////////////
+function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var data = JSON.parse(e.postData.contents);
+    
+    // IST (Indian Time) ke format me date aur time convert karna
+    var now = new Date();
+    var dateString = Utilities.formatDate(now, "Asia/Kolkata", "yyyy-MM-dd");
+    var timeString = Utilities.formatDate(now, "Asia/Kolkata", "HH:mm:ss");
+    
+    // Naya row sheet me append karna
+    sheet.appendRow([
+      dateString,
+      timeString,
+      data.fullName,
+      data.phoneNumber,
+      data.email || "N/A",
+      data.option,
+      data.message || ""
+    ]);
+    
+    return ContentService.createTextOutput(JSON.stringify({ "status": "success" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ "status": "error", "message": error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+//////////////////////////////////////////////////////////////////////
+
+5. Code paste karne ke baad, editor me upar "Save project" (floppy disk icon) par click karein.
+
+----------------------------------------------------------------------
+STEP 3: WEB APP DEPLOY KAREIN (URL GENERATE KAREIN)
+----------------------------------------------------------------------
+1. Apps Script ke page par top right side me "Deploy" button par click karein aur "New deployment" select karein.
+2. Ek popup khulega. Gear icon (Select type) par click karke "Web app" select karein.
+3. Settings me ye details fill karein:
+   - Description: Aaradhya Lead Capture
+   - Execute as: "Me (apna-email@gmail.com)"
+   - Who has access: "Anyone"  <-- ISKO "ANYONE" RAKHNA ZAROORI HAI!
+4. "Deploy" button par click karein.
+5. Agar Google access permission maange, to "Authorize Access" par click karke apne Google account ko select karein, "Advanced" par click karein, aur "Go to Untitled project (unsafe)" / Allow par click karein.
+6. Deployment complete hone par aapko ek "Web app URL" milega.
+   URL kuch aisa dikhega:
+   https://script.google.com/macros/s/AKfycb.../exec
+7. Is URL ko copy kar lijiye.
+
+----------------------------------------------------------------------
+STEP 4: NEXT.JS PROJECT ME URL DAALEIN
+----------------------------------------------------------------------
+Aapko ye copied URL apne project ke root folder me ".env.local" file me dalna hoga:
+
+NEXT_PUBLIC_GOOGLE_SHEET_URL=apna_copied_web_app_url_yahan_dalein
+
+Ya phir, aap `app/contact/page.tsx` file ke andar variables me direct bhi paste kar sakte hain.
+======================================================================

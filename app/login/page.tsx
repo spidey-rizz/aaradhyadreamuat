@@ -16,8 +16,8 @@ function LoginContent() {
   const [error, setError] = useState<string | null>(null);
   const expired = searchParams.get("expired");
 
-  // ── Session check: if already logged in with valid JWT, redirect to dashboard ──
-  const { status } = useAuth({ redirectIfValid: "/dashboard" });
+  // ── Session check: if already logged in with valid JWT, redirect based on role ──
+  const { status } = useAuth({ redirectBasedOnRole: true, redirectIfValid: "/dashboard" });
 
   const [formData, setFormData] = useState({
     phone: "",
@@ -68,7 +68,14 @@ function LoginContent() {
       });
 
       localStorage.setItem("access_token", response.access_token);
-      router.push("/dashboard");
+      if (typeof window !== "undefined") {
+        document.cookie = `access_token=${response.access_token}; path=/; max-age=3600; SameSite=Lax; Secure`;
+      }
+      const role = response.role || 'ASSOCIATE';
+      if (role === 'SUPERADMIN') router.push('/superadmin');
+      else if (role === 'ADMIN') router.push('/admin');
+      else if (role === 'OFFICE') router.push('/office');
+      else router.push("/dashboard");
     } catch (err: any) {
       if (err.status === 403) {
         setError("Account not verified. Please verify via WhatsApp first.");
