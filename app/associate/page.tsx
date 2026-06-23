@@ -395,7 +395,7 @@ export default function AssociatePage() {
               <div className="w-full lg:w-1/2">
                 <div className="relative aspect-[4/3] rounded-3xl overflow-hidden">
                   <Image
-                    src="/Performance Bonus.png"
+                    src="/Performance Bonus.jpg"
                     alt="Performance Rewards"
                     fill
                     className="object-cover grayscale-0 md:grayscale md:hover:grayscale-0 transition-all duration-700"
@@ -424,7 +424,7 @@ export default function AssociatePage() {
               <div className="w-full lg:w-1/2">
                 <div className="relative aspect-[4/3] rounded-3xl overflow-hidden">
                   <Image
-                    src="/Hand holding house key.png"
+                    src="/Hand holding house key.jpg"
                     alt="Lifetime Royalty"
                     fill
                     className="object-cover grayscale-0 md:grayscale md:hover:grayscale-0 transition-all duration-700"
@@ -536,7 +536,7 @@ export default function AssociatePage() {
               {/* Floating accent */}
               <div className="absolute -bottom-8 -left-8 w-48 h-48 rounded-full overflow-hidden border-[10px] border-background shadow-2xl hidden md:block">
                 <Image
-                  src="/Hand holding house key.png"
+                  src="/Hand holding house key.jpg"
                   alt="Keys"
                   fill
                   className="object-cover"
