@@ -42,12 +42,12 @@ export default function Navbar() {
   const shouldForceWhite = isHome && !isScrolled;
 
   const navLinks = [
-    { label: "Home",             href: "/" },
-    { label: "About",            href: "/#about" },
-    { label: "Projects",         href: "/projects" },
-    { label: "Gallery",          href: "/gallery" },
+    { label: "Home", href: "/" },
+    { label: "About", href: "/#about" },
+    { label: "Projects", href: "/projects" },
+    { label: "Gallery", href: "/gallery" },
     { label: "Become Associate", href: "/associate" },
-    { label: "Contact",          href: "/contact" },
+    { label: "Contact", href: "/contact" },
   ];
 
   if (isDashboardRoute) return null;
@@ -56,13 +56,12 @@ export default function Navbar() {
     <>
       {/* ━━━ NAVBAR ━━━ (no backdrop-blur so it doesn't create a stacking context on mobile) */}
       <nav
-        className={`fixed top-0 left-0 right-0 z-[90] transition-all duration-300 ${
-          isScrolled
+        className={`fixed top-0 left-0 right-0 z-[90] transition-all duration-300 ${isScrolled
             ? "bg-background/95 border-b border-border shadow-md py-2 sm:py-3"
             : isHome
-            ? "bg-transparent py-5"
-            : "bg-background border-b border-border py-4"
-        }`}
+              ? "bg-transparent py-5"
+              : "bg-background border-b border-border py-4"
+          }`}
       >
         <div className="max-w-7xl mx-auto px-5 sm:px-10 lg:px-14">
           <div className="flex items-center justify-between gap-4">
@@ -70,7 +69,7 @@ export default function Navbar() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group shrink-0">
               <div className={`relative w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden ring-2 transition-all duration-300 ${shouldForceWhite ? "ring-white/20" : "ring-primary/40"} group-hover:ring-primary/60`}>
-                <Image src="/logo.jpg" alt="Logo" fill sizes="48px" className="object-cover" priority />
+                <Image src="/logo.png" alt="Logo" fill sizes="48px" className="object-cover" priority />
               </div>
               <div className="flex flex-col leading-none">
                 <span className={`text-[15px] sm:text-[16px] font-black tracking-tight transition-colors ${shouldForceWhite ? "text-white" : "text-foreground"}`}>Aaradhya</span>
@@ -103,13 +102,12 @@ export default function Navbar() {
                         Dashboard
                       </Link>
                     )}
-                    <button 
+                    <button
                       onClick={handleLogout}
-                      className={`p-2.5 rounded-full transition-colors border ${
-                        shouldForceWhite 
-                          ? "bg-white/10 border-white/20 text-white hover:bg-red-500/20 hover:text-red-400" 
+                      className={`p-2.5 rounded-full transition-colors border ${shouldForceWhite
+                          ? "bg-white/10 border-white/20 text-white hover:bg-red-500/20 hover:text-red-400"
                           : "bg-foreground/[0.03] border-border text-foreground/70 hover:bg-red-500/10 hover:text-red-500"
-                      }`}
+                        }`}
                       title="Logout"
                     >
                       <LogOut size={18} />
