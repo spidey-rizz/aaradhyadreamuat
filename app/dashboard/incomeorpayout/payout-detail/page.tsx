@@ -15,23 +15,40 @@ export default function PayoutDetailPage() {
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-  const [reportData, setReportData] = useState<any>(null);
+  const [rawPlots, setRawPlots] = useState<any[]>([]);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
   const monthInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchReport = async (month: number, year: number) => {
+  const fetchReport = async (pNum = page) => {
     if (!profile) return;
     setReportLoading(true);
     setReportError(null);
     try {
-      const data = await apiFetch(
-        `${endpoints.monthlyReport}?month=${month}&year=${year}`
-      );
-      setReportData(data);
+      const url = `${endpoints.soldPlots}?page=${pNum}&page_size=100`;
+      const data = await apiFetch(url);
+      
+      let list: any[] = [];
+      if (Array.isArray(data)) {
+        list = data;
+      } else if (data) {
+        list =
+          data.plots ||
+          data.sold_plots ||
+          data.sales ||
+          data.transactions ||
+          data.data ||
+          data.self_sales ||
+          data.team_sales ||
+          data.all_sales ||
+          [];
+      }
+      setRawPlots(Array.isArray(list) ? list : []);
+      setPage(pNum);
     } catch (err: any) {
       setReportError(err.detail || "Failed to fetch payout data.");
-      setReportData(null);
+      setRawPlots([]);
     } finally {
       setReportLoading(false);
     }
@@ -39,7 +56,7 @@ export default function PayoutDetailPage() {
 
   useEffect(() => {
     if (profile) {
-      fetchReport(selectedMonth, selectedYear);
+      fetchReport(1);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
@@ -50,48 +67,43 @@ export default function PayoutDetailPage() {
     const [y, m] = val.split("-").map(Number);
     setSelectedMonth(m);
     setSelectedYear(y);
-    fetchReport(m, y);
   };
 
-  // Extract payouts from the monthly report
+  // Build payout rows from rawPlots
   const payouts = useMemo(() => {
-    if (!reportData) return [];
-    // Try to extract payout/income records from report
-    const records: any[] = 
-      reportData?.payouts ||
-      reportData?.payout_list ||
-      reportData?.income_list ||
-      reportData?.transactions ||
-      reportData?.sales ||
-      reportData?.self_sales ||
-      [];
+    const currentUserId = profile?._id || profile?.id;
+    if (!currentUserId) return [];
 
-    if (Array.isArray(records) && records.length > 0) {
-      return records.map((r: any, idx: number) => ({
-        no: idx + 1,
-        date: r.date || r.created_at || r.payout_date || `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-01`,
-        amount: r.payout_amount || r.amount || r.paid_amount || 0,
-        status: r.status || r.payout_status || "PAID",
-        type: r.sale_data?.type || r.type || r.payout_type || r.income_type || "sell income",
-        plot_id: r.plot_id || "—",
-      }));
-    }
+    return rawPlots
+      .filter((p: any) => {
+        // 1. Filter by current logged-in user
+        const pUid = p.user_id || p.userId || (p.sale_data && (p.sale_data.user_id || p.sale_data.userId));
+        if (pUid !== currentUserId) return false;
 
-    // Fallback: if report has a summary total, show it as a single entry
-    const selfTotal = reportData?.self_total || reportData?.summary?.self_sales || reportData?.total_amount || 0;
-    if (selfTotal > 0) {
-      return [{
-        no: 1,
-        date: `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-01`,
-        amount: selfTotal,
-        status: "PAID",
-        type: "sell income",
-        plot_id: "—",
-      }];
-    }
-
-    return [];
-  }, [reportData, selectedMonth, selectedYear]);
+        // 2. Filter by selected month & year
+        const dateStr = p.created_at || p.date || p.createdAt || (p.sale_data && (p.sale_data.created_at || p.sale_data.date || p.sale_data.createdAt));
+        if (dateStr) {
+          const d = new Date(dateStr);
+          const m = d.getMonth() + 1;
+          const y = d.getFullYear();
+          if (m !== selectedMonth || y !== selectedYear) return false;
+        } else {
+          return false;
+        }
+        return true;
+      })
+      .map((p: any, idx: number) => {
+        return {
+          no: idx + 1,
+          date: p.created_at || p.date || p.createdAt || (p.sale_data && (p.sale_data.created_at || p.sale_data.date || p.sale_data.createdAt)),
+          amount: p.payout_amount || p.amount || p.paid_amount || (p.sale_data && (p.sale_data.payout_amount || p.sale_data.amount || p.sale_data.paid_amount)) || 0,
+          status: p.status || p.payout_status || "PAID",
+          type: p.type || p.sale_data?.type || "sell income",
+          plot_id: p.plot_id || p.plotId || p.plot_number || "—",
+          processing_fee: p.processing_fee !== undefined ? p.processing_fee : p.processing !== undefined ? p.processing : (p.sale_data?.processing_fee !== undefined ? p.sale_data.processing_fee : p.sale_data?.processing)
+        };
+      });
+  }, [rawPlots, selectedMonth, selectedYear, profile]);
 
   const totalPaidAmountSum = useMemo(() => {
     return payouts
@@ -128,7 +140,7 @@ export default function PayoutDetailPage() {
       {/* Back Button */}
       <button 
         onClick={() => router.push("/dashboard")}
-        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 group text-sm font-semibold uppercase tracking-wider"
+        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 group text-sm font-semibold uppercase tracking-wider cursor-pointer"
       >
         <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
         Back to Profile
@@ -140,7 +152,7 @@ export default function PayoutDetailPage() {
           <h1 className="text-2xl font-black uppercase tracking-tight text-foreground">
             Payout <span className="text-primary">Details</span>
           </h1>
-          <p className="text-xs text-muted-foreground font-medium mt-1">Audit logs of commissions cleared or pending clearance.</p>
+          <p className="text-xs text-muted-foreground font-medium mt-1">Audit logs of commissions cleared or pending clearance (Real-Time API).</p>
         </div>
 
         {/* Filters Row */}
@@ -161,9 +173,9 @@ export default function PayoutDetailPage() {
               className="bg-transparent border-none text-xs text-foreground focus:outline-none w-full sm:w-auto cursor-pointer font-bold uppercase outline-none"
             />
             <button
-              onClick={(e) => { e.stopPropagation(); fetchReport(selectedMonth, selectedYear); }}
+              onClick={(e) => { e.stopPropagation(); fetchReport(1); }}
               disabled={reportLoading}
-              className="text-primary hover:text-primary/70 transition-colors disabled:opacity-50"
+              className="text-primary hover:text-primary/70 transition-colors disabled:opacity-50 cursor-pointer"
               title="Refresh"
             >
               <RefreshCw size={13} className={reportLoading ? "animate-spin" : ""} />
@@ -217,8 +229,8 @@ export default function PayoutDetailPage() {
                   const totalAmt = payout.amount || 0;
                   const tds = Math.round(totalAmt * 0.05);
                   
-                  // Processing fee logic (default empty to match screenshot)
-                  const processingVal = payout.processing_fee !== undefined ? payout.processing_fee : payout.processing !== undefined ? payout.processing : null;
+                  // Processing fee logic
+                  const processingVal = payout.processing_fee !== undefined ? payout.processing_fee : null;
                   const processingFee = processingVal !== null ? Number(processingVal) : 0;
                   const processingDisplay = processingVal !== null && processingVal !== "" ? `₹${processingFee.toLocaleString('en-IN')}` : "—";
                   
@@ -271,6 +283,28 @@ export default function PayoutDetailPage() {
             </tbody>
           </table>
         </div>
+        {/* Pagination Controls */}
+        {rawPlots.length === 100 || page > 1 ? (
+          <div className="flex items-center justify-between px-8 py-4 border-t border-border bg-muted/20">
+            <button
+              type="button"
+              disabled={page === 1 || reportLoading}
+              onClick={() => fetchReport(page - 1)}
+              className="px-4 py-2 text-xs font-bold uppercase tracking-wider border border-border rounded-xl hover:bg-muted disabled:opacity-50 transition-colors cursor-pointer"
+            >
+              Previous
+            </button>
+            <span className="text-xs font-black font-mono">Page {page}</span>
+            <button
+              type="button"
+              disabled={rawPlots.length < 100 || reportLoading}
+              onClick={() => fetchReport(page + 1)}
+              className="px-4 py-2 text-xs font-bold uppercase tracking-wider border border-border rounded-xl hover:bg-muted disabled:opacity-50 transition-colors cursor-pointer"
+            >
+              Next
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );

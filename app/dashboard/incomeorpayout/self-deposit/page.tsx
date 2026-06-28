@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/useAuth";
 import { apiFetch, endpoints } from "@/lib/api";
@@ -15,22 +15,37 @@ export default function SelfDepositPage() {
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-  const [reportData, setReportData] = useState<any>(null);
+  const [rawPlots, setRawPlots] = useState<any[]>([]);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
-  const fetchReport = async (month: number, year: number) => {
+  const fetchReport = async (pNum = page) => {
     if (!profile) return;
     setReportLoading(true);
     setReportError(null);
     try {
-      const data = await apiFetch(
-        `${endpoints.monthlyReport}?month=${month}&year=${year}`
-      );
-      setReportData(data);
+      const data = await apiFetch(`${endpoints.soldPlots}?page=${pNum}&page_size=100`);
+      let list: any[] = [];
+      if (Array.isArray(data)) {
+        list = data;
+      } else if (data) {
+        list =
+          data.plots ||
+          data.sold_plots ||
+          data.sales ||
+          data.transactions ||
+          data.data ||
+          data.self_sales ||
+          data.team_sales ||
+          data.all_sales ||
+          [];
+      }
+      setRawPlots(Array.isArray(list) ? list : []);
+      setPage(pNum);
     } catch (err: any) {
-      setReportError(err.detail || "Failed to fetch monthly report.");
-      setReportData(null);
+      setReportError(err.detail || "Failed to fetch sold plots.");
+      setRawPlots([]);
     } finally {
       setReportLoading(false);
     }
@@ -38,7 +53,7 @@ export default function SelfDepositPage() {
 
   useEffect(() => {
     if (profile) {
-      fetchReport(selectedMonth, selectedYear);
+      fetchReport(1);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
@@ -49,39 +64,41 @@ export default function SelfDepositPage() {
     const [y, m] = val.split("-").map(Number);
     setSelectedMonth(m);
     setSelectedYear(y);
-    fetchReport(m, y);
   };
 
-  // Build deposit rows from monthly report
+  // Build deposit rows by filtering sold plots for current logged-in user and selected month/year
   const deposits = useMemo(() => {
-    if (!reportData) return [];
-    // The monthly-report returns an object with self_sales / transactions / summary
-    // We try to extract individual self transactions for this user
-    const selfSales: any[] = reportData?.self_sales || reportData?.transactions || reportData?.sales || [];
-    if (Array.isArray(selfSales) && selfSales.length > 0) {
-      return selfSales.map((s: any, idx: number) => ({
-        no: idx + 1,
-        date: s.date || s.created_at || `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-01`,
-        amount: s.paid_amount || s.amount || 0,
-        plot_id: s.plot_id || "—",
-        type: s.sale_data?.type || s.type || "NEW",
-      }));
-    }
-    // Fallback: use summary total_sales from report
-    if (reportData?.summary?.self_sales || reportData?.self_total || reportData?.total_amount) {
-      const total = reportData?.summary?.self_sales || reportData?.self_total || reportData?.total_amount || 0;
-      if (total > 0) {
-        return [{
-          no: 1,
-          date: `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-01`,
-          amount: total,
-          plot_id: "—",
-          type: "Summary",
-        }];
-      }
-    }
-    return [];
-  }, [reportData, selectedMonth, selectedYear]);
+    const currentUserId = profile?._id || profile?.id;
+    if (!currentUserId) return [];
+
+    return rawPlots
+      .filter((p: any) => {
+        // 1. Filter by current logged-in user
+        const pUid = p.user_id || p.userId || (p.sale_data && (p.sale_data.user_id || p.sale_data.userId));
+        if (pUid !== currentUserId) return false;
+
+        // 2. Filter by selected month & year
+        const dateStr = p.created_at || p.date || p.createdAt || (p.sale_data && (p.sale_data.created_at || p.sale_data.date || p.sale_data.createdAt));
+        if (dateStr) {
+          const d = new Date(dateStr);
+          const m = d.getMonth() + 1;
+          const y = d.getFullYear();
+          if (m !== selectedMonth || y !== selectedYear) return false;
+        } else {
+          return false;
+        }
+        return true;
+      })
+      .map((p: any, idx: number) => {
+        return {
+          no: idx + 1,
+          date: p.created_at || p.date || p.createdAt || (p.sale_data && (p.sale_data.created_at || p.sale_data.date || p.sale_data.createdAt)),
+          amount: p.paid_amount || p.amount || (p.sale_data && (p.sale_data.paid_amount || p.sale_data.amount)) || 0,
+          plot_id: p.plot_id || p.plotId || p.plot_number || "—",
+          type: p.type || p.sale_data?.type || "NEW"
+        };
+      });
+  }, [rawPlots, selectedMonth, selectedYear, profile]);
 
   const totalAmount = useMemo(() => {
     return deposits.reduce((acc: number, curr: any) => acc + (curr.amount || 0), 0);
@@ -103,7 +120,7 @@ export default function SelfDepositPage() {
       {/* Back Button */}
       <button 
         onClick={() => router.push("/dashboard")}
-        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 group text-sm font-semibold uppercase tracking-wider"
+        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 group text-sm font-semibold uppercase tracking-wider cursor-pointer"
       >
         <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
         Back to Profile
@@ -115,7 +132,7 @@ export default function SelfDepositPage() {
           <h1 className="text-2xl font-black uppercase tracking-tight text-foreground">
             Self <span className="text-primary">Deposit Amount</span>
           </h1>
-          <p className="text-xs text-muted-foreground font-medium mt-1">Your monthly self deposit sales report from the API.</p>
+          <p className="text-xs text-muted-foreground font-medium mt-1">Your monthly self deposit sales report (Real-Time API).</p>
         </div>
 
         {/* Month-Year Picker */}
@@ -130,9 +147,9 @@ export default function SelfDepositPage() {
             className="bg-transparent border-none text-xs text-foreground focus:outline-none w-full sm:w-auto cursor-pointer font-bold uppercase outline-none"
           />
           <button
-            onClick={() => fetchReport(selectedMonth, selectedYear)}
+            onClick={() => fetchReport(1)}
             disabled={reportLoading}
-            className="ml-1 text-primary hover:text-primary/70 transition-colors disabled:opacity-50"
+            className="ml-1 text-primary hover:text-primary/70 transition-colors disabled:opacity-50 cursor-pointer"
             title="Refresh"
           >
             <RefreshCw size={14} className={reportLoading ? "animate-spin" : ""} />
@@ -222,6 +239,28 @@ export default function SelfDepositPage() {
             </tbody>
           </table>
         </div>
+        {/* Pagination Controls */}
+        {rawPlots.length === 100 || page > 1 ? (
+          <div className="flex items-center justify-between px-8 py-4 border-t border-border bg-muted/20">
+            <button
+              type="button"
+              disabled={page === 1 || reportLoading}
+              onClick={() => fetchReport(page - 1)}
+              className="px-4 py-2 text-xs font-bold uppercase tracking-wider border border-border rounded-xl hover:bg-muted disabled:opacity-50 transition-colors cursor-pointer"
+            >
+              Previous
+            </button>
+            <span className="text-xs font-black font-mono">Page {page}</span>
+            <button
+              type="button"
+              disabled={rawPlots.length < 100 || reportLoading}
+              onClick={() => fetchReport(page + 1)}
+              className="px-4 py-2 text-xs font-bold uppercase tracking-wider border border-border rounded-xl hover:bg-muted disabled:opacity-50 transition-colors cursor-pointer"
+            >
+              Next
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );

@@ -162,6 +162,13 @@ export default function SuperAdminPanelPage() {
       setAllUsers(prev => 
         prev.map(u => (u._id || u.id) === userId ? { ...u, role: isMakeAdmin ? "admin" : "broker", is_admin: isMakeAdmin } : u)
       );
+
+      // If the updated user is the current logged-in user, clear session and redirect to restart session
+      if (userId === (profile._id || profile.id)) {
+        document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        window.location.href = "/login?expired=true&role_updated=true";
+        return;
+      }
     } catch (err: any) {
       alert(err.detail || "Failed to update privilege.");
     } finally {

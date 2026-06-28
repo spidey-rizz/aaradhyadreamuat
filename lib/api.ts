@@ -17,8 +17,16 @@ export class APIError extends Error {
   }
 }
 
+export function getCookie(name: string): string | null {
+  if (typeof window === "undefined") return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+  return null;
+}
+
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const token = getCookie("access_token");
 
   const headers = {
     "Content-Type": "application/json",
@@ -33,7 +41,6 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
 
   if (response.status === 401 && typeof window !== "undefined") {
     // Session expired or unauthorized
-    localStorage.removeItem("access_token");
     document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     if (!window.location.pathname.includes("/login")) {
       window.location.href = "/login?expired=true";
@@ -62,4 +69,6 @@ export const endpoints = {
   userLookup: "/broker/admin/user",
   setPrivilege: "/broker/admin/set-privilege",
   allUsers: "/broker/admin/users",
+  soldPlots: "/sales/sold-plots",
+  editUser: "/broker/user/edit",
 };

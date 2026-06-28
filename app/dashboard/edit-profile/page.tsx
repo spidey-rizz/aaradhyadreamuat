@@ -3,7 +3,20 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/useAuth";
-import { Loader2, ChevronLeft, User, Phone, CheckCircle2, ShieldAlert } from "lucide-react";
+import { apiFetch, endpoints } from "@/lib/api";
+import { 
+  Loader2, 
+  ChevronLeft, 
+  User, 
+  Mail, 
+  Phone, 
+  CheckCircle2, 
+  ShieldAlert, 
+  Building2, 
+  CreditCard, 
+  Hash, 
+  Lock 
+} from "lucide-react";
 
 export default function EditProfilePage() {
   const { status, profile } = useAuth({ redirectIfInvalid: "/login?expired=true" });
@@ -13,7 +26,11 @@ export default function EditProfilePage() {
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
-    phone: ""
+    email: "",
+    Bank_Name: "",
+    Branch_Name: "",
+    Account_Number: "",
+    IFSC_Code: ""
   });
   
   const [loading, setLoading] = useState(false);
@@ -22,14 +39,14 @@ export default function EditProfilePage() {
   // Load initial values from profile once fetched
   useEffect(() => {
     if (profile) {
-      let cleanPhone = profile.phone || "";
-      if (cleanPhone.startsWith("91") && cleanPhone.length === 12) {
-        cleanPhone = cleanPhone.slice(2);
-      }
       setFormData({
         first_name: profile.first_name || "",
         last_name: profile.last_name || "",
-        phone: cleanPhone
+        email: profile.email || "",
+        Bank_Name: profile.Bank_Name || "",
+        Branch_Name: profile.Branch_Name || "",
+        Account_Number: profile.Account_Number || "",
+        IFSC_Code: profile.IFSC_Code || ""
       });
     }
   }, [profile]);
@@ -43,38 +60,46 @@ export default function EditProfilePage() {
     );
   }
 
+  let cleanPhone = profile.phone || "";
+  if (cleanPhone.startsWith("91") && cleanPhone.length === 12) {
+    cleanPhone = cleanPhone.slice(2);
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
 
-    // Validate name inputs
+    // Validate inputs
     if (!formData.first_name.trim() || !formData.last_name.trim()) {
       setMessage({ type: "error", text: "First name and last name are required." });
       setLoading(false);
       return;
     }
 
-    // Validate phone number (should be 10 digits or sanitised)
-    let rawPhone = formData.phone.replace(/\D/g, "");
-    if (rawPhone.length === 10) {
-      rawPhone = "91" + rawPhone;
-    } else if (rawPhone.length < 10) {
-      setMessage({ type: "error", text: "Please enter a valid 10-digit phone number." });
-      setLoading(false);
-      return;
-    }
-
     try {
-      // Since the backend OpenAPI spec does not support PUT/PATCH /broker/me yet,
-      // we save the overrides locally in localStorage so that useAuth merges it.
-      // This will instantly reflect the updated name and phone number across the frontend.
-      
-      // Since backend endpoints do not support profile editing yet, we will display a mock simulation message
-      // without storing insecure data overrides in localStorage (resolving client-side profile pollution).
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      const payload = {
+        user_id: profile._id || profile.id,
+        first_name: formData.first_name.trim(),
+        last_name: formData.last_name.trim(),
+        email: formData.email.trim() || null,
+        Bank_Name: formData.Bank_Name.trim() || null,
+        Branch_Name: formData.Branch_Name.trim() || null,
+        Account_Number: formData.Account_Number.trim() || null,
+        IFSC_Code: formData.IFSC_Code.trim() || null
+      };
 
-      setMessage({ type: "success", text: "Profile details updated successfully! (Simulation only, backend integration pending)" });
+      await apiFetch(endpoints.editUser, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+
+      setMessage({ type: "success", text: "Profile details updated successfully!" });
+      
+      // Redirect back to dashboard after a short delay so user can see success message
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 1500);
 
     } catch (err: any) {
       setMessage({ type: "error", text: err.message || "Failed to update profile." });
@@ -84,11 +109,11 @@ export default function EditProfilePage() {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="space-y-6 max-w-3xl mx-auto pb-12">
       {/* Back Button */}
       <button 
         onClick={() => router.push("/dashboard")}
-        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 group text-sm font-semibold uppercase tracking-wider"
+        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 group text-sm font-semibold uppercase tracking-wider cursor-pointer"
       >
         <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
         Back to Profile
@@ -102,7 +127,7 @@ export default function EditProfilePage() {
           </div>
           <div>
             <h1 className="text-2xl font-black uppercase tracking-tight text-foreground">Edit <span className="text-primary">Profile</span></h1>
-            <p className="text-xs text-muted-foreground font-medium mt-1">Update your associate account credentials and phone number.</p>
+            <p className="text-xs text-muted-foreground font-medium mt-1">Update your associate account details and bank credentials for payout processing.</p>
           </div>
         </div>
 
@@ -118,55 +143,142 @@ export default function EditProfilePage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">First Name *</label>
-              <input
-                required
-                type="text"
-                placeholder="Enter first name"
-                value={formData.first_name}
-                onChange={(e) => setFormData({...formData, first_name: e.target.value})}
-                className="w-full bg-background border border-border rounded-xl py-3 px-4 text-foreground focus:border-primary outline-none transition-all text-sm font-medium"
-              />
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* SECTION 1: Personal Information */}
+          <div className="space-y-6">
+            <h3 className="text-xs font-black uppercase tracking-widest text-primary border-l-2 border-primary pl-2 mb-4">Personal Details</h3>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">First Name *</label>
+                <div className="relative flex items-center">
+                  <User size={16} className="absolute left-4 text-muted-foreground" />
+                  <input
+                    required
+                    type="text"
+                    placeholder="Enter first name"
+                    value={formData.first_name}
+                    onChange={(e) => setFormData({...formData, first_name: e.target.value})}
+                    className="w-full bg-background border border-border rounded-xl py-3 pl-10 pr-4 text-foreground focus:border-primary outline-none transition-all text-sm font-medium"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Last Name *</label>
+                <div className="relative flex items-center">
+                  <User size={16} className="absolute left-4 text-muted-foreground" />
+                  <input
+                    required
+                    type="text"
+                    placeholder="Enter last name"
+                    value={formData.last_name}
+                    onChange={(e) => setFormData({...formData, last_name: e.target.value})}
+                    className="w-full bg-background border border-border rounded-xl py-3 pl-10 pr-4 text-foreground focus:border-primary outline-none transition-all text-sm font-medium"
+                  />
+                </div>
+              </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Last Name *</label>
-              <input
-                required
-                type="text"
-                placeholder="Enter last name"
-                value={formData.last_name}
-                onChange={(e) => setFormData({...formData, last_name: e.target.value})}
-                className="w-full bg-background border border-border rounded-xl py-3 px-4 text-foreground focus:border-primary outline-none transition-all text-sm font-medium"
-              />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Email Address</label>
+                <div className="relative flex items-center">
+                  <Mail size={16} className="absolute left-4 text-muted-foreground" />
+                  <input
+                    type="email"
+                    placeholder="name@example.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    className="w-full bg-background border border-border rounded-xl py-3 pl-10 pr-4 text-foreground focus:border-primary outline-none transition-all text-sm font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Phone Number (Read-only)</label>
+                <div className="relative flex items-center">
+                  <div className="absolute left-4 flex items-center gap-2 text-muted-foreground/60 font-bold border-r border-border pr-3">
+                    <Phone size={16} />
+                    <span className="text-sm">+91</span>
+                  </div>
+                  <input
+                    readOnly
+                    disabled
+                    type="tel"
+                    value={cleanPhone}
+                    className="w-full bg-muted/30 border border-border/80 rounded-xl py-3 pl-24 pr-4 text-muted-foreground outline-none text-sm font-medium select-none"
+                  />
+                  <Lock size={14} className="absolute right-4 text-muted-foreground/40" />
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Phone Number *</label>
-            <div className="relative flex items-center">
-              <div className="absolute left-4 flex items-center gap-2 text-primary font-bold border-r border-border pr-3">
-                <Phone size={16} />
-                <span className="text-sm">+91</span>
+          <div className="h-px bg-border my-6" />
+
+          {/* SECTION 2: Bank Account Details */}
+          <div className="space-y-6">
+            <h3 className="text-xs font-black uppercase tracking-widest text-primary border-l-2 border-primary pl-2 mb-4">Bank Account Details</h3>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Bank Name</label>
+                <div className="relative flex items-center">
+                  <Building2 size={16} className="absolute left-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="e.g. State Bank of India"
+                    value={formData.Bank_Name}
+                    onChange={(e) => setFormData({...formData, Bank_Name: e.target.value})}
+                    className="w-full bg-background border border-border rounded-xl py-3 pl-10 pr-4 text-foreground focus:border-primary outline-none transition-all text-sm font-medium"
+                  />
+                </div>
               </div>
-              <input
-                required
-                type="tel"
-                maxLength={10}
-                placeholder="10 Digits"
-                value={formData.phone}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, "").slice(0, 10);
-                  setFormData({...formData, phone: val});
-                }}
-                className="w-full bg-background border border-border rounded-xl py-3.5 pl-24 pr-4 text-foreground focus-border-primary outline-none transition-all text-sm font-medium"
-              />
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Branch Name</label>
+                <div className="relative flex items-center">
+                  <Building2 size={16} className="absolute left-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="e.g. Varanasi Main Branch"
+                    value={formData.Branch_Name}
+                    onChange={(e) => setFormData({...formData, Branch_Name: e.target.value})}
+                    className="w-full bg-background border border-border rounded-xl py-3 pl-10 pr-4 text-foreground focus:border-primary outline-none transition-all text-sm font-medium"
+                  />
+                </div>
+              </div>
             </div>
-            <p className="text-[10px] text-muted-foreground ml-1">
-              Your registered phone number is used for WhatsApp verification.
-            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Account Number</label>
+                <div className="relative flex items-center">
+                  <CreditCard size={16} className="absolute left-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Enter account number"
+                    value={formData.Account_Number}
+                    onChange={(e) => setFormData({...formData, Account_Number: e.target.value})}
+                    className="w-full bg-background border border-border rounded-xl py-3 pl-10 pr-4 text-foreground focus:border-primary outline-none transition-all text-sm font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">IFSC Code</label>
+                <div className="relative flex items-center">
+                  <Hash size={16} className="absolute left-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="e.g. SBIN0000201"
+                    value={formData.IFSC_Code}
+                    onChange={(e) => setFormData({...formData, IFSC_Code: e.target.value.toUpperCase()})}
+                    className="w-full bg-background border border-border rounded-xl py-3 pl-10 pr-4 text-foreground focus:border-primary outline-none transition-all text-sm font-medium uppercase"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="h-px bg-border my-6" />
@@ -174,7 +286,7 @@ export default function EditProfilePage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary hover:scale-[1.01] active:scale-95 text-black py-4 rounded-xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full bg-primary hover:scale-[1.01] active:scale-95 text-black py-4 rounded-xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
           >
             {loading ? <Loader2 className="animate-spin" size={18} /> : null}
             {loading ? "Saving changes..." : "Save Changes"}

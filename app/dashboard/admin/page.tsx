@@ -563,6 +563,7 @@ function BookedPlotList() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fetched, setFetched] = useState(false);
+  const [page, setPage] = useState(1);
 
   // Associate mapping and filter states
   const [associates, setAssociates] = useState<any[]>([]);
@@ -582,24 +583,32 @@ function BookedPlotList() {
     }
   };
 
-  const fetchPlots = async (m = month, y = year, uid = userId) => {
+  const fetchPlots = async (pNum = page) => {
     setLoading(true);
     setError(null);
     setFetched(true);
     try {
-      const url = uid 
-        ? `${endpoints.monthlyReport}?month=${m}&year=${y}&user_id=${uid}`
-        : `${endpoints.monthlyReport}?month=${m}&year=${y}`;
+      const url = `${endpoints.soldPlots}?page=${pNum}&page_size=100`;
       const data = await apiFetch(url);
-      // Extract sales/transactions from report
-      const list: any[] =
-        data?.sales ||
-        data?.transactions ||
-        data?.self_sales ||
-        data?.team_sales ||
-        data?.all_sales ||
-        [];
+      
+      let list: any[] = [];
+      if (Array.isArray(data)) {
+        list = data;
+      } else if (data) {
+        list =
+          data.plots ||
+          data.sold_plots ||
+          data.sales ||
+          data.transactions ||
+          data.data ||
+          data.self_sales ||
+          data.team_sales ||
+          data.all_sales ||
+          [];
+      }
+      
       setPlots(Array.isArray(list) ? list : []);
+      setPage(pNum);
     } catch (err: any) {
       setError(err.detail || "Failed to fetch booked plots.");
       setPlots([]);
@@ -610,7 +619,7 @@ function BookedPlotList() {
 
   useEffect(() => {
     fetchAssociatesMap();
-    fetchPlots(month, year, userId);
+    fetchPlots(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -635,7 +644,6 @@ function BookedPlotList() {
             setAssociateError("");
             const uid = user._id || user.id;
             setUserId(uid);
-            fetchPlots(month, year, uid);
           } else {
             setAssociateFound(null);
             setAssociateLoading(false);
@@ -660,7 +668,6 @@ function BookedPlotList() {
     setAssociateError("");
     setAssociateLoading(false);
     setUserId("");
-    fetchPlots(month, year, "");
   };
 
   const handleMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -669,15 +676,33 @@ function BookedPlotList() {
     const [y, m] = val.split("-").map(Number);
     setMonth(m);
     setYear(y);
-    fetchPlots(m, y, userId);
   };
 
   const monthValue = `${year}-${String(month).padStart(2, "0")}`;
 
   const filtered = plots.filter((p: any) => {
-    if (!plotFilter.trim()) return true;
-    const pid = String(p.plot_id || "").toLowerCase();
-    return pid.includes(plotFilter.toLowerCase());
+    // 1. Filter by Plot Number keyword
+    if (plotFilter.trim()) {
+      const pid = String(p.plot_id || p.plotId || p.plot_number || "").toLowerCase();
+      if (!pid.includes(plotFilter.toLowerCase())) return false;
+    }
+    
+    // 2. Filter by Associate ID if active
+    if (userId) {
+      const pUid = p.user_id || p.userId || (p.sale_data && (p.sale_data.user_id || p.sale_data.userId));
+      if (pUid !== userId) return false;
+    }
+    
+    // 3. Filter by Month & Year based on created_at or date
+    const dateStr = p.created_at || p.date || p.createdAt || (p.sale_data && (p.sale_data.created_at || p.sale_data.date || p.sale_data.createdAt));
+    if (dateStr) {
+      const d = new Date(dateStr);
+      const m = d.getMonth() + 1;
+      const y = d.getFullYear();
+      if (m !== month || y !== year) return false;
+    }
+    
+    return true;
   });
 
   return (
@@ -768,7 +793,7 @@ function BookedPlotList() {
           className={`${inputCls} sm:w-44 cursor-pointer`}
         />
         <button
-          onClick={() => fetchPlots(month, year, userId)}
+          onClick={() => fetchPlots(1)}
           disabled={loading}
           className="bg-primary text-black px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/10 flex items-center justify-center gap-2 shrink-0 cursor-pointer disabled:opacity-50"
         >
@@ -821,7 +846,7 @@ function BookedPlotList() {
                     ? plot.remaining_amount 
                     : (plot.total_amount - plot.paid_amount || 0);
                   return (
-                    <tr key={plot.plot_id || idx} className="hover:bg-muted/30 transition-colors">
+                    <tr key={plot._id || plot.id || `${plot.plot_id || 'plot'}-${idx}`} className="hover:bg-muted/30 transition-colors">
                       <td className="py-5 px-6 text-xs font-mono text-muted-foreground">{idx + 1}.</td>
                       <td className="py-5 px-6 text-sm font-black text-foreground font-mono">{plot.plot_id || "—"}</td>
                       <td className="py-5 px-6 text-sm font-semibold text-foreground">
@@ -872,6 +897,28 @@ function BookedPlotList() {
             </tbody>
           </table>
         </div>
+        {/* Pagination Controls */}
+        {plots.length === 100 || page > 1 ? (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-muted/20">
+            <button
+              type="button"
+              disabled={page === 1 || loading}
+              onClick={() => fetchPlots(page - 1)}
+              className="px-4 py-2 text-xs font-bold uppercase tracking-wider border border-border rounded-xl hover:bg-muted disabled:opacity-50 transition-colors cursor-pointer"
+            >
+              Previous
+            </button>
+            <span className="text-xs font-black font-mono">Page {page}</span>
+            <button
+              type="button"
+              disabled={plots.length < 100 || loading}
+              onClick={() => fetchPlots(page + 1)}
+              className="px-4 py-2 text-xs font-bold uppercase tracking-wider border border-border rounded-xl hover:bg-muted disabled:opacity-50 transition-colors cursor-pointer"
+            >
+              Next
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiFetch, endpoints } from "./api";
+import { apiFetch, endpoints, getCookie } from "./api";
 
 /**
  * Verifies the JWT session exists and is valid by calling /broker/me.
@@ -30,7 +30,7 @@ export function useAuth(options?: {
 
     const verifySession = async () => {
 
-      const token = localStorage.getItem("access_token");
+      const token = getCookie("access_token");
 
       if (!token) {
         setStatus("unauthenticated");
@@ -77,7 +77,6 @@ export function useAuth(options?: {
           router.replace(options.redirectIfValid);
         }
       } catch {
-        localStorage.removeItem("access_token");
         if (typeof window !== "undefined") {
           document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
         }
