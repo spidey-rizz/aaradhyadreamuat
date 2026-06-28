@@ -270,7 +270,7 @@ export default function Home() {
               <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
                 <div className={`relative w-full lg:w-3/5 transition-all duration-1000 ${section1.visible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-20"}`}>
                   <div className="relative aspect-[16/10] rounded-3xl overflow-hidden group shadow-lg">
-                     <Image src="/duplex2.jpeg" alt="Duplex House" fill sizes="(max-width: 1024px) 100vw, 768px" className="object-cover transition-transform duration-1000 group-hover:scale-105" />
+                     <Image src="/duplex2.jpg" alt="Duplex House" fill sizes="(max-width: 1024px) 100vw, 768px" className="object-cover transition-transform duration-1000 group-hover:scale-105" />
                   </div>
                 </div>
 

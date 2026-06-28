@@ -75,7 +75,6 @@ export default function DashboardLayout({
           </p>
           <button 
             onClick={() => { 
-              localStorage.removeItem("access_token"); 
               document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
               window.location.href = "/login"; 
             }}
@@ -89,7 +88,6 @@ export default function DashboardLayout({
   }
 
   const handleLogout = () => {
-    localStorage.removeItem("access_token");
     document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     window.location.href = "/";
   };
@@ -143,7 +141,7 @@ export default function DashboardLayout({
       <div className="p-6 border-b border-border/60">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative w-10 h-10 rounded-full overflow-hidden ring-2 ring-primary/40 group-hover:ring-primary/60 transition-all">
-            <Image src="/logo.jpg" alt="Logo" fill sizes="40px" className="object-cover" />
+            <Image src="/logo.png" alt="Logo" fill sizes="40px" className="object-cover" />
           </div>
           <div className="flex flex-col leading-none">
             <span className="text-base font-black tracking-tight text-foreground">Aaradhya</span>
@@ -295,7 +293,7 @@ export default function DashboardLayout({
       <header className="md:hidden flex items-center justify-between px-6 py-4 bg-card border-b border-border/80 sticky top-0 z-40">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative w-8 h-8 rounded-full overflow-hidden ring-2 ring-primary/40">
-            <Image src="/logo.jpg" alt="Logo" fill sizes="32px" className="object-cover" />
+            <Image src="/logo.png" alt="Logo" fill sizes="32px" className="object-cover" />
           </div>
           <div className="flex flex-col leading-none">
             <span className="text-sm font-black tracking-tight text-foreground">Aaradhya</span>

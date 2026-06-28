@@ -38,7 +38,7 @@ export default function Footer() {
             <Link href="/" className="flex items-center gap-3 mb-6">
               <div className="relative w-10 h-10 rounded-xl overflow-hidden ring-1 ring-white/10">
                 <Image
-                  src="/logo.jpg"
+                  src="/logo.png"
                   alt="Aaradhya Dream City"
                   fill
                   sizes="40px"

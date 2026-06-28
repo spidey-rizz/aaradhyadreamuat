@@ -5,10 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { 
-  ArrowRight, 
-  Award, 
-  Zap, 
+import {
+  ArrowRight,
+  Award,
+  Zap,
   Star,
   MapPin,
   ChevronRight,
@@ -138,7 +138,8 @@ export default function AssociatePage() {
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 overflow-x-hidden">
       <Navbar />
 
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes slowZoom {
           0%, 100% { transform: scale(1); }
           50% { transform: scale(1.08); }
@@ -182,10 +183,10 @@ export default function AssociatePage() {
         <section className="relative w-full min-h-[100dvh] flex items-end pb-20 md:pb-32 overflow-hidden">
           {/* Full-bleed background */}
           <div className="absolute inset-0 z-0">
-            <Image 
-              src="/broker img.png" 
-              alt="Premium Associate Program" 
-              fill 
+            <Image
+              src="/broker img.png"
+              alt="Premium Associate Program"
+              fill
               className="object-cover object-top animate-[slowZoom_30s_ease-in-out_infinite]"
               priority
               quality={95}
@@ -194,11 +195,10 @@ export default function AssociatePage() {
             <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a1a]/60 to-transparent" />
           </div>
 
-          <div 
+          <div
             ref={hero.ref}
-            className={`relative z-10 max-w-7xl mx-auto px-6 lg:px-12 w-full pt-28 md:pt-36 transition-all duration-1000 ease-out ${
-              hero.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
-            }`}
+            className={`relative z-10 max-w-7xl mx-auto px-6 lg:px-12 w-full pt-28 md:pt-36 transition-all duration-1000 ease-out ${hero.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
+              }`}
           >
             {/* Overline */}
             <div className="flex items-center gap-4 mb-8">
@@ -220,15 +220,15 @@ export default function AssociatePage() {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row items-start gap-5">
-              <Link 
-                href="/register" 
+              <Link
+                href="/register"
                 className="group px-10 py-5 bg-primary text-black rounded-full font-black text-xs uppercase tracking-[0.2em] hover:bg-primary-hover transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-3 shadow-2xl shadow-primary/20"
               >
                 Register Now
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
 
-              <button 
+              <button
                 onClick={() => scrollTo("how-it-works")}
                 className="px-10 py-5 text-white/70 font-bold text-xs uppercase tracking-[0.2em] hover:text-white transition-colors flex items-center gap-2"
               >
@@ -365,10 +365,10 @@ export default function AssociatePage() {
               </div>
               <div className="w-full lg:w-1/2">
                 <div className="relative aspect-[4/3] rounded-3xl overflow-hidden">
-                  <Image 
-                    src="/broker img.png" 
-                    alt="Commission Structure" 
-                    fill 
+                  <Image
+                    src="/broker img.png"
+                    alt="Commission Structure"
+                    fill
                     className="object-cover grayscale-0 md:grayscale md:hover:grayscale-0 transition-all duration-700"
                   />
                 </div>
@@ -394,10 +394,10 @@ export default function AssociatePage() {
               </div>
               <div className="w-full lg:w-1/2">
                 <div className="relative aspect-[4/3] rounded-3xl overflow-hidden">
-                  <Image 
-                    src="/Performance Bonus.jfif" 
-                    alt="Performance Rewards" 
-                    fill 
+                  <Image
+                    src="/Performance Bonus.jpg"
+                    alt="Performance Rewards"
+                    fill
                     className="object-cover grayscale-0 md:grayscale md:hover:grayscale-0 transition-all duration-700"
                   />
                 </div>
@@ -423,10 +423,10 @@ export default function AssociatePage() {
               </div>
               <div className="w-full lg:w-1/2">
                 <div className="relative aspect-[4/3] rounded-3xl overflow-hidden">
-                  <Image 
-                    src="/Hand holding house key.jfif" 
-                    alt="Lifetime Royalty" 
-                    fill 
+                  <Image
+                    src="/Hand holding house key.jpg"
+                    alt="Lifetime Royalty"
+                    fill
                     className="object-cover grayscale-0 md:grayscale md:hover:grayscale-0 transition-all duration-700"
                   />
                 </div>
@@ -444,12 +444,12 @@ export default function AssociatePage() {
               {/* Video */}
               <div className="w-full lg:w-1/2">
                 <div className="relative rounded-3xl overflow-hidden aspect-video">
-                  <video 
-                    src="/Ai finding house v.mp4" 
-                    autoPlay 
-                    loop 
-                    muted 
-                    playsInline 
+                  <video
+                    src="/Ai finding house v.mp4"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
                     className="w-full h-full object-cover opacity-80"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a]/60 to-transparent" />
@@ -477,7 +477,7 @@ export default function AssociatePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {[
                     "Smart Lead Generation",
-                    "Digital Marketing Support", 
+                    "Digital Marketing Support",
                     "Automated Site Visits",
                     "Real-time Dashboard",
                   ].map((item, i) => (
@@ -525,20 +525,20 @@ export default function AssociatePage() {
 
             <div className="w-full lg:w-1/2 relative">
               <div className="relative aspect-[4/5] rounded-3xl overflow-hidden">
-                <Image 
-                  src="/indian fam.png" 
-                  alt="Happy Family" 
-                  fill 
+                <Image
+                  src="/indian fam.png"
+                  alt="Happy Family"
+                  fill
                   className="object-cover"
                 />
               </div>
 
               {/* Floating accent */}
               <div className="absolute -bottom-8 -left-8 w-48 h-48 rounded-full overflow-hidden border-[10px] border-background shadow-2xl hidden md:block">
-                <Image 
-                  src="/Hand holding house key.jfif" 
-                  alt="Keys" 
-                  fill 
+                <Image
+                  src="/Hand holding house key.jpg"
+                  alt="Keys"
+                  fill
                   className="object-cover"
                 />
               </div>
@@ -555,11 +555,10 @@ export default function AssociatePage() {
 
             <div className="relative min-h-[200px]">
               {testimonials.map((t, i) => (
-                <div 
+                <div
                   key={i}
-                  className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-700 ${
-                    i === activeTestimonial ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
-                  }`}
+                  className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-700 ${i === activeTestimonial ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
+                    }`}
                 >
                   <div className="flex items-center gap-1 mb-6">
                     {[...Array(5)].map((_, j) => (
@@ -583,9 +582,8 @@ export default function AssociatePage() {
                 <button
                   key={i}
                   onClick={() => setActiveTestimonial(i)}
-                  className={`h-1.5 rounded-full transition-all duration-500 ${
-                    i === activeTestimonial ? "w-8 bg-primary" : "w-1.5 bg-foreground/10 hover:bg-foreground/30"
-                  }`}
+                  className={`h-1.5 rounded-full transition-all duration-500 ${i === activeTestimonial ? "w-8 bg-primary" : "w-1.5 bg-foreground/10 hover:bg-foreground/30"
+                    }`}
                 />
               ))}
             </div>
@@ -612,8 +610,8 @@ export default function AssociatePage() {
                 Stop being just a broker. Become an Associate today and step into the most rewarding real estate network.
               </p>
 
-              <Link 
-                href="/register" 
+              <Link
+                href="/register"
                 className="inline-flex items-center gap-3 px-12 py-5 bg-black text-primary rounded-full font-black text-sm uppercase tracking-[0.15em] hover:bg-neutral-900 transition-all hover:scale-105 active:scale-95 shadow-2xl"
               >
                 Join Now
