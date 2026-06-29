@@ -6,15 +6,21 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/lib/useAuth";
-import { Users, Loader2, Plus, ShieldAlert } from "lucide-react";
+import { Loader2, ShieldAlert } from "lucide-react";
 import ProfileSection from "@/components/ProfileSection";
 import AnnouncementsFeed from "@/components/AnnouncementsFeed";
+import AdminHeader from "@/components/AdminHeader";
+import OfficeMembersSection from "@/components/OfficeMembersSection";
 
 export default function AdminPanel() {
   const { status, profile } = useAuth({
     redirectIfInvalid: "/login?expired=true",
     requiredRole: ["ADMIN", "SUPERADMIN"],
   });
+
+  const handleAddOfficeMember = () => {
+    console.log("Add office member action triggered.");
+  };
 
   if (status === "loading") {
     return (
@@ -33,35 +39,20 @@ export default function AdminPanel() {
 
       <main className="flex-grow pt-24 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto space-y-6">
-          <div className="bg-card border border-border rounded-3xl p-8 shadow-sm mb-6 relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-4 opacity-5">
-               <ShieldAlert size={120} className="text-primary" />
-             </div>
-            <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-primary mb-2 relative z-10">Admin Panel</h1>
-            <p className="text-muted-foreground font-medium relative z-10">Manage Office Members and oversee network operations.</p>
-          </div>
+          <AdminHeader
+            title="Admin Panel"
+            description="Manage Office Members and oversee network operations."
+            Icon={ShieldAlert}
+            iconClassName="text-primary"
+            iconOpacityClassName="opacity-5"
+          />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <ProfileSection profile={profile} />
             <AnnouncementsFeed />
           </div>
 
-          <div className="bg-card border border-border rounded-[2.5rem] overflow-hidden shadow-sm p-6 sm:p-8">
-             <div className="flex justify-between items-center mb-6">
-                 <h2 className="text-xl font-black uppercase tracking-tight flex items-center gap-3">
-                    <Users className="text-primary" /> Office Members
-                 </h2>
-                 <button className="bg-primary text-black font-black text-xs uppercase tracking-widest px-5 py-2.5 rounded-xl hover:scale-105 transition-transform flex items-center gap-2 shadow-lg shadow-primary/20">
-                     <Plus size={16} /> Add Office Member
-                 </button>
-             </div>
-             
-             <div className="border border-border rounded-2xl p-12 text-center text-muted-foreground flex flex-col items-center justify-center bg-background/50">
-                 <Users size={48} className="opacity-20 mb-4 text-primary" />
-                 <p className="font-bold text-lg text-foreground">No office members loaded yet.</p>
-                 <p className="text-sm mt-2">API integration pending based on database changes.</p>
-             </div>
-          </div>
+          <OfficeMembersSection onAddMember={handleAddOfficeMember} />
         </div>
       </main>
 
