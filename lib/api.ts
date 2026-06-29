@@ -25,6 +25,31 @@ export function getCookie(name: string): string | null {
   return null;
 }
 
+export function clearSessionData() {
+  if (typeof window !== "undefined") {
+    // Clear access token cookie
+    document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    
+    // Clear localStorage
+    try {
+      localStorage.clear();
+    } catch (e) {
+      console.error("Failed to clear localStorage:", e);
+    }
+    
+    // Clear sessionStorage, preserving theme context if exists
+    try {
+      const theme = sessionStorage.getItem("theme");
+      sessionStorage.clear();
+      if (theme) {
+        sessionStorage.setItem("theme", theme);
+      }
+    } catch (e) {
+      console.error("Failed to clear sessionStorage:", e);
+    }
+  }
+}
+
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const token = getCookie("access_token");
 
@@ -41,7 +66,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
 
   if (response.status === 401 && typeof window !== "undefined") {
     // Session expired or unauthorized
-    document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    clearSessionData();
     if (!window.location.pathname.includes("/login")) {
       window.location.href = "/login?expired=true";
     }

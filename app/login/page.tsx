@@ -70,11 +70,22 @@ function LoginContent() {
       if (typeof window !== "undefined") {
         document.cookie = `access_token=${response.access_token}; path=/; max-age=86400; SameSite=Lax; Secure`;
       }
-      const role = response.role || 'ASSOCIATE';
-      if (role === 'SUPERADMIN') router.push('/superadmin');
-      else if (role === 'ADMIN') router.push('/admin');
-      else if (role === 'OFFICE') router.push('/office');
-      else router.push("/dashboard");
+
+      // Fetch user profile immediately after setting the token to get the user's role
+      let role = "ASSOCIATE";
+      try {
+        const profile = await apiFetch(endpoints.me);
+        role = (profile.role || "ASSOCIATE").toUpperCase();
+      } catch (profileErr) {
+        console.error("Failed to fetch user profile after login:", profileErr);
+      }
+
+      if (typeof window !== "undefined") {
+        if (role === "SUPERADMIN") window.location.href = "/superadmin";
+        else if (role === "ADMIN") window.location.href = "/admin";
+        else if (role === "OFFICE") window.location.href = "/office";
+        else window.location.href = "/dashboard";
+      }
     } catch (err: any) {
       if (err.status === 403) {
         setError("Account not verified. Please verify via WhatsApp first.");
@@ -156,7 +167,14 @@ function LoginContent() {
             <div className="space-y-2">
               <div className="flex justify-between items-center ml-1">
                 <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Password</label>
-                <Link href="#" className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">Forgot?</Link>
+                <Link 
+                  href={`https://wa.me/${process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "919335602932"}?text=forgot`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline"
+                >
+                  Forgot?
+                </Link>
               </div>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" size={18} />

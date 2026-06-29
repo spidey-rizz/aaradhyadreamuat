@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiFetch, endpoints, getCookie } from "./api";
+import { apiFetch, endpoints, getCookie, clearSessionData } from "./api";
 
 /**
  * Verifies the JWT session exists and is valid by calling /broker/me.
@@ -77,9 +77,7 @@ export function useAuth(options?: {
           router.replace(options.redirectIfValid);
         }
       } catch {
-        if (typeof window !== "undefined") {
-          document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-        }
+        clearSessionData();
         setStatus("unauthenticated");
         if (options?.redirectIfInvalid) {
           router.replace(options.redirectIfInvalid);

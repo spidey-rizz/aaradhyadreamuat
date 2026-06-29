@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "@/lib/ThemeContext";
 import { useAuth } from "@/lib/useAuth";
+import { clearSessionData } from "@/lib/api";
 import { getAssociatePolicy, incrementWebsiteVisits } from "@/lib/adminStore";
 import {
   User,
@@ -75,7 +76,7 @@ export default function DashboardLayout({
           </p>
           <button 
             onClick={() => { 
-              document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+              clearSessionData();
               window.location.href = "/login"; 
             }}
             className="w-full bg-red-500 text-white font-black text-xs uppercase tracking-widest py-4 rounded-xl hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20"
@@ -88,7 +89,7 @@ export default function DashboardLayout({
   }
 
   const handleLogout = () => {
-    document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    clearSessionData();
     window.location.href = "/";
   };
 

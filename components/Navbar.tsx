@@ -6,7 +6,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/lib/ThemeContext";
 import { Menu, X, Sun, Moon, LogOut, User } from "lucide-react";
-import { getCookie } from "@/lib/api";
+import { getCookie, clearSessionData } from "@/lib/api";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -34,7 +34,7 @@ export default function Navbar() {
   }, [mobileMenuOpen]);
 
   const handleLogout = () => {
-    document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    clearSessionData();
     window.location.href = "/";
   };
 
