@@ -2,102 +2,131 @@
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Shield, Lock, Eye, FileText, ChevronRight } from "lucide-react";
+import { Shield, Calendar, ChevronRight, Phone, Mail, MapPin, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-black text-white">
+    <div className="flex flex-col min-h-screen bg-black text-white noise-overlay relative overflow-hidden">
       <Navbar />
 
-      <main className="flex-grow pt-32 pb-20 px-4 sm:px-6">
+      {/* Subtle Gold Background Glow */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full filter blur-[120px] pointer-events-none -z-10" />
+
+      {/* Main Content Area - Golden Ratio vertical padding */}
+      <main className="flex-grow pt-[8.5rem] pb-[5.5rem] px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-4xl mx-auto">
           
           {/* Breadcrumbs */}
-          <div className="flex items-center gap-2 text-zinc-500 text-sm mb-8">
-            <Link href="/" className="hover:text-primary transition-colors">Home</Link>
-            <ChevronRight size={14} />
+          <div className="flex items-center gap-2 text-zinc-500 text-sm mb-8 animate-fade-in-up">
+            <Link href="/" className="hover:text-primary transition-colors duration-200">Home</Link>
+            <ChevronRight size={14} className="text-zinc-600" />
             <span className="text-zinc-300 font-medium">Privacy Policy</span>
           </div>
 
-          <header className="mb-12">
+          {/* Header */}
+          <header className="mb-14 animate-fade-in-up delay-100 border-b border-zinc-900 pb-8">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest mb-4">
-              <Shield size={12} />
-              Trust & Security
+              <ShieldCheck size={12} />
+              Privacy & Trust
             </div>
-            <h1 className="text-4xl sm:text-5xl font-black uppercase tracking-tight mb-6">Privacy <span className="text-primary">Policy</span></h1>
-            <p className="text-zinc-400 text-lg">Last Updated: April 26, 2026</p>
+            <h1 className="text-4xl sm:text-5xl font-black uppercase tracking-tight mb-6">
+              Privacy <span className="text-primary font-extrabold">Policy</span>
+            </h1>
+            <div className="flex items-center gap-1.5 text-zinc-400 text-sm mb-6">
+              <Calendar size={14} className="text-primary" />
+              <span>Last Updated: 01/07/2026</span>
+            </div>
+            <p className="text-zinc-400 text-base sm:text-lg leading-relaxed max-w-3xl">
+              At Aaradhya Dream City, your privacy is our top priority. We are committed to protecting your personal information and ensuring it is handled with absolute safety and confidentiality.
+            </p>
           </header>
 
-          <div className="space-y-12">
+          {/* Point by Point Content (No Boxes/Cards) */}
+          <div className="space-y-10 animate-fade-in-up delay-200">
             
-            <section className="bg-zinc-950 border border-zinc-900 rounded-3xl p-8">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-3">
-                <Eye className="text-primary" />
-                1. Information We Collect
+            {/* 1. Strict No-Leak Policy */}
+            <section className="border-b border-zinc-900/60 pb-8">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 text-primary">
+                1. Strict Data Protection (No Leak Policy)
               </h2>
-              <div className="space-y-4 text-zinc-400 leading-relaxed">
-                <p>We collect personal information that you provide directly to us when you register as an Associate, investor, or homebuyer. This includes:</p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li><strong className="text-white">Personal Identifiers:</strong> Name, address, phone number, email address, and Aadhaar/PAN details for verification.</li>
-                  <li><strong className="text-white">Account Credentials:</strong> Passwords and security verification tokens.</li>
-                  <li><strong className="text-white">Financial Information:</strong> Bank account details for commission payouts and transaction history.</li>
-                  <li><strong className="text-white">Network Data:</strong> Referral codes and associate hierarchy data.</li>
-                </ul>
-              </div>
+              <ul className="list-disc pl-5 space-y-2 text-zinc-400 leading-relaxed">
+                <li>We implement advanced security and encryption measures to ensure that your personal and financial details are completely secure.</li>
+                <li>Your data is hosted on secure databases with strict access controls to prevent any unauthorized leakage or cybersecurity threats.</li>
+                <li>We guarantee that your personal information will never be leaked, sold, or shared with unauthorized third parties.</li>
+              </ul>
             </section>
 
-            <section className="p-4 sm:p-8">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-3">
-                <FileText className="text-primary" />
-                2. How We Use Your Data
+            {/* 2. Prevention of Misuse */}
+            <section className="border-b border-zinc-900/60 pb-8">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 text-primary">
+                2. No Misuse of Information
               </h2>
-              <div className="space-y-4 text-zinc-400 leading-relaxed">
-                <p>Aaradhya Dream City uses the collected data for various purposes:</p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>To provide and maintain our Service, including user authentication and verification.</li>
-                  <li>To manage Associate commissions and referral network tracking.</li>
-                  <li>To communicate with you via WhatsApp, Email, or Phone regarding updates and services.</li>
-                  <li>To comply with legal obligations and regulatory requirements in the real estate sector.</li>
-                  <li>To monitor the usage of our Service and detect, prevent, and address technical issues.</li>
-                </ul>
-              </div>
+              <ul className="list-disc pl-5 space-y-2 text-zinc-400 leading-relaxed">
+                <li>All details collected are strictly used for the transactional and booking purposes of Aaradhya Dream City.</li>
+                <li>We do not use your contact information for spamming or marketing unrelated products.</li>
+                <li>Access to your sensitive documents (like PAN/Aadhaar) is limited only to authorized personnel handling your verification.</li>
+              </ul>
             </section>
 
-            <section className="bg-zinc-950 border border-zinc-900 rounded-3xl p-8">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-3">
-                <Lock className="text-primary" />
-                3. Data Security & Retention
+            {/* 3. Safety & Verification Purpose */}
+            <section className="border-b border-zinc-900/60 pb-8">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 text-primary">
+                3. Safety & KYC Verification
               </h2>
-              <div className="space-y-4 text-zinc-400 leading-relaxed">
-                <p>The security of your data is important to us. We implement industry-standard encryption and security measures to protect your personal information from unauthorized access.</p>
-                <p>We retain your Personal Data only for as long as is necessary for the purposes set out in this Privacy Policy. We will retain and use your Personal Data to the extent necessary to comply with our legal obligations (for example, if we are required to retain your data to comply with applicable laws).</p>
-              </div>
+              <ul className="list-disc pl-5 space-y-2 text-zinc-400 leading-relaxed">
+                <li>Information is collected to verify customer identities to prevent financial fraud and fraudulent property claims.</li>
+                <li>Verifying details ensures that the right plot is officially assigned to the correct buyer without legal disputes.</li>
+                <li>This verification process is designed entirely for the legal safety of both the buyer and the developer.</li>
+              </ul>
             </section>
 
-            <section className="p-4 sm:p-8 border-l-2 border-primary/20">
-              <h2 className="text-xl font-bold mb-4">4. Third-Party Sharing</h2>
-              <p className="text-zinc-400 leading-relaxed">
-                We do not sell, trade, or otherwise transfer your personally identifiable information to outside parties except for verified third-party service providers who assist us in operating our website, conducting our business (like WhatsApp API services), or servicing you, so long as those parties agree to keep this information confidential.
-              </p>
+            {/* 4. Record Maintenance */}
+            <section className="border-b border-zinc-900/60 pb-8">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 text-primary">
+                4. Official Record Keeping
+              </h2>
+              <ul className="list-disc pl-5 space-y-2 text-zinc-400 leading-relaxed">
+                <li>We maintain accurate digital records of plot sales, customer bookings, payment history, and associate referral levels.</li>
+                <li>Maintaining these records helps us provide swift customer service, process commissions accurately, and issue receipts immediately.</li>
+                <li>These records are safely stored to comply with national property laws and tax audits.</li>
+              </ul>
             </section>
 
-            <section className="bg-zinc-950 border border-zinc-900 rounded-3xl p-8">
-              <h2 className="text-xl font-bold mb-4">5. Your Rights</h2>
-              <p className="text-zinc-400 leading-relaxed">
-                You have the right to access, update, or delete the personal information we have on you. If you are unable to perform these actions yourself within your account settings, please contact us to assist you.
-              </p>
+            {/* 5. What Data We Collect */}
+            <section className="border-b border-zinc-900/60 pb-8">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 text-primary">
+                5. Information We Collect
+              </h2>
+              <ul className="list-disc pl-5 space-y-2 text-zinc-400 leading-relaxed">
+                <li><strong className="text-white">Personal Identity:</strong> Name, phone number, address, and email.</li>
+                <li><strong className="text-white">KYC Documents:</strong> PAN card or Aadhaar details solely for official booking verification.</li>
+                <li><strong className="text-white">Financial Details:</strong> Payment transaction references, paid amount records, and pending dues tracking.</li>
+              </ul>
             </section>
 
-            <section className="pt-10 border-t border-zinc-900">
-              <h2 className="text-xl font-bold mb-4">6. Contact Us</h2>
-              <p className="text-zinc-400 mb-4">
-                If you have any questions about this Privacy Policy, you can contact our privacy officer:
-              </p>
-              <div className="bg-zinc-950 p-6 rounded-2xl border border-zinc-800">
-                <p className="text-white font-bold">Aaradhya Dream City Privacy Team</p>
-                <p className="text-zinc-500">Email: support@aaradhyadreamcity.in</p>
-                <p className="text-zinc-500">Varanasi, Uttar Pradesh, India</p>
+            {/* 6. Contact Information */}
+            <section className="border-b border-zinc-900/60 pb-8">
+              <h2 className="text-xl sm:text-2xl font-bold mb-6 text-primary">
+                6. Contact Our Privacy Team
+              </h2>
+              
+              <div className="space-y-4 pl-2 text-zinc-400 leading-relaxed">
+                <p className="font-bold text-white text-lg">Aaradhya Dream City Support</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3">
+                    <Phone className="text-primary shrink-0" size={18} />
+                    <span>Phone: +91 93356 02932</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Mail className="text-primary shrink-0" size={18} />
+                    <span>Email: <a href="mailto:support@aaradhyadreamcity.in" className="hover:text-primary transition-colors">support@aaradhyadreamcity.in</a></span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <MapPin className="text-primary shrink-0" size={18} />
+                    <span>Location: Varanasi, Uttar Pradesh</span>
+                  </div>
+                </div>
               </div>
             </section>
 
