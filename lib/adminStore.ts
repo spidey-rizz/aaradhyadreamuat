@@ -158,5 +158,5 @@ export function incrementWebsiteVisits() {
   sessionStorage.setItem(VISITS_KEY, (current + 1).toString());
   
   fetch("https://abacus.jasoncameron.dev/hit/aaradhyadreamcity/visits")
-    .catch((err) => console.error("Failed to increment visits counter:", err));
+    .catch(() => console.warn("Failed to increment visits counter (offline)"));
 }

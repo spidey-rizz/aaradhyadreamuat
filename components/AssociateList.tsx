@@ -134,12 +134,12 @@ export default function AssociateList() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Joining Date</th>
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Name</th>
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Referral Code</th>
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Phone</th>
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-center">Level</th>
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-right">
+                <th className="py-5 px-6 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Joining Date</th>
+                <th className="py-5 px-6 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Name</th>
+                <th className="py-5 px-6 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Referral Code</th>
+                <th className="py-5 px-6 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Phone</th>
+                <th className="py-5 px-6 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] text-center">Level</th>
+                <th className="py-5 px-6 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] text-right">
                   Business (Self / Team / Total)
                 </th>
               </tr>

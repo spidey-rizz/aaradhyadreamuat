@@ -130,14 +130,14 @@ export default function SelfDepositPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-card border border-border p-6 rounded-[2rem] shadow-sm">
         <div>
           <h1 className="text-2xl font-black uppercase tracking-tight text-foreground">
-            Self <span className="text-primary">Deposit Amount</span>
+            Self <span className="text-primary-text">Deposit Amount</span>
           </h1>
           <p className="text-xs text-muted-foreground font-medium mt-1">Your monthly self deposit sales report (Real-Time API).</p>
         </div>
 
         {/* Month-Year Picker */}
         <div className="flex items-center gap-2 bg-background border border-border px-3 py-2 rounded-xl w-full sm:w-auto cursor-pointer hover:border-primary/40 transition-colors">
-          <CalendarRange size={14} className="text-primary shrink-0" />
+          <CalendarRange size={14} className="text-primary-text shrink-0" />
           <input 
             type="month"
             value={monthYearValue}
@@ -149,7 +149,7 @@ export default function SelfDepositPage() {
           <button
             onClick={() => fetchReport(1)}
             disabled={reportLoading}
-            className="ml-1 text-primary hover:text-primary/70 transition-colors disabled:opacity-50 cursor-pointer"
+            className="ml-1 text-primary-text hover:text-primary/70 transition-colors disabled:opacity-50 cursor-pointer"
             title="Refresh"
           >
             <RefreshCw size={14} className={reportLoading ? "animate-spin" : ""} />
@@ -161,16 +161,16 @@ export default function SelfDepositPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-primary/10 border border-primary/20 rounded-3xl p-6 flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-primary/80 mb-1">
+            <p className="text-[10px] font-black uppercase tracking-widest text-primary-text/90 mb-1">
               Self Deposit — {new Date(selectedYear, selectedMonth - 1).toLocaleString('en-IN', { month: 'long', year: 'numeric' })}
             </p>
             {reportLoading ? (
-              <Loader2 className="text-primary animate-spin mt-1" size={20} />
+              <Loader2 className="text-primary-text animate-spin mt-1" size={20} />
             ) : (
-              <p className="text-3xl font-black text-primary font-mono">₹{totalAmount.toLocaleString('en-IN')}</p>
+              <p className="text-3xl font-black text-primary-text font-mono">₹{totalAmount.toLocaleString('en-IN')}</p>
             )}
           </div>
-          <div className="p-3 bg-primary/20 text-primary rounded-2xl">
+          <div className="p-3 bg-primary/20 text-primary-text rounded-2xl">
             <IndianRupee size={24} />
           </div>
         </div>
@@ -190,18 +190,18 @@ export default function SelfDepositPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="py-5 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em] w-20">No.</th>
-                <th className="py-5 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Deposit Date</th>
-                <th className="py-5 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Plot ID</th>
-                <th className="py-5 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Type</th>
-                <th className="py-5 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-right">Deposit Amount</th>
+                <th className="py-5 px-8 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] w-20">No.</th>
+                <th className="py-5 px-8 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Deposit Date</th>
+                <th className="py-5 px-8 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Plot ID</th>
+                <th className="py-5 px-8 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Type</th>
+                <th className="py-5 px-8 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] text-right">Deposit Amount</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {reportLoading ? (
                 <tr>
                   <td colSpan={5} className="py-16 text-center">
-                    <Loader2 className="text-primary animate-spin mx-auto" size={28} />
+                    <Loader2 className="text-primary-text animate-spin mx-auto" size={28} />
                     <p className="text-muted-foreground text-xs mt-3 font-medium">Loading report data...</p>
                   </td>
                 </tr>
@@ -217,7 +217,7 @@ export default function SelfDepositPage() {
                     </td>
                     <td className="py-5 px-8 text-sm text-muted-foreground font-mono">{dep.plot_id}</td>
                     <td className="py-5 px-8">
-                      <span className="px-2 py-0.5 bg-primary/10 border border-primary/20 text-primary rounded-full text-[9px] font-black uppercase tracking-wider">
+                      <span className="px-2 py-0.5 bg-primary/10 border border-primary/20 text-primary-text rounded-full text-[9px] font-black uppercase tracking-wider">
                         {dep.type}
                       </span>
                     </td>
@@ -230,7 +230,7 @@ export default function SelfDepositPage() {
                 <tr>
                   <td colSpan={5} className="py-16 text-center text-muted-foreground text-xs italic">
                     <div className="flex flex-col items-center gap-2">
-                      <IndianRupee size={28} className="opacity-20 text-primary" />
+                      <IndianRupee size={28} className="opacity-20 text-primary-text" />
                       <p>No self deposits found for {new Date(selectedYear, selectedMonth - 1).toLocaleString('en-IN', { month: 'long', year: 'numeric' })}.</p>
                     </div>
                   </td>

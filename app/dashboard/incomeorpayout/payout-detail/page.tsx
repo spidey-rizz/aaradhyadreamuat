@@ -150,7 +150,7 @@ export default function PayoutDetailPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-card border border-border p-6 rounded-[2rem] shadow-sm">
         <div>
           <h1 className="text-2xl font-black uppercase tracking-tight text-foreground">
-            Payout <span className="text-primary">Details</span>
+            Payout <span className="text-primary-text">Details</span>
           </h1>
           <p className="text-xs text-muted-foreground font-medium mt-1">Audit logs of commissions cleared or pending clearance (Real-Time API).</p>
         </div>
@@ -162,7 +162,7 @@ export default function PayoutDetailPage() {
             onClick={() => monthInputRef.current?.showPicker?.()}
             className="flex items-center gap-3 bg-background border border-border px-3 py-2 rounded-xl w-full sm:w-auto cursor-pointer select-none hover:border-primary/45 transition-colors"
           >
-            <CalendarRange size={14} className="text-primary shrink-0" />
+            <CalendarRange size={14} className="text-primary-text shrink-0" />
             <input
               ref={monthInputRef}
               type="month"
@@ -175,7 +175,7 @@ export default function PayoutDetailPage() {
             <button
               onClick={(e) => { e.stopPropagation(); fetchReport(1); }}
               disabled={reportLoading}
-              className="text-primary hover:text-primary/70 transition-colors disabled:opacity-50 cursor-pointer"
+              className="text-primary-text hover:text-primary/70 transition-colors disabled:opacity-50 cursor-pointer"
               title="Refresh"
             >
               <RefreshCw size={13} className={reportLoading ? "animate-spin" : ""} />
@@ -195,7 +195,7 @@ export default function PayoutDetailPage() {
       {/* Total Paid Amount */}
       {!reportLoading && payouts.length > 0 && (
         <div className="text-xs font-black uppercase tracking-widest text-muted-foreground bg-muted/40 border border-border px-5 py-3 rounded-2xl w-fit">
-          Total Paid Amount : <span className="font-mono font-black text-primary ml-1">₹{totalPaidAmountSum.toLocaleString('en-IN')}</span>
+          Total Paid Amount : <span className="font-mono font-black text-primary-text ml-1">₹{totalPaidAmountSum.toLocaleString('en-IN')}</span>
         </div>
       )}
 
@@ -205,22 +205,22 @@ export default function PayoutDetailPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="py-5 px-5 text-[10px] text-primary font-black uppercase tracking-[0.2em] w-16">No.</th>
-                <th className="py-5 px-5 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Payout Date</th>
-                <th className="py-5 px-5 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Plot ID</th>
-                <th className="py-5 px-5 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Payout Type</th>
-                <th className="py-5 px-5 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Status</th>
-                <th className="py-5 px-5 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-right">Total Amt.</th>
-                <th className="py-5 px-5 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-right">TDS (5%)</th>
-                <th className="py-5 px-5 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-right">Processsing (5%)</th>
-                <th className="py-5 px-5 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-right">Payout Amount</th>
+                <th className="py-5 px-5 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] w-16">No.</th>
+                <th className="py-5 px-5 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Payout Date</th>
+                <th className="py-5 px-5 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Plot ID</th>
+                <th className="py-5 px-5 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Payout Type</th>
+                <th className="py-5 px-5 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Status</th>
+                <th className="py-5 px-5 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] text-right">Total Amt.</th>
+                <th className="py-5 px-5 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] text-right">TDS (5%)</th>
+                <th className="py-5 px-5 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] text-right">Processsing (5%)</th>
+                <th className="py-5 px-5 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] text-right">Payout Amount</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {reportLoading ? (
                 <tr>
                   <td colSpan={9} className="py-16 text-center">
-                    <Loader2 className="text-primary animate-spin mx-auto" size={28} />
+                    <Loader2 className="text-primary-text animate-spin mx-auto" size={28} />
                     <p className="text-muted-foreground text-xs mt-3 font-medium">Loading payout data...</p>
                   </td>
                 </tr>
@@ -264,7 +264,7 @@ export default function PayoutDetailPage() {
                       <td className="py-5 px-5 text-sm text-muted-foreground font-bold font-mono text-right whitespace-nowrap">
                         {processingDisplay}
                       </td>
-                      <td className="py-5 px-5 text-sm text-primary font-black font-mono text-right whitespace-nowrap">
+                      <td className="py-5 px-5 text-sm text-primary-text font-black font-mono text-right whitespace-nowrap">
                         ₹{netPayoutAmt.toLocaleString('en-IN')}
                       </td>
                     </tr>
@@ -274,7 +274,7 @@ export default function PayoutDetailPage() {
                 <tr>
                   <td colSpan={9} className="py-16 text-center text-muted-foreground text-xs italic">
                     <div className="flex flex-col items-center gap-2">
-                      <FileText size={28} className="opacity-20 text-primary" />
+                      <FileText size={28} className="opacity-20 text-primary-text" />
                       <p>No payouts found for {new Date(selectedYear, selectedMonth - 1).toLocaleString('en-IN', { month: 'long', year: 'numeric' })}.</p>
                     </div>
                   </td>

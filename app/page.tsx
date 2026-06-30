@@ -44,7 +44,7 @@ export default function Home() {
   useEffect(() => {
     // Increment the global website visits counter dynamically using Abacus API
     fetch("https://abacus.jasoncameron.dev/hit/aaradhyadreamcity/visits")
-      .catch((err) => console.error("Failed to increment visits counter:", err));
+      .catch(() => console.warn("Failed to increment visits counter (offline)"));
   }, []);
 
   return (

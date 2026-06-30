@@ -195,19 +195,19 @@ export default function TeamDepositPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-card border border-border p-6 rounded-[2rem] shadow-sm">
         <div>
           <h1 className="text-2xl font-black uppercase tracking-tight text-foreground">
-            Team + <span className="text-primary">Self Deposit</span>
+            Team + <span className="text-primary-text">Self Deposit</span>
           </h1>
           <p className="text-xs text-muted-foreground font-medium mt-1">Detailed overview of self and downline team contributions.</p>
           
           {/* Breadcrumb Trail */}
           {history.length > 0 && (
             <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground mt-3 bg-muted/40 px-3 py-1.5 rounded-lg border border-border/20 w-fit select-none">
-              <span className="cursor-pointer hover:text-primary transition-colors" onClick={() => setHistory([])}>Main</span>
+              <span className="cursor-pointer hover:text-primary-text transition-colors" onClick={() => setHistory([])}>Main</span>
               {history.map((item, index) => (
                 <span key={item.userId} className="flex items-center gap-1">
-                  <ChevronRight size={10} className="text-primary/60" />
+                  <ChevronRight size={10} className="text-primary-text/70" />
                   <span 
-                    className={`cursor-pointer hover:text-primary transition-colors ${index === history.length - 1 ? "text-primary font-black" : ""}`}
+                    className={`cursor-pointer hover:text-primary-text transition-colors ${index === history.length - 1 ? "text-primary-text font-black" : ""}`}
                     onClick={() => setHistory(history.slice(0, index + 1))}
                   >
                     {item.userName}
@@ -219,7 +219,7 @@ export default function TeamDepositPage() {
         </div>
 
         {/* Active View User Badge */}
-        <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 px-4 py-2.5 rounded-xl text-primary font-black text-xs uppercase tracking-widest">
+        <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 px-4 py-2.5 rounded-xl text-primary-text font-black text-xs uppercase tracking-widest">
           <ShieldCheck size={14} />
           {currentUserName}
         </div>
@@ -254,11 +254,11 @@ export default function TeamDepositPage() {
               )}
             </div>
             <div className="flex flex-col justify-center py-2 sm:py-0 sm:pl-6">
-              <span className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Total Deposit</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-primary-text mb-1">Total Deposit</span>
               {loading ? (
-                <Loader2 className="animate-spin text-primary mx-auto" size={18} />
+                <Loader2 className="animate-spin text-primary-text mx-auto" size={18} />
               ) : (
-                <span className="text-2xl font-black text-primary font-mono">₹{levelData.total.toLocaleString('en-IN')}</span>
+                <span className="text-2xl font-black text-primary-text font-mono">₹{levelData.total.toLocaleString('en-IN')}</span>
               )}
             </div>
           </div>
@@ -271,19 +271,19 @@ export default function TeamDepositPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="py-5 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em] w-20">No.</th>
-                <th className="py-5 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Ref ID</th>
-                <th className="py-5 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Member Name</th>
-                <th className="py-5 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-right">Self Amount</th>
-                <th className="py-5 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-right">Team Deposit Amount</th>
-                <th className="py-5 px-8 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-center w-36">More Details</th>
+                <th className="py-5 px-8 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] w-20">No.</th>
+                <th className="py-5 px-8 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Ref ID</th>
+                <th className="py-5 px-8 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Member Name</th>
+                <th className="py-5 px-8 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] text-right">Self Amount</th>
+                <th className="py-5 px-8 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] text-right">Team Deposit Amount</th>
+                <th className="py-5 px-8 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] text-center w-36">More Details</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
                   <td colSpan={6} className="py-16 text-center">
-                    <Loader2 className="text-primary animate-spin mx-auto" size={28} />
+                    <Loader2 className="text-primary-text animate-spin mx-auto" size={28} />
                     <p className="text-muted-foreground text-xs mt-3 font-medium">Loading team data...</p>
                   </td>
                 </tr>
@@ -296,14 +296,14 @@ export default function TeamDepositPage() {
                     <td className="py-5 px-8 text-sm text-foreground font-bold font-mono text-right">
                       {member.selfAmount > 0 ? `₹${member.selfAmount.toLocaleString('en-IN')}` : "—"}
                     </td>
-                    <td className="py-5 px-8 text-sm text-primary font-black font-mono text-right">
+                    <td className="py-5 px-8 text-sm text-primary-text font-black font-mono text-right">
                       {member.teamDepositAmount > 0 ? `₹${member.teamDepositAmount.toLocaleString('en-IN')}` : "—"}
                     </td>
                     <td className="py-5 px-8 text-center">
                       {member.hasDownline ? (
                         <button
                           onClick={() => handleDrillDown(member)}
-                          className="inline-flex items-center gap-1 bg-primary/10 border border-primary/20 hover:bg-primary hover:text-black text-primary px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest cursor-pointer transition-all shadow-sm shadow-primary/5 active:scale-95"
+                          className="inline-flex items-center gap-1 bg-primary/10 border border-primary/20 hover:bg-primary hover:text-black text-primary-text px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest cursor-pointer transition-all shadow-sm shadow-primary/5 active:scale-95"
                           title={`View ${member.memberName}'s downline team`}
                         >
                           <Eye size={12} />
@@ -319,7 +319,7 @@ export default function TeamDepositPage() {
                 <tr>
                   <td colSpan={6} className="py-16 text-center text-muted-foreground text-xs italic">
                     <div className="flex flex-col items-center gap-2">
-                      <RefreshCw size={28} className="opacity-20 text-primary" />
+                      <RefreshCw size={28} className="opacity-20 text-primary-text" />
                       <p>This user has no downline team members.</p>
                     </div>
                   </td>

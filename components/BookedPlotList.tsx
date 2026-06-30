@@ -279,14 +279,14 @@ export default function BookedPlotList() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em] w-16">No.</th>
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Plot Number</th>
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Buyer Name</th>
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Buyer Phone</th>
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Associate Name</th>
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Associate Phone</th>
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em]">Booked Date</th>
-                <th className="py-5 px-6 text-[10px] text-primary font-black uppercase tracking-[0.2em] text-right">
+                <th className="py-5 px-6 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] w-16">No.</th>
+                <th className="py-5 px-6 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Plot Number</th>
+                <th className="py-5 px-6 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Buyer Name</th>
+                <th className="py-5 px-6 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Buyer Phone</th>
+                <th className="py-5 px-6 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Associate Name</th>
+                <th className="py-5 px-6 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Associate Phone</th>
+                <th className="py-5 px-6 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Booked Date</th>
+                <th className="py-5 px-6 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] text-right">
                   Pricing (Total / Paid / Remaining)
                 </th>
               </tr>

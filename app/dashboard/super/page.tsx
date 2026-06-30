@@ -100,7 +100,7 @@ export default function SuperAdminPanelPage() {
         setVisitsCount(14850 + data.value);
       }
     } catch (err) {
-      console.error("Failed to fetch real-time website visits:", err);
+      console.warn("Failed to fetch real-time website visits (offline)");
     }
     
     setLoadingUsers(false);

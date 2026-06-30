@@ -93,16 +93,16 @@ export default function NetworkPage() {
     <div className="space-y-6 sm:space-y-8 selection:bg-primary/30">
       
       {/* Breadcrumbs / Back Link */}
-      <div className="flex items-center gap-2 text-zinc-500 text-xs sm:text-sm px-1">
-        <button onClick={() => router.push("/dashboard")} className="hover:text-primary transition-colors">Dashboard</button>
+      <div className="flex items-center gap-2 text-muted-foreground text-xs sm:text-sm px-1">
+        <button onClick={() => router.push("/dashboard")} className="hover:text-primary-text transition-colors">Dashboard</button>
         <ChevronRight size={12} />
-        <span className="text-zinc-300 font-medium">My Network</span>
+        <span className="text-foreground/70 font-medium">My Network</span>
       </div>
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-1">
         <div className="text-center md:text-left">
-          <h1 className="text-3xl sm:text-4xl font-black text-white mb-2 uppercase tracking-tight">Your <span className="text-primary">Network</span></h1>
-          <p className="text-zinc-500 max-w-lg text-xs sm:text-sm mx-auto md:mx-0">Visualize and manage your multi-level associate hierarchy. View all direct and indirect partners in one place.</p>
+          <h1 className="text-3xl sm:text-4xl font-black text-foreground mb-2 uppercase tracking-tight">Your <span className="text-primary-text">Network</span></h1>
+          <p className="text-muted-foreground max-w-lg text-xs sm:text-sm mx-auto md:mx-0">Visualize and manage your multi-level associate hierarchy. View all direct and indirect partners in one place.</p>
         </div>
 
         {/* Stats Summary */}
@@ -116,7 +116,7 @@ export default function NetworkPage() {
             <div className="text-[8px] sm:text-[10px] text-muted-foreground uppercase font-bold tracking-widest mt-1">Direct</div>
           </div>
           <div className="bg-card border border-border rounded-xl sm:rounded-2xl px-2 sm:px-6 py-3 sm:py-4 text-center">
-            <div className="text-lg sm:text-2xl font-black text-primary">{indirectCount}</div>
+            <div className="text-lg sm:text-2xl font-black text-primary-text">{indirectCount}</div>
             <div className="text-[8px] sm:text-[10px] text-muted-foreground uppercase font-bold tracking-widest mt-1">Indirect</div>
           </div>
         </div>
@@ -196,45 +196,45 @@ export default function NetworkPage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {filteredList.length > 0 ? (
-                  filteredList.map((member: any, idx: number) => (
-                    <tr key={idx} className="group hover:bg-zinc-900/30 transition-all duration-300">
+                   filteredList.map((member: any, idx: number) => (
+                    <tr key={idx} className="group hover:bg-muted/30 transition-all duration-300">
                       <td className="py-6 px-8">
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                            <User size={18} />
-                          </div>
-                          <div className="text-white font-bold">{member.name}</div>
+                          <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary-text group-hover:scale-110 transition-transform">
+                             <User size={18} />
+                           </div>
+                           <div className="text-foreground font-bold">{member.name}</div>
                         </div>
                       </td>
                       <td className="py-6 px-8">
-                        <div className="flex items-center gap-2 text-primary/80 text-sm">
-                          <Phone size={14} className="text-zinc-600" />
+                        <div className="flex items-center gap-2 text-foreground/80 text-sm">
+                          <Phone size={14} className="text-muted-foreground" />
                           {member.phone}
                         </div>
                       </td>
                       <td className="py-6 px-8">
                         <div className="flex items-center gap-2">
-                           <Layers size={14} className="text-primary/60" />
-                           <span className="bg-zinc-900 text-zinc-400 px-3 py-1 rounded-full text-[10px] font-black border border-zinc-800 whitespace-nowrap">LvL-{member.level || 1}</span>
+                           <Layers size={14} className="text-primary-text" />
+                           <span className="bg-primary/10 text-primary-text px-3 py-1 rounded-full text-[10px] font-black border border-primary/20 whitespace-nowrap">LvL-{member.level || 1}</span>
                         </div>
                       </td>
                       <td className="py-6 px-8">
                         <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${
                           member.connection === "direct" 
                             ? "bg-accent/10 text-accent border-accent/20" 
-                            : "bg-zinc-800/50 text-zinc-400 border-zinc-700"
+                            : "bg-muted text-muted-foreground border-border"
                         }`}>
                           {member.connection}
                         </span>
                       </td>
                       <td className="py-6 px-8">
-                        <div className="flex items-center gap-2 text-zinc-500 text-sm">
-                          <Calendar size={14} className="text-zinc-700" />
+                        <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                          <Calendar size={14} className="text-muted-foreground/60" />
                           {member.created_at ? new Date(member.created_at).toLocaleDateString() : "—"}
                         </div>
                       </td>
                       <td className="py-6 px-8">
-                        <div className="text-white font-black font-mono">₹{(member.direct_sale || member.total_sales || member.lifetime_sale || 0).toLocaleString()}</div>
+                        <div className="text-primary-text font-black font-mono">₹{(member.direct_sale || member.total_sales || member.lifetime_sale || 0).toLocaleString()}</div>
                       </td>
                     </tr>
                   ))

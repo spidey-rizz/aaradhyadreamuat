@@ -93,7 +93,7 @@ export default function DashboardPage() {
           </div>
           
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 relative z-10">
-            <div className="w-24 h-24 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 shadow-inner">
+            <div className="w-24 h-24 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary-text shrink-0 shadow-inner">
               <User size={48} />
             </div>
             <div className="text-center sm:text-left flex-grow">
@@ -101,22 +101,22 @@ export default function DashboardPage() {
                 <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight">
                   {profile.first_name} {profile.last_name}
                 </h1>
-                <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">
+                <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary-text text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">
                   LvL-{profile.level || 1}
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-muted-foreground font-medium text-sm">
                 <p className="flex items-center justify-center sm:justify-start gap-2">
-                  <span className="text-[10px] uppercase tracking-widest text-primary/60 w-16">Phone:</span> {profile.phone}
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold w-16">Phone:</span> {profile.phone}
                 </p>
                 <p className="flex items-center justify-center sm:justify-start gap-2">
-                  <span className="text-[10px] uppercase tracking-widest text-primary/60 w-16">PAN:</span> {profile.pan_number || "—"}
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold w-16">PAN:</span> {profile.pan_number || "—"}
                 </p>
                 <p className="flex items-center justify-center sm:justify-start gap-2">
-                  <span className="text-[10px] uppercase tracking-widest text-primary/60 w-16">Adhar:</span> {profile.adhar_number || "—"}
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold w-16">Adhar:</span> {profile.adhar_number || "—"}
                 </p>
                 <p className="flex items-center justify-center sm:justify-start gap-2">
-                  <span className="text-[10px] uppercase tracking-widest text-primary/60 w-16">Referral:</span> {profile.referral_code}
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold w-16">Referral:</span> {profile.referral_code}
                 </p>
               </div>
             </div>
@@ -128,8 +128,8 @@ export default function DashboardPage() {
           <div className="absolute -right-4 -bottom-4 opacity-10 rotate-12">
             <Megaphone size={100} />
           </div>
-          <h3 className="text-sm font-black uppercase tracking-[0.2em] mb-4 opacity-70">Official Notice</h3>
-          <p className="text-lg font-bold leading-tight mb-4 italic opacity-50">
+          <h3 className="text-sm font-black uppercase tracking-[0.2em] mb-4 text-black/85">Official Notice</h3>
+          <p className="text-lg font-bold leading-tight mb-4 italic text-black/90">
             No new announcements.
           </p>
           <button className="text-[10px] font-black uppercase tracking-widest border-b-2 border-black/30 hover:border-black transition-all cursor-pointer">
@@ -146,7 +146,7 @@ export default function DashboardPage() {
           <div>
             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-4">My Referral Link</h3>
             <div className="flex flex-col sm:flex-row items-center gap-3 bg-background border border-border p-2 rounded-2xl">
-              <code className="text-primary font-black text-lg tracking-wider bg-primary/5 px-4 py-2 rounded-xl flex-grow text-center sm:text-left overflow-hidden text-ellipsis whitespace-nowrap w-full">
+              <code className="text-primary-text font-black text-lg tracking-wider bg-primary/5 px-4 py-2 rounded-xl flex-grow text-center sm:text-left overflow-hidden text-ellipsis whitespace-nowrap w-full">
                 {profile.referral_code}
               </code>
               <button 
@@ -190,8 +190,8 @@ export default function DashboardPage() {
                 <div className="border-t border-dashed border-border/60" />
                 
                 <div className="flex justify-between items-center py-2 bg-primary/5 px-3 rounded-xl border border-primary/20">
-                  <span className="text-xs font-black text-primary uppercase tracking-widest">Total Business</span>
-                  <span className="text-base font-black text-primary font-mono">₹{totalBusiness.toLocaleString()}</span>
+                  <span className="text-xs font-black text-primary-text uppercase tracking-widest">Total Business</span>
+                  <span className="text-base font-black text-primary-text font-mono">₹{totalBusiness.toLocaleString()}</span>
                 </div>
                 
                 {policy?.limit !== null && (
@@ -250,14 +250,14 @@ export default function DashboardPage() {
                     <td className="px-8 py-6 text-xs font-mono text-muted-foreground">{idx + 1}.</td>
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary-text group-hover:scale-110 transition-transform">
                           <User size={14} />
                         </div>
                         <span className="font-bold text-foreground">{ref.name}</span>
                       </div>
                     </td>
                     <td className="px-8 py-6 text-muted-foreground font-medium text-sm">{ref.phone || "—"}</td>
-                    <td className="px-8 py-6 font-black text-primary italic font-mono">₹{(ref.direct_sale || ref.total_sales || 0).toLocaleString()}</td>
+                    <td className="px-8 py-6 font-black text-primary-text italic font-mono">₹{(ref.direct_sale || ref.total_sales || 0).toLocaleString()}</td>
                     <td className="px-8 py-6 text-muted-foreground text-sm">
                       {ref.created_at ? new Date(ref.created_at).toLocaleDateString('en-IN', {
                         day: '2-digit',

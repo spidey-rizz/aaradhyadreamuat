@@ -8,15 +8,16 @@ body {
 
 :root {
   --background: #faf9f6; /* Off-white/Cream for premium feel */
-  --foreground: #1a1a1a;
+  --foreground: #000000; /* Pure black for maximum contrast in light mode */
   --primary: #d4af37;
   --primary-hover: #b8962e;
+  --primary-text: #7c600d; /* Deeper gold/bronze for high contrast in light mode */
   --secondary: #f3f2ef;
   --accent: #22c55e;
   --muted: #f5f4f0;
-  --muted-foreground: #737373;
+  --muted-foreground: #4b5563; /* Darker gray (Gray-600) for highly readable secondary text */
   --card: #ffffff;
-  --card-foreground: #1a1a1a;
+  --card-foreground: #000000;
   --border: #e8e6e1;
   --selection: rgba(212, 175, 55, 0.2);
 }
@@ -26,6 +27,7 @@ body {
   --foreground: #ffffff;
   --primary: #d4af37;
   --primary-hover: #b8962e;
+  --primary-text: #d4af37; /* Bright gold in dark mode */
   --secondary: #171717;
   --accent: #22c55e;
   --muted: #121212;
@@ -41,6 +43,7 @@ body {
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
+  --color-primary-text: var(--primary-text);
   --color-secondary: var(--secondary);
   --color-accent: var(--accent);
   --color-muted: var(--muted);

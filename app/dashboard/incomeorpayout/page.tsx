@@ -56,7 +56,7 @@ export default function PayoutsPage() {
       description: "Log of payouts, status clearances, and reference transaction IDs.",
       href: "/dashboard/incomeorpayout/payout-detail",
       icon: FileText,
-      color: "text-primary bg-primary/10"
+      color: "text-primary-text bg-primary/10"
     }
   ];
 
@@ -73,12 +73,12 @@ export default function PayoutsPage() {
 
       {/* Header Row */}
       <div className="bg-card border border-border p-6 rounded-[2rem] shadow-sm flex items-center gap-4">
-        <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+        <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary-text">
           <Wallet size={22} />
         </div>
         <div>
           <h1 className="text-2xl font-black uppercase tracking-tight text-foreground">
-            Payouts & <span className="text-primary">Income Dashboard</span>
+            Payouts & <span className="text-primary-text">Income Dashboard</span>
           </h1>
           <p className="text-xs text-muted-foreground font-medium mt-1">Monitor deposit structures, downlines, and payment releases.</p>
         </div>

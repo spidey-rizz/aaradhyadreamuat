@@ -3,14 +3,14 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Send, 
-  CheckCircle2, 
-  AlertCircle, 
-  Clock, 
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Send,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
   ArrowRight,
   Sparkles
 } from "lucide-react";
@@ -37,7 +37,7 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validations
     if (!formData.fullName.trim()) {
       setStatus("error");
@@ -115,7 +115,7 @@ export default function ContactPage() {
         <div className="absolute bottom-10 left-10 w-80 h-80 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
-          
+
           {/* Header */}
           <div className="text-center mb-16 max-w-2xl mx-auto">
             <div className="inline-flex items-center gap-2 mb-4 px-4 py-1 rounded-full border border-primary/20 bg-primary/5 backdrop-blur-md">
@@ -131,7 +131,7 @@ export default function ContactPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-            
+
             {/* Info Cards (Left) */}
             <div className="lg:col-span-5 space-y-8">
               <div className="space-y-4">
@@ -143,7 +143,7 @@ export default function ContactPage() {
 
               {/* Grid of contact details */}
               <div className="space-y-6">
-                
+
                 {/* Phone Card */}
                 <div className="flex items-start gap-4 p-5 bg-card border border-border/60 rounded-2xl shadow-sm hover:border-primary/30 transition-all">
                   <div className="p-3 bg-primary/10 rounded-xl text-primary">
@@ -152,7 +152,7 @@ export default function ContactPage() {
                   <div>
                     <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">Call Us</h4>
                     <p className="font-semibold text-foreground hover:text-primary transition-colors">
-                      <a href="tel:+919876543210">+91 98765 43210</a>
+                      <a href="tel:+919876543210">+91 93356 02932</a>
                     </p>
                   </div>
                 </div>
@@ -204,7 +204,7 @@ export default function ContactPage() {
 
             {/* Form Card (Right) */}
             <div className="lg:col-span-7 bg-card border border-border rounded-3xl p-8 shadow-lg shadow-black/[0.02] relative overflow-hidden">
-              
+
               {/* Submission State: Success */}
               {status === "success" && (
                 <div className="flex flex-col items-center justify-center py-12 text-center animate-in fade-in zoom-in-95 duration-500">
@@ -215,7 +215,7 @@ export default function ContactPage() {
                   <p className="text-muted-foreground font-light max-w-sm mb-8 leading-relaxed">
                     Thank you for reaching out to Aaradhya Dream City. Your details have been successfully saved, and our team will connect with you soon.
                   </p>
-                  <button 
+                  <button
                     onClick={() => setStatus("idle")}
                     className="inline-flex items-center gap-2 px-6 py-3 border border-border rounded-full text-xs font-black uppercase tracking-wider hover:bg-foreground/[0.03] transition-all"
                   >
@@ -228,7 +228,7 @@ export default function ContactPage() {
               {/* Submission State: Normal Form / Loading / Error */}
               {status !== "success" && (
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  
+
                   {/* Dynamic Alert Banner for error state */}
                   {status === "error" && (
                     <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex gap-3 text-red-600 dark:text-red-400 animate-in slide-in-from-top-2 duration-300">

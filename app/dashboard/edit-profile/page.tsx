@@ -122,11 +122,11 @@ export default function EditProfilePage() {
       {/* Profile Form Card */}
       <div className="bg-card border border-border rounded-[2.5rem] p-6 sm:p-10 shadow-sm">
         <div className="flex items-center gap-4 border-b border-border pb-6 mb-8">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary-text shrink-0">
             <User size={22} />
           </div>
           <div>
-            <h1 className="text-2xl font-black uppercase tracking-tight text-foreground">Edit <span className="text-primary">Profile</span></h1>
+            <h1 className="text-2xl font-black uppercase tracking-tight text-foreground">Edit <span className="text-primary-text">Profile</span></h1>
             <p className="text-xs text-muted-foreground font-medium mt-1">Update your associate account details and bank credentials for payout processing.</p>
           </div>
         </div>
@@ -146,7 +146,7 @@ export default function EditProfilePage() {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* SECTION 1: Personal Information */}
           <div className="space-y-6">
-            <h3 className="text-xs font-black uppercase tracking-widest text-primary border-l-2 border-primary pl-2 mb-4">Personal Details</h3>
+            <h3 className="text-xs font-black uppercase tracking-widest text-primary-text border-l-2 border-primary-text pl-2 mb-4">Personal Details</h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -218,7 +218,7 @@ export default function EditProfilePage() {
 
           {/* SECTION 2: Bank Account Details */}
           <div className="space-y-6">
-            <h3 className="text-xs font-black uppercase tracking-widest text-primary border-l-2 border-primary pl-2 mb-4">Bank Account Details</h3>
+            <h3 className="text-xs font-black uppercase tracking-widest text-primary-text border-l-2 border-primary-text pl-2 mb-4">Bank Account Details</h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
