@@ -43,6 +43,24 @@ export function useAuth(options?: {
       try {
         const data = await apiFetch(endpoints.me);
         
+        // Normalize role and admin properties for database alignment
+        if (data) {
+          if (data.admin !== undefined && data.is_admin === undefined) {
+            data.is_admin = data.admin;
+          }
+          if (data.super_admin !== undefined && data.is_super_admin === undefined) {
+            data.is_super_admin = data.super_admin;
+          }
+          if (!data.role) {
+            if (data.super_admin === true || data.is_super_admin === true) {
+              data.role = "SUPERADMIN";
+            } else if (data.admin === true || data.is_admin === true) {
+              data.role = "ADMIN";
+            } else {
+              data.role = "ASSOCIATE";
+            }
+          }
+        }
 
         setProfile(data);
         setStatus("authenticated");

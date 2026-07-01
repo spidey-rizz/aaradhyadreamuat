@@ -75,6 +75,17 @@ function LoginContent() {
       let role = "ASSOCIATE";
       try {
         const profile = await apiFetch(endpoints.me);
+        if (profile) {
+          if (!profile.role) {
+            if (profile.super_admin === true || profile.is_super_admin === true) {
+              profile.role = "SUPERADMIN";
+            } else if (profile.admin === true || profile.is_admin === true) {
+              profile.role = "ADMIN";
+            } else {
+              profile.role = "ASSOCIATE";
+            }
+          }
+        }
         role = (profile.role || "ASSOCIATE").toUpperCase();
       } catch (profileErr) {
         console.error("Failed to fetch user profile after login:", profileErr);

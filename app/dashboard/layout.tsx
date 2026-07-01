@@ -94,8 +94,17 @@ export default function DashboardLayout({
   };
 
   const userRole = profile?.role?.toUpperCase();
-  const isAdmin = userRole === "ADMIN" || userRole === "SUPERADMIN" || profile?.is_admin === true || profile?.is_super_admin === true;
-  const isSuperAdmin = userRole === "SUPERADMIN" || profile?.is_super_admin === true;
+  const isAdmin =
+    userRole === "ADMIN" ||
+    userRole === "SUPERADMIN" ||
+    profile?.is_admin === true ||
+    profile?.admin === true ||
+    profile?.is_super_admin === true ||
+    profile?.super_admin === true;
+  const isSuperAdmin =
+    userRole === "SUPERADMIN" ||
+    profile?.is_super_admin === true ||
+    profile?.super_admin === true;
 
   const menuItems = [
     {

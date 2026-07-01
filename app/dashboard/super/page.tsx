@@ -64,7 +64,10 @@ export default function SuperAdminPanelPage() {
 
   // Role guard
   const userRole = profile?.role?.toUpperCase();
-  const isSuperAdmin = userRole === "SUPERADMIN" || profile?.is_super_admin === true;
+  const isSuperAdmin =
+    userRole === "SUPERADMIN" ||
+    profile?.is_super_admin === true ||
+    profile?.super_admin === true;
 
   useEffect(() => {
     if (status === "authenticated" && !isSuperAdmin) {
@@ -78,7 +81,26 @@ export default function SuperAdminPanelPage() {
     // Fetch users (real-time data) with page_size=100 (API maximum)
     try {
       const usersData = await apiFetch(`${endpoints.allUsers}?page=1&page_size=100`);
-      setAllUsers(usersData.users || []);
+      const normalizedUsers = (usersData.users || []).map((u: any) => {
+        const normalized = { ...u };
+        if (normalized.admin !== undefined && normalized.is_admin === undefined) {
+          normalized.is_admin = normalized.admin;
+        }
+        if (normalized.super_admin !== undefined && normalized.is_super_admin === undefined) {
+          normalized.is_super_admin = normalized.super_admin;
+        }
+        if (!normalized.role) {
+          if (normalized.super_admin === true || normalized.is_super_admin === true) {
+            normalized.role = "super_admin";
+          } else if (normalized.admin === true || normalized.is_admin === true) {
+            normalized.role = "admin";
+          } else {
+            normalized.role = "broker";
+          }
+        }
+        return normalized;
+      });
+      setAllUsers(normalizedUsers);
     } catch (err) {
       console.error("Failed to fetch users list:", err);
     }

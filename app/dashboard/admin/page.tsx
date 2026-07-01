@@ -35,7 +35,9 @@ export default function AdminPanelPage() {
     userRole === "ADMIN" ||
     userRole === "SUPERADMIN" ||
     profile?.is_admin === true ||
-    profile?.is_super_admin === true;
+    profile?.admin === true ||
+    profile?.is_super_admin === true ||
+    profile?.super_admin === true;
 
   useEffect(() => {
     if (status === "authenticated" && !isAuthorized) {
@@ -76,7 +78,7 @@ export default function AdminPanelPage() {
         </div>
         <div className="bg-primary/10 border border-primary/20 text-primary px-4 py-2 rounded-2xl flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
           <Shield size={15} />
-          {profile.role === "super_admin" ? "Super Admin" : "Admin"} Mode
+          {(profile.role?.toLowerCase() === "super_admin" || profile.role?.toUpperCase() === "SUPERADMIN" || profile.super_admin === true || profile.is_super_admin === true) ? "Super Admin" : "Admin"} Mode
         </div>
       </div>
 
