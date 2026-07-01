@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { apiFetch, endpoints } from "@/lib/api";
 import { Loader2, Users, Phone, X, AlertCircle, Home, RefreshCw } from "lucide-react";
+import ReceiptModal from "@/components/ReceiptModal";
 
 const inputCls =
   "w-full bg-background border border-border rounded-xl py-3 px-4 text-foreground focus:border-primary outline-none transition-all text-sm";
@@ -26,6 +27,27 @@ export default function BookedPlotList() {
   const [associateError, setAssociateError] = useState("");
   const [userId, setUserId] = useState("");
   const phoneDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Receipt Modal States
+  const [receiptToView, setReceiptToView] = useState<any | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleViewReceipt = (plot: any) => {
+    const receiptData = {
+      receiptNo: plot._id || plot.id,
+      date: plot.created_at || plot.date || plot.createdAt,
+      plotNo: plot.plot_id || plot.plotId || plot.plot_number,
+      customerName: plot.sale_data?.name || plot.name || plot.buyer_name,
+      phone: plot.sale_data?.phone || plot.phone || plot.buyer_phone,
+      address: plot.sale_data?.address || plot.address || plot.buyer_address,
+      paymentMode: plot.payment || plot.payment_mode || plot.sale_data?.payment || "Cash",
+      totalAmount: plot.total_amount,
+      paidAmount: plot.paid_amount,
+      remainingAmount: plot.remaining_amount,
+    };
+    setReceiptToView(receiptData);
+    setIsModalOpen(true);
+  };
 
   const fetchAssociatesMap = async () => {
     try {
@@ -289,6 +311,7 @@ export default function BookedPlotList() {
                 <th className="py-5 px-6 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] text-right">
                   Pricing (Total / Paid / Remaining)
                 </th>
+                <th className="py-5 px-6 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] text-center">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -343,6 +366,14 @@ export default function BookedPlotList() {
                           </span>
                         </div>
                       </td>
+                      <td className="py-5 px-6 text-center">
+                        <button
+                          onClick={() => handleViewReceipt(plot)}
+                          className="px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-primary hover:text-black transition-all cursor-pointer"
+                        >
+                          Receipt
+                        </button>
+                      </td>
                     </tr>
                   );
                 })
@@ -390,6 +421,15 @@ export default function BookedPlotList() {
           </div>
         ) : null}
       </div>
+      
+      <ReceiptModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setReceiptToView(null);
+        }}
+        data={receiptToView}
+      />
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { Receipt, ReceiptData } from '@/components/Receipt';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 import jsPDF from 'jspdf';
 import { Printer, Download, AlertCircle, Loader2 } from 'lucide-react';
 
@@ -61,8 +61,68 @@ export default function ReceiptPage() {
     }
   }, [id]);
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = async () => {
+    if (!receiptRef.current) return;
+
+    try {
+      setIsGeneratingPdf(true);
+      const element = receiptRef.current;
+      
+      const canvas = await html2canvas(element, {
+        scale: 2, // Higher scale for better quality
+        useCORS: true,
+        logging: false,
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+      // Print via hidden iframe containing the PDF blob
+      const pdfBlob = pdf.output('blob');
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      
+      // Cleanup previous blob URL if exists to avoid memory leaks
+      if (typeof window !== "undefined" && (window as any)._activePrintBlobUrl) {
+        URL.revokeObjectURL((window as any)._activePrintBlobUrl);
+      }
+      if (typeof window !== "undefined") {
+        (window as any)._activePrintBlobUrl = blobUrl;
+      }
+
+      let iframe = document.getElementById("print-pdf-iframe") as HTMLIFrameElement;
+      if (!iframe) {
+        iframe = document.createElement("iframe");
+        iframe.id = "print-pdf-iframe";
+        iframe.style.position = "fixed";
+        iframe.style.right = "0";
+        iframe.style.bottom = "0";
+        iframe.style.width = "0";
+        iframe.style.height = "0";
+        iframe.style.border = "none";
+        document.body.appendChild(iframe);
+      }
+      
+      iframe.src = blobUrl;
+      
+      iframe.onload = () => {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      };
+    } catch (err) {
+      console.error('Error printing PDF', err);
+      alert('Failed to load print preview. Please try again.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   const handleDownloadPdf = async () => {

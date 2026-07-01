@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import { useAuth } from "@/lib/useAuth";
 import { apiFetch, endpoints } from "@/lib/api";
 import { getAssociatePolicy, addAdminLog } from "@/lib/adminStore";
+import ReceiptModal from "@/components/ReceiptModal";
 import {
   Loader2,
   PlusCircle,
@@ -43,6 +44,8 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
   const [form, setForm] = useState(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [receiptToView, setReceiptToView] = useState<any | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const phoneDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
@@ -139,7 +142,7 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
     }
 
     try {
-      await apiFetch(endpoints.addSale, {
+      const res = await apiFetch(endpoints.addSale, {
         method: "POST",
         body: JSON.stringify({
           user_id: form.user_id,
@@ -164,6 +167,22 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
         })`
       );
 
+      // Create Receipt Data from Form & Response
+      const receiptData = {
+        receiptNo: res?.id || res?._id || res?.data?._id || res?.data?.receiptNo || undefined,
+        date: new Date().toISOString(),
+        plotNo: form.plot_id.trim(),
+        customerName: form.name.trim(),
+        phone: form.phone.trim(),
+        address: form.address.trim(),
+        paymentMode: form.payment === "cash" ? "Cash" : form.payment === "bank_transfer" ? "Bank Transfer" : form.payment === "cheque" ? "Cheque" : form.payment === "upi" ? "UPI" : form.payment,
+        totalAmount: parseFloat(form.total_amount),
+        paidAmount: parseFloat(form.paid_amount),
+      };
+
+      setReceiptToView(receiptData);
+      setIsModalOpen(true);
+
       setMsg({ type: "success", text: `${saleType === "NEW" ? "New Booking" : "Settlement"} submitted successfully!` });
       setForm(EMPTY_FORM);
     } catch (err: any) {
@@ -174,7 +193,8 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto">
+    <>
+      <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto">
       {msg && (
         <div
           className={`p-4 rounded-2xl flex items-start gap-3 text-sm font-semibold border ${
@@ -401,6 +421,15 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
           ? "Submit New Booking"
           : "Submit Settlement"}
       </button>
-    </form>
+      </form>
+      <ReceiptModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setReceiptToView(null);
+        }}
+        data={receiptToView}
+      />
+    </>
   );
 }

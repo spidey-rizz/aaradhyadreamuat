@@ -58,7 +58,9 @@ export const Receipt: React.FC<ReceiptProps> = ({ data }) => {
       {/* Basic Info */}
       <div className="flex justify-between mb-6">
         <div>
-          <p className="mb-1"><span className="font-semibold w-24 inline-block">Receipt No</span>: {receiptNo || 'Auto Generated'}</p>
+          {receiptNo && receiptNo !== 'Auto Generated' && (
+            <p className="mb-1"><span className="font-semibold w-24 inline-block">Receipt No</span>: {receiptNo}</p>
+          )}
           <p className="mb-1"><span className="font-semibold w-24 inline-block">Date</span>: {displayDate}</p>
         </div>
         <div className="text-right">
