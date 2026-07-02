@@ -36,13 +36,13 @@ export default function Footer() {
           {/* ── Brand ── */}
           <div className="col-span-1 md:col-span-2">
             <Link href="/" className="flex items-center gap-3 mb-6">
-              <div className="relative w-10 h-10 rounded-xl overflow-hidden ring-1 ring-white/10">
+              <div className="relative w-10 h-10">
                 <Image
                   src="/logo.png"
                   alt="Aaradhya Dream City"
                   fill
                   sizes="40px"
-                  className="object-cover"
+                  className="object-contain"
                 />
               </div>
               <span className="text-xl font-bold tracking-tight text-white">

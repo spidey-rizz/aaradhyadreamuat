@@ -91,12 +91,8 @@ function LoginContent() {
         console.error("Failed to fetch user profile after login:", profileErr);
       }
 
-      if (typeof window !== "undefined") {
-        if (role === "SUPERADMIN") window.location.href = "/superadmin";
-        else if (role === "ADMIN") window.location.href = "/admin";
-        else if (role === "OFFICE") window.location.href = "/office";
-        else window.location.href = "/dashboard";
-      }
+      // Redirect to dashboard after successful login
+      router.replace("/dashboard");
     } catch (err: any) {
       if (err.status === 403) {
         setError("Account not verified. Please verify via WhatsApp first.");

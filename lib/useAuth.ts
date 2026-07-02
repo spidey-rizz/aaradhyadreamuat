@@ -74,23 +74,15 @@ export function useAuth(options?: {
           const userRoleRaw = data.role || "ASSOCIATE";
           const userRole = userRoleRaw.toUpperCase();
           if (!allowedUpper.includes(userRole)) {
-            // Redirect to their correct dashboard instead of just /login
-            if (userRole === "SUPERADMIN") router.replace("/superadmin");
-            else if (userRole === "ADMIN") router.replace("/admin");
-            else if (userRole === "OFFICE") router.replace("/office");
-            else router.replace("/dashboard");
+            // Redirect to dashboard
+            router.replace("/dashboard");
             return;
           }
         }
 
         // Role-based redirect (e.g. on the login page)
         if (options?.redirectBasedOnRole) {
-          const roleRaw = data.role || "ASSOCIATE";
-          const role = roleRaw.toUpperCase();
-          if (role === "SUPERADMIN") router.replace("/superadmin");
-          else if (role === "ADMIN") router.replace("/admin");
-          else if (role === "OFFICE") router.replace("/office");
-          else router.replace("/dashboard");
+          router.replace("/dashboard");
         } else if (options?.redirectIfValid) {
           router.replace(options.redirectIfValid);
         }

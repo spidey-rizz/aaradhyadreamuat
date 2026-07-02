@@ -83,8 +83,8 @@ export default function Home() {
               Aaradhya<br />
               <span className="text-primary">Dream City</span>
             </h1>
-            <p className="text-lg md:text-xl text-white/60 mb-12 max-w-2xl mx-auto leading-relaxed font-light italic">
-              Crafting legacy, one brick at a time.
+            <p className="text-xl sm:text-2xl font-serif italic text-primary/95 mb-12 max-w-2xl mx-auto leading-relaxed tracking-wide drop-shadow-[0_2px_10px_rgba(212,175,55,0.15)]">
+              &ldquo;Happiness Happens Here&hellip;&rdquo;
             </p>
           </div>
 

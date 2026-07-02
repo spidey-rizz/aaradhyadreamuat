@@ -53,6 +53,7 @@ body {
   --color-border: var(--border);
   
   --font-sans: var(--font-outfit), var(--font-geist-sans), ui-sans-serif, system-ui;
+  --font-serif: var(--font-playfair), ui-serif, Georgia, Cambria, serif;
   --font-mono: var(--font-geist-mono);
 }
 
