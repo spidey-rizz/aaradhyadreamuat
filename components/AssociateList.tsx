@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { apiFetch, endpoints } from "@/lib/api";
 import { Loader2, Search, X, AlertCircle, Users } from "lucide-react";
+import { getAssociatePolicy } from "@/lib/adminStore";
 
 const inputCls =
   "w-full bg-background border border-border rounded-xl py-3 px-4 text-foreground focus:border-primary outline-none transition-all text-sm";
@@ -71,8 +72,15 @@ export default function AssociateList() {
   };
 
   const displayedResults = useMemo(() => {
-    if (levelFilter === "all") return rawResults;
-    return rawResults.filter((u: any) => String(u.level || 1) === levelFilter);
+    const mapped = rawResults.map((u: any) => {
+      const policy = getAssociatePolicy(u._id || u.id);
+      return {
+        ...u,
+        level: policy && policy.level !== undefined && policy.level !== null ? policy.level : (u.level || 1)
+      };
+    });
+    if (levelFilter === "all") return mapped;
+    return mapped.filter((u: any) => String(u.level) === levelFilter);
   }, [rawResults, levelFilter]);
 
   return (

@@ -18,6 +18,7 @@ import {
   GitFork
 } from "lucide-react";
 import ReferralTree from "@/components/ReferralTree";
+import { getAssociatePolicy } from "@/lib/adminStore";
 
 export default function NetworkPage() {
   const { status, profile } = useAuth({ redirectIfInvalid: "/login?expired=true" });
@@ -27,7 +28,14 @@ export default function NetworkPage() {
   const router = useRouter();
 
   const referralList = useMemo(() => {
-    return profile?.referral_list || [];
+    const rawList = profile?.referral_list || [];
+    return rawList.map((m: any) => {
+      const policy = getAssociatePolicy(m._id || m.id);
+      return {
+        ...m,
+        level: policy && policy.level !== undefined && policy.level !== null ? policy.level : (m.level || 1)
+      };
+    });
   }, [profile]);
 
 

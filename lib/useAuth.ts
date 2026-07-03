@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch, endpoints, getCookie, clearSessionData } from "./api";
+import { getAssociatePolicy } from "./adminStore";
 
 /**
  * Verifies the JWT session exists and is valid by calling /broker/me.
@@ -59,6 +60,12 @@ export function useAuth(options?: {
             } else {
               data.role = "ASSOCIATE";
             }
+          }
+          
+          // Apply level override
+          const policy = getAssociatePolicy(data._id || data.id);
+          if (policy && policy.level !== undefined && policy.level !== null) {
+            data.level = policy.level;
           }
         }
 

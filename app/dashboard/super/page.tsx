@@ -30,10 +30,11 @@ import {
   AlertTriangle,
   History,
   Lock,
-  MailWarning
+  MailWarning,
+  Layers
 } from "lucide-react";
 
-type Tab = "overview" | "admins" | "associates" | "logs";
+type Tab = "overview" | "admins" | "associates" | "levels" | "logs";
 
 export default function SuperAdminPanelPage() {
   const { status, profile } = useAuth({ redirectIfInvalid: "/login?expired=true" });
@@ -50,6 +51,7 @@ export default function SuperAdminPanelPage() {
   // ── Admin Control States ──
   const [adminSearchQuery, setAdminSearchQuery] = useState("");
   const [associateSearchQuery, setAssociateSearchQuery] = useState("");
+  const [levelSearchQuery, setLevelSearchQuery] = useState("");
   const [privilegeUpdatingId, setPrivilegeUpdatingId] = useState<string | null>(null);
 
   // ── Modal States ──
@@ -108,6 +110,12 @@ export default function SuperAdminPanelPage() {
           } else {
             normalized.role = "broker";
           }
+        }
+        
+        // Apply level override
+        const policy = getAssociatePolicy(normalized._id || normalized.id);
+        if (policy && policy.level !== undefined && policy.level !== null) {
+          normalized.level = policy.level;
         }
         return normalized;
       });
@@ -293,6 +301,30 @@ export default function SuperAdminPanelPage() {
     });
   };
 
+  const executeLevelChange = (userId: string, userName: string, newLevel: number) => {
+    updateAssociatePolicy(userId, { level: newLevel });
+    
+    // Log action
+    const actionDesc = `Changed level of ${userName} to Level ${newLevel}`;
+    const adminName = `${profile.first_name} ${profile.last_name}`;
+    addAdminLog(adminName, actionDesc);
+    setLogs(getAdminLogs());
+    
+    // Refresh local users list state
+    setAllUsers(prev => 
+      prev.map(u => (u._id || u.id) === userId ? { ...u, level: newLevel } : u)
+    );
+  };
+
+  const handleLevelChangeClick = (user: any, newLevel: number) => {
+    setConfirmModal({
+      open: true,
+      title: "Confirm Level Change",
+      message: `Are you sure you want to change the level of @${user.first_name} ${user.last_name} (${user.phone || 'N/A'}) to Level ${newLevel}?`,
+      onConfirm: () => executeLevelChange(user._id || user.id, `${user.first_name} ${user.last_name}`, newLevel)
+    });
+  };
+
   if (status === "loading" || !profile) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center">
@@ -318,6 +350,20 @@ export default function SuperAdminPanelPage() {
   const filteredAssociates = associatesList.filter(u => {
     const q = associateSearchQuery.toLowerCase();
     return (u.first_name?.toLowerCase().includes(q) || u.phone?.includes(q) || u.email?.toLowerCase().includes(q));
+  });
+
+  const filteredLevelUsers = allUsers.filter(u => {
+    const isSelf = (u._id || u.id) === (profile?._id || profile?.id);
+    const isSuper = u.role === "super_admin" || u.is_super_admin === true;
+    if (isSelf || isSuper) return false;
+    
+    const q = levelSearchQuery.toLowerCase();
+    return (
+      u.first_name?.toLowerCase().includes(q) ||
+      u.last_name?.toLowerCase().includes(q) ||
+      u.phone?.includes(q) ||
+      u.email?.toLowerCase().includes(q)
+    );
   });
 
   return (
@@ -351,6 +397,7 @@ export default function SuperAdminPanelPage() {
           { id: "overview", icon: Activity, label: "Overview" },
           { id: "admins", icon: Shield, label: "Admin Registry" },
           { id: "associates", icon: Users, label: "Associate Controls" },
+          { id: "levels", icon: Layers, label: "Level Control" },
           { id: "logs", icon: History, label: "Action Logs" },
         ].map((t) => (
           <button
@@ -600,6 +647,87 @@ export default function SuperAdminPanelPage() {
                          })
                        ) : (
                          <tr><td colSpan={4} className="py-12 text-center text-muted-foreground text-sm font-medium">No associates found.</td></tr>
+                       )}
+                    </tbody>
+                 </table>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {activeTab === "levels" && (
+        <div className="bg-card border border-border rounded-[2.5rem] p-6 sm:p-8 shadow-sm animate-in slide-in-from-bottom-4 duration-300">
+           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+              <h2 className="text-xl font-black uppercase tracking-tight flex items-center gap-3">
+                 <Layers className="text-primary" /> Level Control
+              </h2>
+              <div className="relative w-full sm:w-auto">
+                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={15} />
+                 <input 
+                    type="text" 
+                    placeholder="Search by phone/name..." 
+                    value={levelSearchQuery}
+                    onChange={(e) => setLevelSearchQuery(e.target.value)}
+                    className="w-full sm:w-64 bg-background border border-border rounded-xl py-3 pl-10 pr-4 text-sm focus:border-primary outline-none transition-all"
+                 />
+              </div>
+           </div>
+
+           <div className="border border-border rounded-2xl overflow-hidden">
+              <div className="overflow-x-auto">
+                 <table className="w-full text-left border-collapse min-w-[800px]">
+                    <thead>
+                       <tr className="bg-muted/50 border-b border-border">
+                          <th className="py-4 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-widest">User</th>
+                          <th className="py-4 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Phone</th>
+                          <th className="py-4 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Role</th>
+                          <th className="py-4 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Current Level</th>
+                          <th className="py-4 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right">Change Level</th>
+                       </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                       {loadingUsers ? (
+                          <tr><td colSpan={5} className="py-12 text-center"><Loader2 className="animate-spin text-primary mx-auto" /></td></tr>
+                       ) : filteredLevelUsers.length > 0 ? (
+                         filteredLevelUsers.map(user => {
+                             const uid = user._id || user.id;
+                             return (
+                                <tr key={uid} className="hover:bg-muted/30 transition-colors">
+                                   <td className="py-4 px-6">
+                                      <div className="flex items-center gap-3">
+                                         <div className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center font-black text-xs text-foreground shrink-0">
+                                            {user.first_name?.[0]}{user.last_name?.[0]}
+                                         </div>
+                                         <span className="font-bold text-sm text-foreground">{user.first_name} {user.last_name}</span>
+                                      </div>
+                                   </td>
+                                   <td className="py-4 px-6 text-sm font-mono text-muted-foreground">{user.phone}</td>
+                                   <td className="py-4 px-6">
+                                      <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-muted text-muted-foreground border border-border'}`}>
+                                         {user.role}
+                                      </span>
+                                   </td>
+                                   <td className="py-4 px-6">
+                                      <span className="px-3 py-1 bg-primary/10 text-primary-text rounded-full text-[10px] font-black uppercase tracking-widest">
+                                         LvL-{user.level || 1}
+                                      </span>
+                                   </td>
+                                   <td className="py-4 px-6 text-right">
+                                      <select
+                                         value={user.level || 1}
+                                         onChange={(e) => handleLevelChangeClick(user, parseInt(e.target.value))}
+                                         className="bg-background border border-border rounded-xl py-2 px-3 text-sm focus:border-primary outline-none cursor-pointer text-foreground font-bold"
+                                      >
+                                         {[1, 2, 3, 4, 5, 6, 7].map(lvl => (
+                                            <option key={lvl} value={lvl}>Level {lvl}</option>
+                                         ))}
+                                      </select>
+                                   </td>
+                                </tr>
+                             );
+                          })
+                       ) : (
+                          <tr><td colSpan={5} className="py-12 text-center text-muted-foreground text-sm font-medium">No users found.</td></tr>
                        )}
                     </tbody>
                  </table>

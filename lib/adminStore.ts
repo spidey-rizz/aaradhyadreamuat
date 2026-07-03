@@ -9,11 +9,12 @@ export interface AdminLog {
   action: string;
 }
 
-// Define the shape of Associate Policy (Limit, Suspended, Warnings)
+// Define the shape of Associate Policy (Limit, Suspended, Warnings, Levels)
 export interface AssociatePolicy {
   suspended: boolean;
   limit: number | null;
   warnings: string[];
+  level?: number | null;
 }
 
 const LOGS_KEY = "aaradhya_admin_logs";
@@ -24,7 +25,7 @@ const VISITS_KEY = "aaradhya_website_visits";
 
 export function getAdminLogs(): AdminLog[] {
   if (typeof window === "undefined") return [];
-  const raw = sessionStorage.getItem(LOGS_KEY);
+  const raw = localStorage.getItem(LOGS_KEY);
   if (raw) {
     try {
       return JSON.parse(raw);
@@ -43,7 +44,7 @@ export function getAdminLogs(): AdminLog[] {
       action: "System initialized and logs created.",
     }
   ];
-  sessionStorage.setItem(LOGS_KEY, JSON.stringify(initialLogs));
+  localStorage.setItem(LOGS_KEY, JSON.stringify(initialLogs));
   return initialLogs;
 }
 
@@ -61,7 +62,7 @@ export function addAdminLog(adminName: string, action: string) {
   };
   
   const updatedLogs = [newLog, ...logs];
-  sessionStorage.setItem(LOGS_KEY, JSON.stringify(updatedLogs));
+  localStorage.setItem(LOGS_KEY, JSON.stringify(updatedLogs));
 }
 
 // -- Associate Policies --
@@ -84,7 +85,7 @@ const decodeBase64 = (str: string) => {
 
 export function getAllAssociatePolicies(): Record<string, AssociatePolicy> {
   if (typeof window === "undefined") return {};
-  const raw = sessionStorage.getItem(POLICIES_KEY);
+  const raw = localStorage.getItem(POLICIES_KEY);
   if (raw) {
     try {
       const isBase64 = !raw.trim().startsWith("{") && !raw.trim().startsWith("[");
@@ -93,7 +94,7 @@ export function getAllAssociatePolicies(): Record<string, AssociatePolicy> {
       
       // Auto-migrate old plain text records to obfuscated format
       if (!isBase64) {
-        sessionStorage.setItem(POLICIES_KEY, encodeBase64(decodedStr));
+        localStorage.setItem(POLICIES_KEY, encodeBase64(decodedStr));
       }
       return parsed;
     } catch (e) {
@@ -114,7 +115,7 @@ export function updateAssociatePolicy(userId: string, updates: Partial<Associate
   const current = policies[userId] || { suspended: false, limit: null, warnings: [] };
   
   policies[userId] = { ...current, ...updates };
-  sessionStorage.setItem(POLICIES_KEY, encodeBase64(JSON.stringify(policies)));
+  localStorage.setItem(POLICIES_KEY, encodeBase64(JSON.stringify(policies)));
 }
 
 export function addAssociateWarning(userId: string, warning: string) {
@@ -124,7 +125,7 @@ export function addAssociateWarning(userId: string, warning: string) {
   
   current.warnings = [...current.warnings, warning];
   policies[userId] = current;
-  sessionStorage.setItem(POLICIES_KEY, encodeBase64(JSON.stringify(policies)));
+  localStorage.setItem(POLICIES_KEY, encodeBase64(JSON.stringify(policies)));
 }
 
 export function clearAssociateWarnings(userId: string) {
@@ -134,28 +135,28 @@ export function clearAssociateWarnings(userId: string) {
   
   current.warnings = [];
   policies[userId] = current;
-  sessionStorage.setItem(POLICIES_KEY, encodeBase64(JSON.stringify(policies)));
+  localStorage.setItem(POLICIES_KEY, encodeBase64(JSON.stringify(policies)));
 }
 
 // -- Website Visits --
 
 export function getWebsiteVisits(): number {
   if (typeof window === "undefined") return 14850;
-  const raw = sessionStorage.getItem(VISITS_KEY);
+  const raw = localStorage.getItem(VISITS_KEY);
   if (raw) {
     return parseInt(raw, 10);
   }
   
   // Set an initial realistic number
   const initial = 14850 + Math.floor(Math.random() * 100);
-  sessionStorage.setItem(VISITS_KEY, initial.toString());
+  localStorage.setItem(VISITS_KEY, initial.toString());
   return initial;
 }
 
 export function incrementWebsiteVisits() {
   if (typeof window === "undefined") return;
   const current = getWebsiteVisits();
-  sessionStorage.setItem(VISITS_KEY, (current + 1).toString());
+  localStorage.setItem(VISITS_KEY, (current + 1).toString());
   
   fetch("https://abacus.jasoncameron.dev/hit/aaradhyadreamcity/visits")
     .catch(() => console.warn("Failed to increment visits counter (offline)"));
