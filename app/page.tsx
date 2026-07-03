@@ -172,8 +172,8 @@ export default function Home() {
                       {/* Circle Accent */}
                       <div className="absolute -top-4 -left-4 w-24 h-24 bg-primary/5 rounded-full blur-xl group-hover:bg-primary/10 transition-colors" />
                       <div className="relative z-10 flex items-center gap-6">
-                        <span className="text-4xl sm:text-5xl font-black text-primary tracking-tight font-sans">500+</span>
-                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em] leading-snug">Happy<br />Investors</span>
+                        <span className="text-4xl sm:text-5xl font-black text-primary tracking-tight font-sans">950+</span>
+                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em] leading-snug">Happy<br />Customers</span>
                       </div>
                     </div>
 
@@ -199,7 +199,7 @@ export default function Home() {
                       {/* Circle Accent */}
                       <div className="absolute -top-4 -left-4 w-24 h-24 bg-primary/5 rounded-full blur-xl group-hover:bg-primary/10 transition-colors" />
                       <div className="relative z-10 flex items-center gap-6">
-                        <span className="text-4xl sm:text-5xl font-black text-primary tracking-tight font-sans">10+</span>
+                        <span className="text-4xl sm:text-5xl font-black text-primary tracking-tight font-sans">100+</span>
                         <span className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em] leading-snug">Acres<br />Developed</span>
                       </div>
                     </div>
