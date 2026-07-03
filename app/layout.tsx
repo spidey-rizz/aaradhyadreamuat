@@ -24,9 +24,28 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Estate | Premium Associate Network",
-  description: "Join the most exclusive real estate Associate network in Aaradhya Dream City. Register, verify, and grow your referral network.",
-  keywords: ["Real Estate", "Associate", "Aaradhya", "Referral Network", "Dream City"],
+  title: "Aaradhya Dream City | Real Estate & Associate Network",
+  description: "Discover premium real estate, plots, and properties with Aaradhya Dream City. Join our exclusive real estate Associate network in Varanasi and grow your referral business.",
+  keywords: [
+    "Aaradhya Real Estate",
+    "aaradhyadreamcity",
+    "aaradhyadreamcity.in",
+    "Aaradhya Dream City",
+    "Aaradhya Dream City Varanasi",
+    "Real Estate Varanasi",
+    "Buy Property in Varanasi",
+    "Plots in Varanasi",
+    "Flats in Varanasi",
+    "Real Estate Investment",
+    "Premium Real Estate",
+    "Real Estate Associate Network",
+    "Real Estate Plots",
+    "Real Estate Flats",
+    "Real Estate Investment",
+    "Premium Real Estate",
+    "Real Estate Associate Network",
+    "ADC"
+  ],
 };
 
 import { ThemeProvider } from "@/lib/ThemeContext";

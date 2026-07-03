@@ -55,6 +55,17 @@ export default function SuperAdminPanelPage() {
   // ── Modal States ──
   const [limitModalOpen, setLimitModalOpen] = useState(false);
   const [warningModalOpen, setWarningModalOpen] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    open: false,
+    title: "",
+    message: "",
+    onConfirm: () => {}
+  });
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [limitInput, setLimitInput] = useState("");
   const [warningInput, setWarningInput] = useState("");
@@ -198,30 +209,12 @@ export default function SuperAdminPanelPage() {
     }
   };
 
-  const toggleSuspension = (userId: string, userName: string) => {
-    const policy = getAssociatePolicy(userId);
-    const newStatus = !policy.suspended;
-    updateAssociatePolicy(userId, { suspended: newStatus });
-    
-    // Log action
-    const actionDesc = newStatus ? `Suspended Associate ${userName}` : `Reactivated Associate ${userName}`;
-    const adminName = `${profile.first_name} ${profile.last_name}`;
-    addAdminLog(adminName, actionDesc);
-    setLogs(getAdminLogs());
-    
-    // Force re-render trick for this component by cloning users
-    setAllUsers([...allUsers]);
-  };
-
-  const handleSetLimit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const executeSetLimit = (limitVal: number | null) => {
     if (!selectedUser) return;
-    
-    const limitVal = limitInput ? parseInt(limitInput) : null;
     updateAssociatePolicy(selectedUser._id || selectedUser.id, { limit: limitVal });
     
     // Log action
-    const actionDesc = limitVal ? `Set limit of ₹${limitVal.toLocaleString()} for ${selectedUser.first_name}` : `Removed limit for ${selectedUser.first_name}`;
+    const actionDesc = limitVal ? `Set limit of ₹${limitVal.toLocaleString("en-IN")} for ${selectedUser.first_name}` : `Removed limit for ${selectedUser.first_name}`;
     const adminName = `${profile.first_name} ${profile.last_name}`;
     addAdminLog(adminName, actionDesc);
     setLogs(getAdminLogs());
@@ -232,14 +225,26 @@ export default function SuperAdminPanelPage() {
     setAllUsers([...allUsers]);
   };
 
-  const handleSendWarning = (e: React.FormEvent) => {
+  const handleSetLimitSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedUser || !warningInput.trim()) return;
+    if (!selectedUser) return;
+    const limitVal = limitInput ? parseInt(limitInput) : null;
+    const limitDisplay = limitVal !== null ? `₹${limitVal.toLocaleString("en-IN")}` : "Unlimited";
     
-    addAssociateWarning(selectedUser._id || selectedUser.id, warningInput.trim());
+    setConfirmModal({
+      open: true,
+      title: "Confirm Limit Change",
+      message: `Are you sure to set transaction limit for @${selectedUser.first_name} ${selectedUser.last_name} and ${selectedUser.phone || 'N/A'} to ${limitDisplay}?`,
+      onConfirm: () => executeSetLimit(limitVal)
+    });
+  };
+
+  const executeSendWarning = (warningMsg: string) => {
+    if (!selectedUser) return;
+    addAssociateWarning(selectedUser._id || selectedUser.id, warningMsg);
     
     // Log action
-    const actionDesc = `Sent warning notice to ${selectedUser.first_name}: "${warningInput.trim().substring(0, 30)}..."`;
+    const actionDesc = `Sent warning notice to ${selectedUser.first_name}: "${warningMsg.substring(0, 30)}..."`;
     const adminName = `${profile.first_name} ${profile.last_name}`;
     addAdminLog(adminName, actionDesc);
     setLogs(getAdminLogs());
@@ -248,6 +253,44 @@ export default function SuperAdminPanelPage() {
     setSelectedUser(null);
     setWarningInput("");
     setAllUsers([...allUsers]);
+  };
+
+  const handleSendWarningSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUser || !warningInput.trim()) return;
+    const warningMsg = warningInput.trim();
+    
+    setConfirmModal({
+      open: true,
+      title: "Confirm Warning",
+      message: `Are you sure to send warning to @${selectedUser.first_name} ${selectedUser.last_name} and ${selectedUser.phone || 'N/A'}?`,
+      onConfirm: () => executeSendWarning(warningMsg)
+    });
+  };
+
+  const executeToggleSuspension = (userId: string, userName: string, newStatus: boolean) => {
+    updateAssociatePolicy(userId, { suspended: newStatus });
+    
+    // Log action
+    const actionDesc = newStatus ? `Suspended Associate ${userName}` : `Reactivated Associate ${userName}`;
+    const adminName = `${profile.first_name} ${profile.last_name}`;
+    addAdminLog(adminName, actionDesc);
+    setLogs(getAdminLogs());
+    
+    setAllUsers([...allUsers]);
+  };
+
+  const handleToggleSuspensionClick = (userId: string, userName: string, phone: string, isCurrentlySuspended: boolean) => {
+    const nextStatus = !isCurrentlySuspended;
+    const actionWord = nextStatus ? "suspend" : "reactivate";
+    const titleText = nextStatus ? "Confirm Suspension" : "Confirm Reactivation";
+    
+    setConfirmModal({
+      open: true,
+      title: titleText,
+      message: `Are you sure to ${actionWord} this user @${userName} and ${phone || 'N/A'}?`,
+      onConfirm: () => executeToggleSuspension(userId, userName, nextStatus)
+    });
   };
 
   if (status === "loading" || !profile) {
@@ -513,7 +556,17 @@ export default function SuperAdminPanelPage() {
                                   <td className="py-4 px-6 text-right space-x-2">
                                      {!user.is_admin && user.role !== "admin" && (
                                         <button 
-                                           onClick={() => toggleUserPrivilege(uid, false, `${user.first_name} ${user.last_name}`)}
+                                           onClick={() => {
+                                              setSelectedUser(user);
+                                              setConfirmModal({
+                                                 open: true,
+                                                 title: "Confirm Action",
+                                                 message: `Are you sure to make this user as admin @${user.first_name} ${user.last_name} and ${user.phone || 'N/A'}?`,
+                                                 onConfirm: async () => {
+                                                    await toggleUserPrivilege(uid, false, `${user.first_name} ${user.last_name}`);
+                                                 }
+                                              });
+                                           }}
                                            className="px-3 py-1.5 rounded-lg border border-primary/20 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest hover:bg-primary/20 transition-all cursor-pointer"
                                         >
                                            Make Admin
@@ -532,7 +585,7 @@ export default function SuperAdminPanelPage() {
                                         <MailWarning size={12} className="inline mr-1 -mt-0.5" /> Warn
                                      </button>
                                      <button 
-                                        onClick={() => toggleSuspension(uid, `${user.first_name} ${user.last_name}`)}
+                                        onClick={() => handleToggleSuspensionClick(uid, `${user.first_name} ${user.last_name}`, user.phone, policy.suspended)}
                                         className={`px-3 py-1.5 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${
                                            policy.suspended 
                                               ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
@@ -609,7 +662,7 @@ export default function SuperAdminPanelPage() {
             <div className="bg-card border border-border rounded-3xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
                <h3 className="text-lg font-black uppercase tracking-tight mb-2">Set Transaction Limit</h3>
                <p className="text-xs text-muted-foreground mb-6">Enter maximum booking/settlement limit for <b>{selectedUser.first_name}</b>. Leave blank to remove limit.</p>
-               <form onSubmit={handleSetLimit}>
+               <form onSubmit={handleSetLimitSubmit}>
                   <div className="relative mb-6">
                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-muted-foreground">₹</span>
                      <input 
@@ -634,7 +687,7 @@ export default function SuperAdminPanelPage() {
             <div className="bg-card border border-border rounded-3xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
                <h3 className="text-lg font-black uppercase tracking-tight mb-2 text-amber-500 flex items-center gap-2"><AlertTriangle size={20}/> Issue Warning</h3>
                <p className="text-xs text-muted-foreground mb-6">Send an official notice to <b>{selectedUser.first_name}</b>. This will appear on their dashboard.</p>
-               <form onSubmit={handleSendWarning}>
+               <form onSubmit={handleSendWarningSubmit}>
                   <textarea 
                      required
                      placeholder="Type warning message here..."
@@ -647,6 +700,38 @@ export default function SuperAdminPanelPage() {
                      <button type="submit" className="px-5 py-2.5 rounded-xl bg-amber-500 text-black text-xs font-black uppercase tracking-widest hover:bg-amber-600 transition-colors cursor-pointer shadow-lg shadow-amber-500/20">Send Warning</button>
                   </div>
                </form>
+            </div>
+         </div>
+      )}
+
+      {confirmModal.open && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+            <div className="bg-card border border-border rounded-3xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
+               <h3 className="text-lg font-black uppercase tracking-tight mb-2 text-primary flex items-center gap-2">
+                  <Shield size={20}/> {confirmModal.title}
+               </h3>
+               <p className="text-sm text-foreground mb-6 leading-relaxed">
+                  {confirmModal.message}
+               </p>
+               <div className="flex gap-3 justify-end">
+                  <button 
+                     type="button" 
+                     onClick={() => setConfirmModal(prev => ({ ...prev, open: false }))} 
+                     className="px-5 py-2.5 rounded-xl border border-border text-xs font-bold uppercase tracking-widest hover:bg-muted transition-colors cursor-pointer"
+                  >
+                     Cancel
+                  </button>
+                  <button 
+                     type="button"
+                     onClick={() => {
+                        confirmModal.onConfirm();
+                        setConfirmModal(prev => ({ ...prev, open: false }));
+                     }}
+                     className="px-5 py-2.5 rounded-xl bg-primary text-black text-xs font-black uppercase tracking-widest hover:bg-primary-hover transition-colors cursor-pointer shadow-lg shadow-primary/20"
+                  >
+                     Confirm
+                  </button>
+               </div>
             </div>
          </div>
       )}
