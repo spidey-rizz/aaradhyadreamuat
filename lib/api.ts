@@ -100,4 +100,5 @@ export const endpoints = {
   allUsers: "/broker/admin/users",
   soldPlots: "/sales/sold-plots",
   editUser: "/broker/user/edit",
+  addPayout: "/sales/payout/add",
 };

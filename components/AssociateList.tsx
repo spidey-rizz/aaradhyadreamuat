@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { apiFetch, endpoints } from "@/lib/api";
-import { Loader2, Search, X, AlertCircle, Users } from "lucide-react";
+import { Loader2, Search, X, AlertCircle, Users, Calendar, CheckCircle2, Wallet, Award } from "lucide-react";
 import { getAssociatePolicy } from "@/lib/adminStore";
 
 const inputCls =
@@ -15,6 +15,78 @@ export default function AssociateList() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
+
+  // Monthly Report and Payout Modal State
+  const [selectedUserForReport, setSelectedUserForReport] = useState<any | null>(null);
+  const [reportMonth, setReportMonth] = useState(new Date().getMonth() + 1);
+  const [reportYear, setReportYear] = useState(new Date().getFullYear());
+  const [reportData, setReportData] = useState<any | null>(null);
+  const [loadingReport, setLoadingReport] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
+  const [payoutSubmitting, setPayoutSubmitting] = useState(false);
+  const [payoutSuccess, setPayoutSuccess] = useState<string | null>(null);
+
+  const fetchMonthlyReport = async (userId: string, m: number, y: number) => {
+    setLoadingReport(true);
+    setReportError(null);
+    setPayoutSuccess(null);
+    try {
+      const data = await apiFetch(`${endpoints.monthlyReport}?user_id=${userId}&month=${m}&year=${y}`);
+      setReportData(data);
+    } catch (err: any) {
+      setReportError(err.detail || "Failed to load monthly report.");
+      setReportData(null);
+    } finally {
+      setLoadingReport(false);
+    }
+  };
+
+  const handleOpenReportModal = (user: any) => {
+    setSelectedUserForReport(user);
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+    setReportMonth(currentMonth);
+    setReportYear(currentYear);
+    fetchMonthlyReport(user._id || user.id, currentMonth, currentYear);
+  };
+
+  const handleReportDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.value || !selectedUserForReport) return;
+    const [y, m] = e.target.value.split("-").map(Number);
+    setReportMonth(m);
+    setReportYear(y);
+    fetchMonthlyReport(selectedUserForReport._id || selectedUserForReport.id, m, y);
+  };
+
+  const handleCreatePayout = async () => {
+    if (!selectedUserForReport || !reportData) return;
+    const amount = reportData.settlement_amount || 0;
+    if (amount <= 0) {
+      alert("No pending amount to clear for this month.");
+      return;
+    }
+    setPayoutSubmitting(true);
+    setPayoutSuccess(null);
+    try {
+      await apiFetch((endpoints as any).addPayout || "/sales/payout/add", {
+        method: "POST",
+        body: JSON.stringify({
+          user_id: selectedUserForReport._id || selectedUserForReport.id,
+          amount: amount,
+          month: reportMonth,
+          year: reportYear
+        })
+      });
+      setPayoutSuccess("Payout recorded successfully.");
+      // Reload report
+      fetchMonthlyReport(selectedUserForReport._id || selectedUserForReport.id, reportMonth, reportYear);
+    } catch (err: any) {
+      alert(err.detail || "Failed to record payout.");
+    } finally {
+      setPayoutSubmitting(false);
+    }
+  };
 
   const fetchAllAssociates = async () => {
     setLoading(true);
@@ -150,12 +222,13 @@ export default function AssociateList() {
                 <th className="py-5 px-6 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] text-right">
                   Business (Self / Team / Total)
                 </th>
+                <th className="py-5 px-6 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center">
+                  <td colSpan={7} className="py-16 text-center">
                     <Loader2 className="text-primary animate-spin mx-auto" size={28} />
                     <p className="text-muted-foreground text-xs mt-3 font-medium">Loading associates...</p>
                   </td>
@@ -207,12 +280,20 @@ export default function AssociateList() {
                           </span>
                         </div>
                       </td>
+                      <td className="py-5 px-6 text-center">
+                        <button
+                          onClick={() => handleOpenReportModal(user)}
+                          className="px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary-text hover:bg-primary hover:text-black rounded-lg text-xs font-bold transition-all cursor-pointer"
+                        >
+                          View Report
+                        </button>
+                      </td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center">
+                  <td colSpan={7} className="py-16 text-center">
                     <Users size={32} className="mx-auto mb-3 opacity-20 text-primary" />
                     <p className="text-muted-foreground text-xs font-semibold">No associates found.</p>
                   </td>
@@ -222,6 +303,160 @@ export default function AssociateList() {
           </table>
         </div>
       </div>
+
+      {/* Monthly Report & Payout Modal */}
+      {selectedUserForReport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-card border border-border rounded-3xl p-6 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200 relative overflow-hidden max-h-[90vh] flex flex-col">
+            <button
+              onClick={() => setSelectedUserForReport(null)}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-muted/50"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="flex items-center gap-3 mb-4 border-b border-border pb-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                <Wallet size={20} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black uppercase tracking-tight">Monthly Report & Payout</h3>
+                <p className="text-xs text-muted-foreground font-semibold">
+                  For {selectedUserForReport.first_name} {selectedUserForReport.last_name}
+                </p>
+              </div>
+            </div>
+
+            {/* Date selector */}
+            <div className="flex items-center gap-3 mb-6 bg-background border border-border p-3 rounded-2xl">
+              <Calendar size={16} className="text-primary-text shrink-0" />
+              <input
+                type="month"
+                value={`${reportYear}-${String(reportMonth).padStart(2, "0")}`}
+                max={`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`}
+                onChange={handleReportDateChange}
+                className="bg-transparent border-none text-xs text-foreground focus:outline-none w-full cursor-pointer font-bold uppercase outline-none"
+              />
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-grow overflow-y-auto pr-1 space-y-5 font-sans">
+              {loadingReport ? (
+                <div className="py-16 text-center">
+                  <Loader2 className="text-primary animate-spin mx-auto" size={28} />
+                  <p className="text-muted-foreground text-xs mt-3 font-semibold">Loading report data...</p>
+                </div>
+              ) : reportError ? (
+                <div className="flex items-center gap-2 text-red-500 text-sm font-semibold bg-red-500/10 border border-red-500/20 p-4 rounded-2xl">
+                  <AlertCircle size={16} /> {reportError}
+                </div>
+              ) : reportData ? (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-background border border-border p-4 rounded-2xl">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Direct Commission</p>
+                      <p className="text-lg font-black text-foreground font-mono">₹{Number(reportData.total_direct_commission || 0).toLocaleString("en-IN")}</p>
+                    </div>
+                    <div className="bg-background border border-border p-4 rounded-2xl">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Team Commission</p>
+                      <p className="text-lg font-black text-foreground font-mono">₹{Number(reportData.total_indirect_commission || 0).toLocaleString("en-IN")}</p>
+                    </div>
+                    <div className="bg-background border border-border p-4 rounded-2xl col-span-2 flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Total Rewards</p>
+                        <p className="text-lg font-black text-foreground font-mono">₹{Number(reportData.total_rewards || 0).toLocaleString("en-IN")}</p>
+                      </div>
+                      {reportData.rewards && reportData.rewards.length > 0 && (
+                        <div className="text-[10px] text-muted-foreground font-semibold flex flex-col items-end">
+                          {reportData.rewards.map((r: any) => (
+                            <span key={r.id}>LvL-{r.level}: ₹{Number(r.amount).toLocaleString("en-IN")}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Summary Box */}
+                  <div className="border border-border rounded-2xl p-4 bg-muted/30 space-y-2">
+                    <div className="flex justify-between items-center text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                      <span>Total Commissions</span>
+                      <span className="font-mono text-foreground">₹{Number(reportData.total_commission || 0).toLocaleString("en-IN")}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                      <span>Total Rewards</span>
+                      <span className="font-mono text-foreground">₹{Number(reportData.total_rewards || 0).toLocaleString("en-IN")}</span>
+                    </div>
+                    <div className="border-t border-dashed border-border/80 my-2" />
+                    <div className="flex justify-between items-center bg-primary/5 border border-primary/20 px-3 py-2.5 rounded-xl">
+                      <span className="text-xs font-black text-primary-text uppercase tracking-widest">Total Amount</span>
+                      <span className="text-base font-black text-primary-text font-mono">
+                        ₹{Number((reportData.total_commission || 0) + (reportData.total_rewards || 0)).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Payout status card */}
+                  <div className={`p-4 rounded-2xl border flex items-center justify-between ${
+                    reportData.settled 
+                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-500" 
+                      : "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400"
+                  }`}>
+                    <div className="flex items-center gap-3">
+                      {reportData.settled ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-wider">Payout Status</p>
+                        <p className="text-sm font-bold mt-0.5">{reportData.settled ? "Settled (Paid)" : "Payout Pending"}</p>
+                      </div>
+                    </div>
+                    {!reportData.settled && (
+                      <span className="font-mono font-black text-sm">
+                        ₹{Number(reportData.settlement_amount || 0).toLocaleString("en-IN")}
+                      </span>
+                    )}
+                  </div>
+
+                  {payoutSuccess && (
+                    <div className="flex items-center gap-2 text-emerald-500 text-sm font-semibold bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl">
+                      <CheckCircle2 size={16} /> {payoutSuccess}
+                    </div>
+                  )}
+
+                  {/* Direct Payout Creation Button */}
+                  {!reportData.settled && (reportData.settlement_amount || 0) > 0 && (
+                    <button
+                      onClick={handleCreatePayout}
+                      disabled={payoutSubmitting}
+                      className="w-full bg-primary text-black py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:scale-[1.01] active:scale-[0.99] transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                    >
+                      {payoutSubmitting ? (
+                        <>
+                          <Loader2 className="animate-spin" size={15} />
+                          Processing Payout...
+                        </>
+                      ) : (
+                        "Direct Create Payout (Pay Now)"
+                      )}
+                    </button>
+                  )}
+                </>
+              ) : (
+                <div className="py-16 text-center text-muted-foreground text-xs font-semibold">
+                  No monthly report found for this period.
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end pt-4 border-t border-border mt-4">
+              <button
+                onClick={() => setSelectedUserForReport(null)}
+                className="px-5 py-2.5 rounded-xl border border-border text-xs font-bold uppercase tracking-widest hover:bg-muted transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
