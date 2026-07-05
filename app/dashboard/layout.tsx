@@ -135,11 +135,6 @@ export default function DashboardLayout({
       href: "/dashboard/admin",
       icon: Shield,
     });
-    menuItems.push({
-      label: "Monthly Payouts",
-      href: "/dashboard/admin/monthly-payouts",
-      icon: Wallet,
-    });
   }
 
   if (isSuperAdmin) {

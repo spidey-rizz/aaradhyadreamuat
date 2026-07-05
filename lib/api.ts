@@ -62,15 +62,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     ...(options.headers || {}),
   };
 
-  const isPayoutEndpoint =
-    endpoint.startsWith("/user/payouts") ||
-    endpoint.startsWith("/admin/monthly-payouts") ||
-    endpoint.startsWith("/admin/monthly-payout/") ||
-    endpoint.startsWith("/admin/payout/approve");
-
-  const url = isPayoutEndpoint ? `/api${endpoint}` : `${BASE_URL}${endpoint}`;
-
-  const response = await fetch(url, {
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
     cache: "no-store",
     ...options,
     headers,
@@ -108,8 +100,4 @@ export const endpoints = {
   allUsers: "/broker/admin/users",
   soldPlots: "/sales/sold-plots",
   editUser: "/broker/user/edit",
-  payouts: "/user/payouts",
-  adminPayouts: "/admin/monthly-payouts",
-  adminPayoutDetail: "/admin/monthly-payout",
-  approvePayout: "/admin/payout/approve",
 };
