@@ -19,6 +19,7 @@ export default function PayoutDetailPage() {
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [monthlyReportData, setMonthlyReportData] = useState<any | null>(null);
   const monthInputRef = useRef<HTMLInputElement>(null);
 
   const fetchReport = async (pNum = page) => {
@@ -46,9 +47,15 @@ export default function PayoutDetailPage() {
       }
       setRawPlots(Array.isArray(list) ? list : []);
       setPage(pNum);
+
+      // Fetch monthly report to get already_paid sum
+      const currentUserId = profile._id || profile.id;
+      const reportData = await apiFetch(`${endpoints.monthlyReport}?user_id=${currentUserId}&month=${selectedMonth}&year=${selectedYear}`);
+      setMonthlyReportData(reportData);
     } catch (err: any) {
       setReportError(err.detail || "Failed to fetch payout data.");
       setRawPlots([]);
+      setMonthlyReportData(null);
     } finally {
       setReportLoading(false);
     }
@@ -58,8 +65,7 @@ export default function PayoutDetailPage() {
     if (profile) {
       fetchReport(1);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile]);
+  }, [profile, selectedMonth, selectedYear]);
 
   const handleMonthYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -74,52 +80,75 @@ export default function PayoutDetailPage() {
     const currentUserId = profile?._id || profile?.id;
     if (!currentUserId) return [];
 
-    return rawPlots
-      .filter((p: any) => {
-        // 1. Filter by current logged-in user
-        const pUid = p.user_id || p.userId || (p.sale_data && (p.sale_data.user_id || p.sale_data.userId));
-        if (pUid !== currentUserId) return false;
+    const filtered = rawPlots.filter((p: any) => {
+      // 1. Filter by current logged-in user
+      const pUid = p.user_id || p.userId || (p.sale_data && (p.sale_data.user_id || p.sale_data.userId));
+      if (pUid !== currentUserId) return false;
 
-        // 2. Filter by selected month & year
-        const dateStr = p.created_at || p.date || p.createdAt || (p.sale_data && (p.sale_data.created_at || p.sale_data.date || p.sale_data.createdAt));
-        if (dateStr) {
-          const d = new Date(dateStr);
-          const m = d.getMonth() + 1;
-          const y = d.getFullYear();
-          if (m !== selectedMonth || y !== selectedYear) return false;
-        } else {
-          return false;
-        }
-        return true;
-      })
-      .map((p: any, idx: number) => {
-        const amt = (p.payout_amount !== undefined && p.payout_amount !== null)
-          ? Number(p.payout_amount)
-          : (p.amount !== undefined && p.amount !== null)
-          ? Number(p.amount)
-          : (p.paid_amount !== undefined && p.paid_amount !== null)
-          ? Number(p.paid_amount)
-          : p.sale_data
-          ? ((p.sale_data.payout_amount !== undefined && p.sale_data.payout_amount !== null)
-            ? Number(p.sale_data.payout_amount)
-            : (p.sale_data.amount !== undefined && p.sale_data.amount !== null)
-            ? Number(p.sale_data.amount)
-            : (p.sale_data.paid_amount !== undefined && p.sale_data.paid_amount !== null)
-            ? Number(p.sale_data.paid_amount)
-            : 0)
-          : 0;
+      // 2. Filter by selected month & year
+      const dateStr = p.created_at || p.date || p.createdAt || (p.sale_data && (p.sale_data.created_at || p.sale_data.date || p.sale_data.createdAt));
+      if (dateStr) {
+        const d = new Date(dateStr);
+        const m = d.getMonth() + 1;
+        const y = d.getFullYear();
+        if (m !== selectedMonth || y !== selectedYear) return false;
+      } else {
+        return false;
+      }
+      return true;
+    });
 
-        return {
-          no: idx + 1,
-          date: p.created_at || p.date || p.createdAt || (p.sale_data && (p.sale_data.created_at || p.sale_data.date || p.sale_data.createdAt)),
-          amount: amt,
-          status: p.status || p.payout_status || "PAID",
-          type: p.type || p.sale_data?.type || "sell income",
-          plot_id: p.plot_id || p.plotId || p.plot_number || "—",
-          processing_fee: p.processing_fee !== undefined ? p.processing_fee : p.processing !== undefined ? p.processing : (p.sale_data?.processing_fee !== undefined ? p.sale_data.processing_fee : p.sale_data?.processing)
-        };
+    // Sort newest first
+    const sortedNewest = [...filtered].sort((a: any, b: any) => {
+      const dA = new Date(a.created_at || a.date || a.createdAt || 0).getTime();
+      const dB = new Date(b.created_at || b.date || b.createdAt || 0).getTime();
+      return dB - dA;
+    });
+
+    const payoutsList = monthlyReportData?.payouts_list || [];
+
+    return sortedNewest.map((p: any, idx: number) => {
+      const amt = (p.commission_amount !== undefined && p.commission_amount !== null)
+        ? Number(p.commission_amount)
+        : (p.payout_amount !== undefined && p.payout_amount !== null)
+        ? Number(p.payout_amount)
+        : (p.amount !== undefined && p.amount !== null)
+        ? Number(p.amount)
+        : (p.paid_amount !== undefined && p.paid_amount !== null)
+        ? Number(p.paid_amount)
+        : p.sale_data
+        ? ((p.sale_data.payout_amount !== undefined && p.sale_data.payout_amount !== null)
+          ? Number(p.sale_data.payout_amount)
+          : (p.sale_data.amount !== undefined && p.sale_data.amount !== null)
+          ? Number(p.sale_data.amount)
+          : (p.sale_data.paid_amount !== undefined && p.sale_data.paid_amount !== null)
+          ? Number(p.sale_data.paid_amount)
+          : 0)
+        : 0;
+
+      const processingVal = p.processing_fee !== undefined ? p.processing_fee : p.processing !== undefined ? p.processing : (p.sale_data?.processing_fee !== undefined ? p.sale_data.processing_fee : p.sale_data?.processing);
+      const processingFee = processingVal !== null && processingVal !== undefined ? Number(processingVal) : 0;
+
+      const saleDate = new Date(p.created_at || p.date || p.createdAt || (p.sale_data && (p.sale_data.created_at || p.sale_data.date || p.sale_data.createdAt)) || 0).getTime();
+      
+      const isPaid = payoutsList.some((pay: any) => {
+        if (!pay.created_at) return false;
+        const payoutDate = new Date(pay.created_at).getTime();
+        return payoutDate >= (saleDate - 5000); // 5 seconds grace period
       });
-  }, [rawPlots, selectedMonth, selectedYear, profile]);
+      const status = isPaid ? "PAID" : "PENDING";
+
+      return {
+        no: idx + 1,
+        date: p.created_at || p.date || p.createdAt || (p.sale_data && (p.sale_data.created_at || p.sale_data.date || p.sale_data.createdAt)),
+        amount: amt,
+        status: status,
+        type: p.type || p.sale_data?.type || "sell income",
+        plot_id: p.plot_id || p.plotId || p.plot_number || "—",
+        processing_fee: processingFee
+      };
+    });
+  }, [rawPlots, selectedMonth, selectedYear, profile, monthlyReportData]);
 
   const totalPaidAmountSum = useMemo(() => {
     return payouts
@@ -223,19 +252,17 @@ export default function PayoutDetailPage() {
               <tr className="border-b border-border bg-muted/50">
                 <th className="py-5 px-5 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] w-16">No.</th>
                 <th className="py-5 px-5 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Payout Date</th>
-                <th className="py-5 px-5 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Plot ID</th>
                 <th className="py-5 px-5 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Payout Type</th>
                 <th className="py-5 px-5 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Status</th>
                 <th className="py-5 px-5 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] text-right">Total Amt.</th>
                 <th className="py-5 px-5 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] text-right">TDS (5%)</th>
-                <th className="py-5 px-5 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] text-right">Processsing (5%)</th>
                 <th className="py-5 px-5 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] text-right">Payout Amount</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {reportLoading ? (
                 <tr>
-                  <td colSpan={9} className="py-16 text-center">
+                  <td colSpan={7} className="py-16 text-center">
                     <Loader2 className="text-primary-text animate-spin mx-auto" size={28} />
                     <p className="text-muted-foreground text-xs mt-3 font-medium">Loading payout data...</p>
                   </td>
@@ -244,13 +271,7 @@ export default function PayoutDetailPage() {
                 payouts.map((payout: any, index: number) => {
                   const totalAmt = payout.amount || 0;
                   const tds = Math.round(totalAmt * 0.05);
-                  
-                  // Processing fee logic
-                  const processingVal = payout.processing_fee !== undefined ? payout.processing_fee : null;
-                  const processingFee = processingVal !== null ? Number(processingVal) : 0;
-                  const processingDisplay = processingVal !== null && processingVal !== "" ? `₹${processingFee.toLocaleString('en-IN')}` : "—";
-                  
-                  const netPayoutAmt = totalAmt - tds - processingFee;
+                  const netPayoutAmt = totalAmt - tds;
 
                   return (
                     <tr key={index} className="hover:bg-muted/30 transition-colors">
@@ -259,7 +280,6 @@ export default function PayoutDetailPage() {
                         <Calendar size={14} className="text-muted-foreground" />
                         {formatDate(payout.date)}
                       </td>
-                      <td className="py-5 px-5 text-sm text-muted-foreground font-mono">{payout.plot_id}</td>
                       <td className="py-5 px-5 text-xs font-bold uppercase tracking-wider text-muted-foreground">{payout.type}</td>
                       <td className="py-5 px-5">
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border ${
@@ -277,9 +297,6 @@ export default function PayoutDetailPage() {
                       <td className="py-5 px-5 text-sm text-red-500 font-bold font-mono text-right whitespace-nowrap">
                         ₹{tds.toLocaleString('en-IN')}
                       </td>
-                      <td className="py-5 px-5 text-sm text-muted-foreground font-bold font-mono text-right whitespace-nowrap">
-                        {processingDisplay}
-                      </td>
                       <td className="py-5 px-5 text-sm text-primary-text font-black font-mono text-right whitespace-nowrap">
                         ₹{netPayoutAmt.toLocaleString('en-IN')}
                       </td>
@@ -288,7 +305,7 @@ export default function PayoutDetailPage() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={9} className="py-16 text-center text-muted-foreground text-xs italic">
+                  <td colSpan={7} className="py-16 text-center text-muted-foreground text-xs italic">
                     <div className="flex flex-col items-center gap-2">
                       <FileText size={28} className="opacity-20 text-primary-text" />
                       <p>No payouts found for {new Date(selectedYear, selectedMonth - 1).toLocaleString('en-IN', { month: 'long', year: 'numeric' })}.</p>

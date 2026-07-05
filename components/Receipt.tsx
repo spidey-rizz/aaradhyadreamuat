@@ -11,6 +11,7 @@ export interface ReceiptData {
   totalAmount?: number;
   paidAmount?: number;
   remainingAmount?: number;
+  prepaid?: number;
 }
 
 interface ReceiptProps {
@@ -29,16 +30,20 @@ export const Receipt: React.FC<ReceiptProps> = ({ data }) => {
     totalAmount,
     paidAmount,
     remainingAmount: apiRemainingAmount,
+    prepaid,
   } = data;
 
   const parsedTotal = Number(totalAmount) || 0;
   const parsedPaid = Number(paidAmount) || 0;
+  const parsedPrepaid = Number(prepaid) || 0;
   
-  // Calculate remaining amount if not provided by the API
+  // Calculate remaining amount if not provided by the API, accounting for prepaid
   const finalRemainingAmount =
     apiRemainingAmount !== undefined && apiRemainingAmount !== null
       ? Number(apiRemainingAmount)
-      : parsedTotal - parsedPaid;
+      : parsedPrepaid > 0
+        ? Math.max(0, parsedTotal - (parsedPrepaid + parsedPaid))
+        : parsedTotal - parsedPaid;
 
   const displayDate = date ? new Date(date).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN');
 
@@ -89,6 +94,12 @@ export const Receipt: React.FC<ReceiptProps> = ({ data }) => {
               <th className="py-3 px-2 w-1/2">Total Amount</th>
               <td className="py-3 px-2 font-medium">₹{parsedTotal.toLocaleString('en-IN')}</td>
             </tr>
+            {parsedPrepaid > 0 && (
+              <tr className="border-b border-gray-200">
+                <th className="py-3 px-2 w-1/2">Prepaid Amount</th>
+                <td className="py-3 px-2 font-medium">₹{parsedPrepaid.toLocaleString('en-IN')}</td>
+              </tr>
+            )}
             <tr className="border-b border-gray-200">
               <th className="py-3 px-2 w-1/2">Paid Amount</th>
               <td className="py-3 px-2 font-medium">₹{parsedPaid.toLocaleString('en-IN')}</td>

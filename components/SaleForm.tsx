@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import { useAuth } from "@/lib/useAuth";
 import { apiFetch, endpoints } from "@/lib/api";
 import { getAssociatePolicy, addAdminLog } from "@/lib/adminStore";
@@ -32,6 +32,7 @@ const EMPTY_FORM = {
   phone: "",
   address: "",
   payment: "cash",
+  type: "NEW" as "NEW" | "SETTLEMENT",
 };
 
 const inputCls =
@@ -41,12 +42,63 @@ const labelCls =
 
 export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" }) {
   const { profile } = useAuth();
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [form, setForm] = useState(() => ({
+    ...EMPTY_FORM,
+    type: saleType
+  }));
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [receiptToView, setReceiptToView] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const phoneDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [loadingPrepaid, setLoadingPrepaid] = useState(false);
+  const [prepaidFetchedMsg, setPrepaidFetchedMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const fetchPrepaidAmount = async () => {
+    if (!form.plot_id.trim()) return;
+    setLoadingPrepaid(true);
+    setPrepaidFetchedMsg(null);
+    try {
+      const saleData = await apiFetch(`${endpoints.plotInfo}${form.plot_id.trim()}`);
+      if (saleData) {
+        const amountPaidPreviously = saleData.paid_amount || saleData.amount || 0;
+        const totalPlotAmount = saleData.total_amount || saleData.totalAmount || 0;
+        const remainingToPay = totalPlotAmount - amountPaidPreviously;
+        
+        setForm((f) => ({
+          ...f,
+          prepaid: String(amountPaidPreviously),
+          total_amount: String(totalPlotAmount),
+          paid_amount: String(remainingToPay > 0 ? remainingToPay : 0),
+        }));
+        
+        setPrepaidFetchedMsg({
+          type: "success",
+          text: `Fetched: Total ₹${totalPlotAmount.toLocaleString("en-IN")}, Prepaid ₹${amountPaidPreviously.toLocaleString("en-IN")}. Auto-filled remaining balance of ₹${remainingToPay.toLocaleString("en-IN")}.`
+        });
+      } else {
+        setPrepaidFetchedMsg({
+          type: "error",
+          text: "No active sale found for this Plot ID."
+        });
+      }
+    } catch (err: any) {
+      setPrepaidFetchedMsg({
+        type: "error",
+        text: err.detail || "Plot not found or not sold yet."
+      });
+    } finally {
+      setLoadingPrepaid(false);
+    }
+  };
+
+  const remainingBalance = useMemo(() => {
+    const total = parseFloat(form.total_amount) || 0;
+    const paid = parseFloat(form.paid_amount) || 0;
+    const prepaid = form.type === "SETTLEMENT" ? (parseFloat(form.prepaid) || 0) : 0;
+    return total - prepaid - paid;
+  }, [form.total_amount, form.paid_amount, form.prepaid, form.type]);
 
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -122,6 +174,14 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
       return;
     }
 
+    const totalAmtVal = parseFloat(form.total_amount) || 0;
+    const paidAmtVal = parseFloat(form.paid_amount) || 0;
+
+    if (form.type === "SETTLEMENT" && totalAmtVal !== paidAmtVal && paidAmtVal >= totalAmtVal && (!form.prepaid || parseFloat(form.prepaid) <= 0)) {
+      setMsg({ type: "error", text: "Prepaid amount is required and must be greater than 0 for settlement sales." });
+      return;
+    }
+
     const policy = getAssociatePolicy(form.user_id);
     if (policy.limit !== null) {
       const saleAmount = parseFloat(form.total_amount);
@@ -147,22 +207,22 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
         body: JSON.stringify({
           user_id: form.user_id,
           plot_id: form.plot_id.trim(),
-          total_amount: parseFloat(form.total_amount),
-          paid_amount: parseFloat(form.paid_amount),
+          total_amount: totalAmtVal,
+          paid_amount: paidAmtVal,
           name: form.name.trim(),
           aadhar: String(form.aadhar).trim(),
           phone: sanitizedBuyerPhone,
           address: form.address.trim(),
           payment: form.payment,
-          type: saleType,
-          prepaid: parseInt(form.prepaid || "0") || 0,
+          type: form.type,
+          prepaid: form.type === "SETTLEMENT" ? (parseFloat(form.prepaid) || 0) : 0,
         }),
       });
 
       const adminName = profile ? `${profile.first_name} ${profile.last_name}` : "Admin";
       addAdminLog(
         adminName,
-        `Submitted ${saleType === "NEW" ? "new booking" : "settlement"} for Plot ${form.plot_id.trim()} (Associate: ${
+        `Submitted ${form.type === "NEW" ? "new booking" : "settlement"} for Plot ${form.plot_id.trim()} (Associate: ${
           form.associate_found?.first_name || "Unknown"
         })`
       );
@@ -178,13 +238,17 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
         paymentMode: form.payment === "cash" ? "Cash" : form.payment === "bank_transfer" ? "Bank Transfer" : form.payment === "cheque" ? "Cheque" : form.payment === "upi" ? "UPI" : form.payment,
         totalAmount: parseFloat(form.total_amount),
         paidAmount: parseFloat(form.paid_amount),
+        prepaid: form.type === "SETTLEMENT" ? (parseFloat(form.prepaid) || 0) : 0,
       };
 
       setReceiptToView(receiptData);
       setIsModalOpen(true);
 
-      setMsg({ type: "success", text: `${saleType === "NEW" ? "New Booking" : "Settlement"} submitted successfully!` });
-      setForm(EMPTY_FORM);
+      setMsg({ type: "success", text: `${form.type === "NEW" ? "New Booking" : "Settlement"} submitted successfully!` });
+      setForm({
+        ...EMPTY_FORM,
+        type: saleType
+      });
     } catch (err: any) {
       setMsg({ type: "error", text: err.detail || "Failed to submit. Please try again." });
     } finally {
@@ -280,17 +344,49 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
         <p className="text-[10px] font-black uppercase tracking-[0.25em] text-primary mb-1 flex items-center gap-2">
           <Home size={14} /> Step 2 — Plot & Payment Details
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <div className="space-y-1">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div className="space-y-1 relative">
             <label className={labelCls}>Plot ID *</label>
-            <input
-              required
-              type="text"
-              placeholder="e.g. PLOT-42"
-              value={form.plot_id}
-              onChange={(e) => set("plot_id", e.target.value)}
-              className={inputCls}
-            />
+            <div className="flex gap-2">
+              <input
+                required
+                type="text"
+                placeholder="e.g. PLOT-42"
+                value={form.plot_id}
+                onChange={(e) => set("plot_id", e.target.value)}
+                className={inputCls}
+              />
+              {form.type === "SETTLEMENT" && form.plot_id.trim() && (
+                <button
+                  type="button"
+                  onClick={fetchPrepaidAmount}
+                  disabled={loadingPrepaid}
+                  className="px-4 bg-primary/10 border border-primary/20 text-primary-text hover:bg-primary hover:text-black rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5"
+                >
+                  {loadingPrepaid ? (
+                    <Loader2 size={13} className="animate-spin" />
+                  ) : (
+                    "Fetch Prepaid"
+                  )}
+                </button>
+              )}
+            </div>
+            {prepaidFetchedMsg && (
+              <p className={`text-[10px] font-semibold mt-1 ${prepaidFetchedMsg.type === "success" ? "text-green-500" : "text-amber-500"}`}>
+                {prepaidFetchedMsg.text}
+              </p>
+            )}
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>Sale Type *</label>
+            <select
+              value={form.type}
+              onChange={(e) => set("type", e.target.value)}
+              className={`${inputCls} cursor-pointer`}
+            >
+              <option value="NEW">New Booking</option>
+              <option value="SETTLEMENT">Settlement</option>
+            </select>
           </div>
           <div className="space-y-1">
             <label className={labelCls}>Payment Method</label>
@@ -306,7 +402,7 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
             </select>
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className={`grid grid-cols-1 ${form.type === "SETTLEMENT" ? "sm:grid-cols-3" : "sm:grid-cols-2"} gap-5`}>
           <div className="space-y-1">
             <label className={labelCls}>Total Amount (₹) *</label>
             <input
@@ -315,7 +411,8 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
               placeholder="Total Price"
               value={form.total_amount}
               onChange={(e) => set("total_amount", e.target.value)}
-              className={`${inputCls} font-mono`}
+              readOnly={form.type === "SETTLEMENT"}
+              className={`${inputCls} font-mono ${form.type === "SETTLEMENT" ? "bg-muted cursor-not-allowed opacity-75" : ""}`}
             />
           </div>
           <div className="space-y-1">
@@ -326,20 +423,32 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
               placeholder="Paid Price"
               value={form.paid_amount}
               onChange={(e) => set("paid_amount", e.target.value)}
-              className={`${inputCls} font-mono`}
+              readOnly={form.type === "SETTLEMENT"}
+              className={`${inputCls} font-mono ${form.type === "SETTLEMENT" ? "bg-muted cursor-not-allowed opacity-75" : ""}`}
             />
           </div>
-          <div className="space-y-1">
-            <label className={labelCls}>Prepaid (₹)</label>
-            <input
-              type="number"
-              placeholder="Prepaid portion"
-              value={form.prepaid}
-              onChange={(e) => set("prepaid", e.target.value)}
-              className={`${inputCls} font-mono`}
-            />
-          </div>
+          {form.type === "SETTLEMENT" && (
+            <div className="space-y-1">
+              <label className={labelCls}>Prepaid (₹) *</label>
+              <input
+                required
+                type="number"
+                placeholder="Prepaid portion (Required)"
+                value={form.prepaid}
+                onChange={(e) => set("prepaid", e.target.value)}
+                className={`${inputCls} font-mono border-amber-500/40 focus:border-amber-500`}
+              />
+            </div>
+          )}
         </div>
+        {form.total_amount && (
+          <div className="flex justify-between items-center bg-primary/5 border border-primary/20 p-4 rounded-xl mt-4 animate-in fade-in slide-in-from-top-1">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Calculated Balance / Remaining Amount</span>
+            <span className={`text-base font-black font-mono ${remainingBalance < 0 ? "text-red-500 font-bold" : "text-primary-text"}`}>
+              ₹{remainingBalance.toLocaleString("en-IN")}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* STEP 3: Buyer Details */}
@@ -417,7 +526,7 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
         {loading ? <Loader2 className="animate-spin" size={18} /> : <PlusCircle size={18} />}
         {loading
           ? "Submitting..."
-          : saleType === "NEW"
+          : form.type === "NEW"
           ? "Submit New Booking"
           : "Submit Settlement"}
       </button>

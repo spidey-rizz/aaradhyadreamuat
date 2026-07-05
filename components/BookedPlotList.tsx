@@ -18,6 +18,7 @@ export default function BookedPlotList() {
   const [error, setError] = useState<string | null>(null);
   const [fetched, setFetched] = useState(false);
   const [page, setPage] = useState(1);
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState("all");
 
   // Associate mapping and filter states
   const [associates, setAssociates] = useState<any[]>([]);
@@ -33,6 +34,12 @@ export default function BookedPlotList() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleViewReceipt = (plot: any) => {
+    const pType = plot.type || plot.sale_data?.type || "NEW";
+    const prepaidAmount = pType === "SETTLEMENT" ? Number(plot.prepaid || 0) : 0;
+    const remainingVal = prepaidAmount > 0 
+      ? Math.max(0, plot.total_amount - (prepaidAmount + plot.paid_amount))
+      : (plot.remaining_amount != null ? plot.remaining_amount : plot.total_amount - plot.paid_amount);
+
     const receiptData = {
       receiptNo: plot._id || plot.id,
       date: plot.created_at || plot.date || plot.createdAt,
@@ -43,7 +50,8 @@ export default function BookedPlotList() {
       paymentMode: plot.payment || plot.payment_mode || plot.sale_data?.payment || "Cash",
       totalAmount: plot.total_amount,
       paidAmount: plot.paid_amount,
-      remainingAmount: plot.remaining_amount,
+      remainingAmount: remainingVal,
+      prepaid: prepaidAmount,
     };
     setReceiptToView(receiptData);
     setIsModalOpen(true);
@@ -181,6 +189,17 @@ export default function BookedPlotList() {
       if (m !== month || y !== year) return false;
     }
 
+    // 4. Filter by Payment Status
+    const total = Number(p.total_amount || p.totalAmount || 0);
+    const paid = Number(p.paid_amount || p.paidAmount || 0);
+    const pType = p.type || p.sale_data?.type || "NEW";
+    const prepaid = pType === "SETTLEMENT" ? Number(p.prepaid || 0) : 0;
+    
+    const isSettled = (total === paid) || ((prepaid + paid) >= total);
+    
+    if (paymentStatusFilter === "settled" && !isSettled) return false;
+    if (paymentStatusFilter === "pending" && isSettled) return false;
+
     return true;
   });
 
@@ -271,6 +290,15 @@ export default function BookedPlotList() {
             </button>
           )}
         </div>
+        <select
+          value={paymentStatusFilter}
+          onChange={(e) => setPaymentStatusFilter(e.target.value)}
+          className={`${inputCls} sm:w-48 cursor-pointer`}
+        >
+          <option value="all">All Bookings</option>
+          <option value="settled">Fully Paid (Settled)</option>
+          <option value="pending">Partially Paid (Pending)</option>
+        </select>
         <input
           type="month"
           value={monthValue}
@@ -329,8 +357,11 @@ export default function BookedPlotList() {
                     ? `${assoc.first_name} ${assoc.last_name}`.trim()
                     : plot.associate_name || plot.sold_by || plot.user_name || "—";
                   const assocPhone = assoc ? assoc.phone : "—";
-                  const remainingAmount =
-                    plot.remaining_amount != null ? plot.remaining_amount : plot.total_amount - plot.paid_amount || 0;
+                  const pType = plot.type || plot.sale_data?.type || "NEW";
+                  const prepaidAmount = pType === "SETTLEMENT" ? Number(plot.prepaid || 0) : 0;
+                  const remainingAmount = prepaidAmount > 0 
+                    ? Math.max(0, plot.total_amount - (prepaidAmount + plot.paid_amount))
+                    : (plot.remaining_amount != null ? plot.remaining_amount : plot.total_amount - plot.paid_amount || 0);
                   return (
                     <tr
                       key={plot._id || plot.id || `${plot.plot_id || "plot"}-${idx}`}
@@ -361,8 +392,9 @@ export default function BookedPlotList() {
                             ₹{Number(plot.total_amount || 0).toLocaleString("en-IN")}
                           </span>
                           <span className="text-[9px] text-muted-foreground font-mono mt-0.5">
-                            Paid: ₹{Number(plot.paid_amount || 0).toLocaleString("en-IN")} | Rem: ₹
-                            {Number(remainingAmount).toLocaleString("en-IN")}
+                            Paid: ₹{Number(plot.paid_amount || 0).toLocaleString("en-IN")}
+                            {prepaidAmount > 0 && ` | Prepaid: ₹${prepaidAmount.toLocaleString("en-IN")}`}
+                            {` | Rem: ₹${Number(remainingAmount).toLocaleString("en-IN")}`}
                           </span>
                         </div>
                       </td>

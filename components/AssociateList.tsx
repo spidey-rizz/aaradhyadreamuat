@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { apiFetch, endpoints } from "@/lib/api";
-import { Loader2, Search, X, AlertCircle, Users, Calendar, CheckCircle2, Wallet, Award } from "lucide-react";
+import { Loader2, Search, X, AlertCircle, Users, Calendar, CheckCircle2, Wallet, Award, Landmark } from "lucide-react";
 import { getAssociatePolicy } from "@/lib/adminStore";
 
 const inputCls =
@@ -18,6 +18,7 @@ export default function AssociateList() {
 
   // Monthly Report and Payout Modal State
   const [selectedUserForReport, setSelectedUserForReport] = useState<any | null>(null);
+  const [selectedUserForBank, setSelectedUserForBank] = useState<any | null>(null);
   const [reportMonth, setReportMonth] = useState(new Date().getMonth() + 1);
   const [reportYear, setReportYear] = useState(new Date().getFullYear());
   const [reportData, setReportData] = useState<any | null>(null);
@@ -280,13 +281,22 @@ export default function AssociateList() {
                           </span>
                         </div>
                       </td>
-                      <td className="py-5 px-6 text-center">
-                        <button
-                          onClick={() => handleOpenReportModal(user)}
-                          className="px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary-text hover:bg-primary hover:text-black rounded-lg text-xs font-bold transition-all cursor-pointer"
-                        >
-                          View Report
-                        </button>
+                      <td className="py-5 px-6">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => handleOpenReportModal(user)}
+                            className="px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary-text hover:bg-primary hover:text-black rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap"
+                          >
+                            View Report
+                          </button>
+                          <button
+                            onClick={() => setSelectedUserForBank(user)}
+                            title="View Bank Details"
+                            className="p-1.5 bg-muted hover:bg-muted-foreground/20 border border-border text-foreground rounded-lg transition-all cursor-pointer flex items-center justify-center"
+                          >
+                            <Landmark size={15} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -352,6 +362,25 @@ export default function AssociateList() {
                 </div>
               ) : reportData ? (
                 <>
+                  {/* Sales/Business Overview section */}
+                  <div className="bg-primary/5 border border-primary/20 p-4 rounded-2xl space-y-3">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Business Overview (API Live)</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="text-center bg-background border border-border/80 p-2.5 rounded-xl">
+                        <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground mb-1">Direct Sales</p>
+                        <p className="text-sm font-black text-foreground font-mono">₹{Number(reportData.direct_sale || 0).toLocaleString("en-IN")}</p>
+                      </div>
+                      <div className="text-center bg-background border border-border/80 p-2.5 rounded-xl">
+                        <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground mb-1">Team Sales</p>
+                        <p className="text-sm font-black text-foreground font-mono">₹{Number(reportData.team_sale || 0).toLocaleString("en-IN")}</p>
+                      </div>
+                      <div className="text-center bg-primary/10 border border-primary/25 p-2.5 rounded-xl">
+                        <p className="text-[8px] font-black uppercase tracking-widest text-primary-text mb-1">Total Sales</p>
+                        <p className="text-sm font-black text-primary-text font-mono">₹{Number(reportData.lifetime_sale || 0).toLocaleString("en-IN")}</p>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-background border border-border p-4 rounded-2xl">
                       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Direct Commission</p>
@@ -377,43 +406,73 @@ export default function AssociateList() {
                   </div>
 
                   {/* Summary Box */}
-                  <div className="border border-border rounded-2xl p-4 bg-muted/30 space-y-2">
-                    <div className="flex justify-between items-center text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                      <span>Total Commissions</span>
-                      <span className="font-mono text-foreground">₹{Number(reportData.total_commission || 0).toLocaleString("en-IN")}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                      <span>Total Rewards</span>
-                      <span className="font-mono text-foreground">₹{Number(reportData.total_rewards || 0).toLocaleString("en-IN")}</span>
-                    </div>
-                    <div className="border-t border-dashed border-border/80 my-2" />
-                    <div className="flex justify-between items-center bg-primary/5 border border-primary/20 px-3 py-2.5 rounded-xl">
-                      <span className="text-xs font-black text-primary-text uppercase tracking-widest">Total Amount</span>
-                      <span className="text-base font-black text-primary-text font-mono">
-                        ₹{Number((reportData.total_commission || 0) + (reportData.total_rewards || 0)).toLocaleString("en-IN")}
-                      </span>
-                    </div>
-                  </div>
+                  {(() => {
+                    const gross = (reportData.total_commission || 0) + (reportData.total_rewards || 0);
+                    const tds = gross * 0.05;
+                    const net = gross - tds;
+                    const alreadyPaid = reportData.already_paid || 0;
+                    return (
+                      <>
+                        <div className="border border-border rounded-2xl p-4 bg-muted/30 space-y-2">
+                          <div className="flex justify-between items-center text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                            <span>Total Commissions</span>
+                            <span className="font-mono text-foreground">₹{Number(reportData.total_commission || 0).toLocaleString("en-IN")}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                            <span>Total Rewards</span>
+                            <span className="font-mono text-foreground">₹{Number(reportData.total_rewards || 0).toLocaleString("en-IN")}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                            <span>Gross Amount</span>
+                            <span className="font-mono text-foreground">₹{Number(gross).toLocaleString("en-IN")}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-xs font-bold text-red-500 uppercase tracking-wider">
+                            <span>TDS (5%)</span>
+                            <span className="font-mono text-red-500">-₹{Number(tds).toLocaleString("en-IN")}</span>
+                          </div>
+                          {alreadyPaid > 0 && (
+                            <div className="flex justify-between items-center text-xs font-bold text-green-500 uppercase tracking-wider">
+                              <span>Already Settled (Paid)</span>
+                              <span className="font-mono text-green-500">-₹{Number(alreadyPaid).toLocaleString("en-IN")}</span>
+                            </div>
+                          )}
+                          <div className="border-t border-dashed border-border/80 my-2" />
+                          <div className="flex justify-between items-center bg-primary/5 border border-primary/20 px-3 py-2.5 rounded-xl">
+                            <span className="text-xs font-black text-primary-text uppercase tracking-widest">
+                              {alreadyPaid > 0 ? "Remaining Pending Payable" : "Net Payable Amount"}
+                            </span>
+                            <span className="text-base font-black text-primary-text font-mono">
+                              ₹{Number(reportData.settled ? alreadyPaid : (reportData.settlement_amount || net)).toLocaleString("en-IN")}
+                            </span>
+                          </div>
+                        </div>
 
-                  {/* Payout status card */}
-                  <div className={`p-4 rounded-2xl border flex items-center justify-between ${
-                    reportData.settled 
-                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-500" 
-                      : "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400"
-                  }`}>
-                    <div className="flex items-center gap-3">
-                      {reportData.settled ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
-                      <div>
-                        <p className="text-xs font-black uppercase tracking-wider">Payout Status</p>
-                        <p className="text-sm font-bold mt-0.5">{reportData.settled ? "Settled (Paid)" : "Payout Pending"}</p>
-                      </div>
-                    </div>
-                    {!reportData.settled && (
-                      <span className="font-mono font-black text-sm">
-                        ₹{Number(reportData.settlement_amount || 0).toLocaleString("en-IN")}
-                      </span>
-                    )}
-                  </div>
+                        {/* Payout status card */}
+                        <div className={`p-4 rounded-2xl border flex items-center justify-between ${
+                          reportData.settled 
+                            ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-500" 
+                            : "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400"
+                        }`}>
+                          <div className="flex items-center gap-3">
+                            {reportData.settled ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
+                            <div>
+                              <p className="text-xs font-black uppercase tracking-wider">Payout Status</p>
+                              <p className="text-sm font-bold mt-0.5">
+                                {reportData.settled 
+                                  ? "Settled (Fully Paid)" 
+                                  : alreadyPaid > 0 
+                                    ? "Partially Settled (Pending)" 
+                                    : "Payout Pending"}
+                              </p>
+                            </div>
+                          </div>
+                          <span className="font-mono font-black text-sm">
+                            ₹{Number(reportData.settled ? 0 : (reportData.settlement_amount || net)).toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                      </>
+                    );
+                  })()}
 
                   {payoutSuccess && (
                     <div className="flex items-center gap-2 text-emerald-500 text-sm font-semibold bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl">
@@ -449,6 +508,76 @@ export default function AssociateList() {
             <div className="flex justify-end pt-4 border-t border-border mt-4">
               <button
                 onClick={() => setSelectedUserForReport(null)}
+                className="px-5 py-2.5 rounded-xl border border-border text-xs font-bold uppercase tracking-widest hover:bg-muted transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bank Details Modal */}
+      {selectedUserForBank && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-card border border-border rounded-3xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 relative overflow-hidden">
+            <button
+              onClick={() => setSelectedUserForBank(null)}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-muted/50"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="flex items-center gap-3 mb-6 border-b border-border pb-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                <Landmark size={20} />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-foreground uppercase tracking-wider">Bank Details</h3>
+                <p className="text-xs text-muted-foreground font-semibold mt-0.5">
+                  {selectedUserForBank.first_name || selectedUserForBank.name
+                    ? `${selectedUserForBank.first_name || ""} ${selectedUserForBank.last_name || ""}`.trim() || selectedUserForBank.name
+                    : "Associate Account"}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {selectedUserForBank.bank_account && 
+               (selectedUserForBank.bank_account.bank_name || 
+                selectedUserForBank.bank_account.account_number || 
+                selectedUserForBank.bank_account.ifsc_code) ? (
+                <div className="space-y-3.5">
+                  <div className="bg-muted/30 border border-border rounded-2xl p-4.5 space-y-3 font-mono">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Bank Name</span>
+                      <span className="text-sm font-black text-foreground">{selectedUserForBank.bank_account.bank_name || "—"}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Account Number</span>
+                      <span className="text-sm font-black text-foreground tracking-wider">{selectedUserForBank.bank_account.account_number || "—"}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">IFSC Code</span>
+                      <span className="text-sm font-black text-primary-text">{selectedUserForBank.bank_account.ifsc_code || "—"}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Branch Name</span>
+                      <span className="text-sm font-black text-foreground">{selectedUserForBank.bank_account.branch_name || "—"}</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="py-8 text-center text-muted-foreground text-sm font-semibold flex flex-col items-center gap-2">
+                  <Landmark size={32} className="opacity-20 text-primary-text" />
+                  <p>No bank details uploaded by this associate yet.</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end pt-4 border-t border-border mt-6">
+              <button
+                onClick={() => setSelectedUserForBank(null)}
                 className="px-5 py-2.5 rounded-xl border border-border text-xs font-bold uppercase tracking-widest hover:bg-muted transition-colors cursor-pointer"
               >
                 Close

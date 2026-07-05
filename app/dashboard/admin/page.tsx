@@ -14,6 +14,7 @@ import {
 import SaleForm from "@/components/SaleForm";
 import AssociateList from "@/components/AssociateList";
 import BookedPlotList from "@/components/BookedPlotList";
+import SettlementList from "@/components/SettlementList";
 
 type Tab = "booking" | "settlement" | "associates" | "plots";
 
@@ -129,7 +130,7 @@ export default function AdminPanelPage() {
         </div>
 
         {activeTab === "booking"    && <SaleForm saleType="NEW" />}
-        {activeTab === "settlement" && <SaleForm saleType="SETTLEMENT" />}
+        {activeTab === "settlement" && <SettlementList />}
         {activeTab === "associates" && <AssociateList />}
         {activeTab === "plots"      && <BookedPlotList />}
       </div>
