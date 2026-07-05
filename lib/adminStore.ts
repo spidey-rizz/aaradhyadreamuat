@@ -24,28 +24,7 @@ const VISITS_KEY = "aaradhya_website_visits";
 // -- Admin Logs --
 
 export function getAdminLogs(): AdminLog[] {
-  if (typeof window === "undefined") return [];
-  const raw = localStorage.getItem(LOGS_KEY);
-  if (raw) {
-    try {
-      return JSON.parse(raw);
-    } catch (e) {
-      console.error("Failed to parse admin logs", e);
-    }
-  }
-  
-  // Return some initial mock data if empty
-  const initialLogs: AdminLog[] = [
-    {
-      id: "1",
-      date: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
-      time: "10:30 AM",
-      adminName: "Super Admin",
-      action: "System initialized and logs created.",
-    }
-  ];
-  localStorage.setItem(LOGS_KEY, JSON.stringify(initialLogs));
-  return initialLogs;
+  return [];
 }
 
 export function addAdminLog(adminName: string, action: string) {

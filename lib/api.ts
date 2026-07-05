@@ -55,11 +55,15 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
 
   const headers = {
     "Content-Type": "application/json",
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.headers || {}),
   };
 
   const response = await fetch(`${BASE_URL}${endpoint}`, {
+    cache: "no-store",
     ...options,
     headers,
   });

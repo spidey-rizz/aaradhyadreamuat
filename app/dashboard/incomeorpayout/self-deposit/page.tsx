@@ -90,10 +90,22 @@ export default function SelfDepositPage() {
         return true;
       })
       .map((p: any, idx: number) => {
+        const amt = (p.paid_amount !== undefined && p.paid_amount !== null)
+          ? Number(p.paid_amount)
+          : (p.amount !== undefined && p.amount !== null)
+          ? Number(p.amount)
+          : p.sale_data
+          ? ((p.sale_data.paid_amount !== undefined && p.sale_data.paid_amount !== null)
+            ? Number(p.sale_data.paid_amount)
+            : (p.sale_data.amount !== undefined && p.sale_data.amount !== null)
+            ? Number(p.sale_data.amount)
+            : 0)
+          : 0;
+
         return {
           no: idx + 1,
           date: p.created_at || p.date || p.createdAt || (p.sale_data && (p.sale_data.created_at || p.sale_data.date || p.sale_data.createdAt)),
-          amount: p.paid_amount || p.amount || (p.sale_data && (p.sale_data.paid_amount || p.sale_data.amount)) || 0,
+          amount: amt,
           plot_id: p.plot_id || p.plotId || p.plot_number || "—",
           type: p.type || p.sale_data?.type || "NEW"
         };

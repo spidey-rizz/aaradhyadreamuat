@@ -775,7 +775,7 @@ export default function SuperAdminPanelPage() {
                              </tr>
                           ))
                        ) : (
-                          <tr><td colSpan={3} className="py-12 text-center text-muted-foreground text-sm">No administrative logs recorded yet.</td></tr>
+                          <tr><td colSpan={3} className="py-12 text-center text-muted-foreground text-sm font-semibold">No data found.</td></tr>
                        )}
                     </tbody>
                  </table>

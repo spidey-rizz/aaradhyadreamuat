@@ -93,10 +93,26 @@ export default function PayoutDetailPage() {
         return true;
       })
       .map((p: any, idx: number) => {
+        const amt = (p.payout_amount !== undefined && p.payout_amount !== null)
+          ? Number(p.payout_amount)
+          : (p.amount !== undefined && p.amount !== null)
+          ? Number(p.amount)
+          : (p.paid_amount !== undefined && p.paid_amount !== null)
+          ? Number(p.paid_amount)
+          : p.sale_data
+          ? ((p.sale_data.payout_amount !== undefined && p.sale_data.payout_amount !== null)
+            ? Number(p.sale_data.payout_amount)
+            : (p.sale_data.amount !== undefined && p.sale_data.amount !== null)
+            ? Number(p.sale_data.amount)
+            : (p.sale_data.paid_amount !== undefined && p.sale_data.paid_amount !== null)
+            ? Number(p.sale_data.paid_amount)
+            : 0)
+          : 0;
+
         return {
           no: idx + 1,
           date: p.created_at || p.date || p.createdAt || (p.sale_data && (p.sale_data.created_at || p.sale_data.date || p.sale_data.createdAt)),
-          amount: p.payout_amount || p.amount || p.paid_amount || (p.sale_data && (p.sale_data.payout_amount || p.sale_data.amount || p.sale_data.paid_amount)) || 0,
+          amount: amt,
           status: p.status || p.payout_status || "PAID",
           type: p.type || p.sale_data?.type || "sell income",
           plot_id: p.plot_id || p.plotId || p.plot_number || "—",
