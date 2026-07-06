@@ -54,7 +54,7 @@ function LoginContent() {
 
     // Sanitize phone
     const sanitizedPhone = formData.phone.replace(/\D/g, "");
-    const phoneToSend = (!sanitizedPhone.startsWith("91") && sanitizedPhone.length === 10)
+    const phoneToSend = sanitizedPhone.length === 10
       ? "91" + sanitizedPhone
       : sanitizedPhone;
 
