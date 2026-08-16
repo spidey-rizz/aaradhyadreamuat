@@ -15,7 +15,8 @@ import {
   Megaphone,
   ChevronRight,
   AlertTriangle,
-  XCircle
+  XCircle,
+  Share2
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -28,6 +29,28 @@ export default function DashboardPage() {
       if (success) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+      }
+    }
+  };
+
+  const shareReferral = async () => {
+    if (profile?.referral_code) {
+      const shareUrl = `${window.location.origin}/register?ref=${profile.referral_code}`;
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Join Aaradhya Dream City',
+            text: 'Sign up using my referral code to grow your network and earn commissions!',
+            url: shareUrl,
+          });
+        } catch (error) {
+          console.error('Error sharing:', error);
+        }
+      } else {
+        await copyToClipboard(shareUrl);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+        alert("Share link copied to clipboard!");
       }
     }
   };
@@ -149,13 +172,22 @@ export default function DashboardPage() {
               <code className="text-primary-text font-black text-lg tracking-wider bg-primary/5 px-4 py-2 rounded-xl flex-grow text-center sm:text-left overflow-hidden text-ellipsis whitespace-nowrap w-full">
                 {profile.referral_code}
               </code>
-              <button 
-                onClick={copyReferral}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-foreground text-background px-5 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-black transition-all shrink-0 cursor-pointer"
-              >
-                {copied ? <Check size={16} /> : <Copy size={16} />}
-                {copied ? "Copied" : "Copy"}
-              </button>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <button 
+                  onClick={copyReferral}
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-foreground text-background px-5 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-black transition-all shrink-0 cursor-pointer"
+                >
+                  {copied ? <Check size={16} /> : <Copy size={16} />}
+                  {copied ? "Copied" : "Copy"}
+                </button>
+                <button 
+                  onClick={shareReferral}
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-primary text-black px-5 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-primary/80 transition-all shrink-0 cursor-pointer"
+                >
+                  <Share2 size={16} />
+                  Share
+                </button>
+              </div>
             </div>
           </div>
           <p className="text-[10px] text-muted-foreground mt-4 font-medium uppercase tracking-widest text-center sm:text-left">
