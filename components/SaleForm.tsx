@@ -3,7 +3,7 @@
 import React, { useState, useRef, useMemo } from "react";
 import { useAuth } from "@/lib/useAuth";
 import { apiFetch, endpoints } from "@/lib/api";
-import { getAssociatePolicy, addAdminLog } from "@/lib/adminStore";
+import { getAssociatePolicy } from "@/lib/adminStore";
 import ReceiptModal from "@/components/ReceiptModal";
 import {
   Loader2,
@@ -218,14 +218,6 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
           prepaid: form.type === "SETTLEMENT" ? (parseFloat(form.prepaid) || 0) : 0,
         }),
       });
-
-      const adminName = profile ? `${profile.first_name} ${profile.last_name}` : "Admin";
-      addAdminLog(
-        adminName,
-        `Submitted ${form.type === "NEW" ? "new booking" : "settlement"} for Plot ${form.plot_id.trim()} (Associate: ${
-          form.associate_found?.first_name || "Unknown"
-        })`
-      );
 
       // Create Receipt Data from Form & Response
       const receiptData = {

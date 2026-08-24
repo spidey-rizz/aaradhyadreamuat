@@ -5,14 +5,20 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/useAuth";
 import { apiFetch, endpoints, clearSessionData } from "@/lib/api";
 import {
-  getAdminLogs,
-  addAdminLog,
-  AdminLog,
   getAssociatePolicy,
   updateAssociatePolicy,
   addAssociateWarning,
   getWebsiteVisits
 } from "@/lib/adminStore";
+
+interface AdminLog {
+  _id: string;
+  admin_name: string;
+  action: string;
+  target: string;
+  details: string;
+  timestamp: string;
+}
 import {
   Loader2,
   ShieldAlert,
@@ -129,14 +135,27 @@ export default function SuperAdminPanelPage() {
       const now = new Date();
       const salesData = await apiFetch(`${endpoints.monthlyReport}?month=${now.getMonth() + 1}&year=${now.getFullYear()}`);
       setGlobalSales(salesData.sales || salesData.transactions || salesData.all_sales || []);
+    try {
+      const usersData = await apiFetch(endpoints.getAllUsers);
+      if (usersData && usersData.status === "success" && Array.isArray(usersData.users)) {
+        setAllUsers(usersData.users);
+      }
     } catch (err) {
-      console.error("Failed to fetch monthly report:", err);
+      console.error("Failed to fetch users", err);
     }
 
-    // Fetch real-time global website visits from Abacus API
     try {
-      const res = await fetch("https://abacus.jasoncameron.dev/get/aaradhyadreamcity/visits");
-      const data = await res.json();
+      const salesData = await apiFetch("/broker/sales/sold-plots");
+      if (salesData && Array.isArray(salesData.plots)) {
+        setGlobalSales(salesData.plots);
+      }
+    } catch (err) {
+      console.error("Failed to fetch global sales", err);
+    }
+
+    // Live visits update
+    try {
+      const data = await apiFetch("/broker/admin/stats");
       if (data && typeof data.value === "number") {
         setVisitsCount(14850 + data.value);
       }
@@ -150,7 +169,7 @@ export default function SuperAdminPanelPage() {
   useEffect(() => {
     if (status === "authenticated" && isSuperAdmin) {
       fetchAllData();
-      setLogs(getAdminLogs());
+      fetchLogs();
       setVisitsCount(getWebsiteVisits());
     }
   }, [status, isSuperAdmin]);
@@ -194,11 +213,9 @@ export default function SuperAdminPanelPage() {
       });
       
       // Log action
-      const actionDesc = isMakeAdmin ? `Promoted ${userName} to Admin` : `Revoked Admin status from ${userName}`;
-      const adminName = `${profile.first_name} ${profile.last_name}`;
-      addAdminLog(adminName, actionDesc);
-      setLogs(getAdminLogs());
-
+      fetchLogs();
+      fetchAllData();
+      
       // Update local state
       setAllUsers(prev => 
         prev.map(u => (u._id || u.id) === userId ? { ...u, role: isMakeAdmin ? "admin" : "broker", is_admin: isMakeAdmin } : u)
@@ -222,10 +239,7 @@ export default function SuperAdminPanelPage() {
     updateAssociatePolicy(selectedUser._id || selectedUser.id, { limit: limitVal });
     
     // Log action
-    const actionDesc = limitVal ? `Set limit of ₹${limitVal.toLocaleString("en-IN")} for ${selectedUser.first_name}` : `Removed limit for ${selectedUser.first_name}`;
-    const adminName = `${profile.first_name} ${profile.last_name}`;
-    addAdminLog(adminName, actionDesc);
-    setLogs(getAdminLogs());
+    fetchLogs();
     
     setLimitModalOpen(false);
     setSelectedUser(null);
@@ -252,10 +266,7 @@ export default function SuperAdminPanelPage() {
     addAssociateWarning(selectedUser._id || selectedUser.id, warningMsg);
     
     // Log action
-    const actionDesc = `Sent warning notice to ${selectedUser.first_name}: "${warningMsg.substring(0, 30)}..."`;
-    const adminName = `${profile.first_name} ${profile.last_name}`;
-    addAdminLog(adminName, actionDesc);
-    setLogs(getAdminLogs());
+    fetchLogs();
     
     setWarningModalOpen(false);
     setSelectedUser(null);
@@ -280,10 +291,7 @@ export default function SuperAdminPanelPage() {
     updateAssociatePolicy(userId, { suspended: newStatus });
     
     // Log action
-    const actionDesc = newStatus ? `Suspended Associate ${userName}` : `Reactivated Associate ${userName}`;
-    const adminName = `${profile.first_name} ${profile.last_name}`;
-    addAdminLog(adminName, actionDesc);
-    setLogs(getAdminLogs());
+    fetchLogs();
     
     setAllUsers([...allUsers]);
   };
@@ -305,10 +313,7 @@ export default function SuperAdminPanelPage() {
     updateAssociatePolicy(userId, { level: newLevel });
     
     // Log action
-    const actionDesc = `Changed level of ${userName} to Level ${newLevel}`;
-    const adminName = `${profile.first_name} ${profile.last_name}`;
-    addAdminLog(adminName, actionDesc);
-    setLogs(getAdminLogs());
+    fetchLogs();
     
     // Refresh local users list state
     setAllUsers(prev => 
@@ -759,18 +764,23 @@ export default function SuperAdminPanelPage() {
                     <tbody className="divide-y divide-border">
                        {logs.length > 0 ? (
                           logs.map(log => (
-                             <tr key={log.id} className="hover:bg-muted/30 transition-colors">
+                             <tr key={log._id} className="hover:bg-muted/30 transition-colors">
                                 <td className="py-4 px-6">
-                                   <p className="text-sm font-bold text-foreground font-mono">{log.date}</p>
-                                   <p className="text-[10px] text-muted-foreground font-mono mt-0.5">{log.time}</p>
+                                   <p className="text-sm font-bold text-foreground font-mono">
+                                     {new Date(log.timestamp).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                                   </p>
+                                   <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
+                                     {new Date(log.timestamp).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true })}
+                                   </p>
                                 </td>
                                 <td className="py-4 px-6">
                                    <span className="px-3 py-1 rounded bg-primary/10 text-primary border border-primary/20 text-xs font-black tracking-wide">
-                                      {log.adminName}
+                                      {log.admin_name}
                                    </span>
                                 </td>
                                 <td className="py-4 px-6 text-sm text-muted-foreground font-medium leading-relaxed">
-                                   {log.action}
+                                   <span className="font-bold">{log.action}: </span>
+                                   {log.target} - {log.details}
                                 </td>
                              </tr>
                           ))

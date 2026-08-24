@@ -1,29 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { MessageSquare, CheckCircle2, ArrowRight, Smartphone, ExternalLink } from "lucide-react";
 
-export default function VerifyPage() {
+function VerifyContent() {
   const [waLink, setWaLink] = useState("");
   const [token, setToken] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    const storedWaLink = sessionStorage.getItem("wa_link");
-    const storedToken = sessionStorage.getItem("verify_token");
+    const urlToken = searchParams.get("token");
+    const urlWa = searchParams.get("wa");
 
-    if (storedWaLink) setWaLink(storedWaLink);
-    if (storedToken) setToken(storedToken);
+    if (urlWa) setWaLink(urlWa);
+    if (urlToken) setToken(urlToken);
 
-    // If no link, redirect to register
-    if (!storedWaLink && !storedToken) {
+    if (!urlWa && !urlToken) {
       router.push("/register");
     }
-  }, [router]);
+  }, [router, searchParams]);
 
   return (
     <div className="flex flex-col min-h-screen bg-black">
@@ -59,22 +59,19 @@ export default function VerifyPage() {
             </div>
           </div>
 
-          <div className="space-y-4">
-            <a
-              href={waLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full bg-[#25D366] hover:bg-[#22c35e] py-5 rounded-2xl text-white font-bold text-xl transition-all shadow-xl flex items-center justify-center gap-3 group"
-            >
-              <MessageSquare size={24} />
-              Verify via WhatsApp
-              <ExternalLink size={18} className="opacity-50 group-hover:opacity-100 transition-opacity" />
-            </a>
+          <a 
+            href={waLink} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="w-full flex items-center justify-center gap-3 gold-gradient text-black font-black py-4 rounded-2xl text-lg uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_40px_-10px_rgba(255,215,0,0.5)]"
+          >
+            <MessageSquare size={24} />
+            Verify on WhatsApp
+          </a>
 
-            <Link href="/login" className="block w-full py-4 rounded-xl text-zinc-500 font-medium hover:text-white transition-colors">
-              I've already verified, take me to Login
-            </Link>
-          </div>
+          <p className="mt-8 text-sm text-zinc-500 font-medium">
+            Having trouble? <Link href="/login" className="text-primary hover:underline hover:text-white transition-colors">Go to Login</Link>
+          </p>
 
           <div className="mt-12 pt-8 border-t border-zinc-800 flex items-center justify-center gap-4 text-zinc-500 text-sm">
             <Smartphone size={16} />
@@ -85,5 +82,13 @@ export default function VerifyPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function VerifyPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-primary">Loading...</div>}>
+      <VerifyContent />
+    </Suspense>
   );
 }

@@ -111,11 +111,11 @@ function RegisterContent() {
         method: "POST",
         body: JSON.stringify(payload),
       });
-
-      sessionStorage.setItem("verify_token", response.verify_token);
-      sessionStorage.setItem("wa_link", response.wa_link);
-
-      router.push("/verify");
+      const params = new URLSearchParams({
+        token: response.verify_token,
+        wa: response.wa_link
+      });
+      router.push(`/verify?${params.toString()}`);
     } catch (err: any) {
       setError(err.detail || "Registration failed. Please check your details.");
     } finally {

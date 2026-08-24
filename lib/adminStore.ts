@@ -17,32 +17,8 @@ export interface AssociatePolicy {
   level?: number | null;
 }
 
-const LOGS_KEY = "aaradhya_admin_logs";
 const POLICIES_KEY = "aaradhya_associate_policies";
 const VISITS_KEY = "aaradhya_website_visits";
-
-// -- Admin Logs --
-
-export function getAdminLogs(): AdminLog[] {
-  return [];
-}
-
-export function addAdminLog(adminName: string, action: string) {
-  if (typeof window === "undefined") return;
-  const logs = getAdminLogs();
-  const now = new Date();
-  
-  const newLog: AdminLog = {
-    id: now.getTime().toString() + Math.floor(Math.random() * 1000),
-    date: now.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
-    time: now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true }),
-    adminName: adminName || "Unknown Admin",
-    action
-  };
-  
-  const updatedLogs = [newLog, ...logs];
-  localStorage.setItem(LOGS_KEY, JSON.stringify(updatedLogs));
-}
 
 // -- Associate Policies --
 
