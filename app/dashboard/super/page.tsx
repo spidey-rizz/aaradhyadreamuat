@@ -170,6 +170,17 @@ export default function SuperAdminPanelPage() {
     setLoadingUsers(false);
   };
 
+  const fetchLogs = async () => {
+    try {
+      const data = await apiFetch("/broker/admin/logs?limit=100");
+      if (data && data.status === "success") {
+        setLogs(data.logs || []);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   useEffect(() => {
     if (status === "authenticated" && isSuperAdmin) {
       fetchAllData();
