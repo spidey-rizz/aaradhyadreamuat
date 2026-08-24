@@ -35,7 +35,7 @@ export default function AssociateList() {
   const [directSalesData, setDirectSalesData] = useState<any[]>([]);
   const [loadingSales, setLoadingSales] = useState(false);
   const [salesError, setSalesError] = useState<string | null>(null);
-  
+
   // Edit Sale Modal State
   const [selectedSaleForEdit, setSelectedSaleForEdit] = useState<any | null>(null);
   const [editSaleForm, setEditSaleForm] = useState<any>({});
@@ -323,10 +323,10 @@ export default function AssociateList() {
                       <td className="py-5 px-6 text-sm text-muted-foreground">
                         {user.created_at
                           ? new Date(user.created_at).toLocaleDateString("en-IN", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            })
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })
                           : "—"}
                       </td>
                       <td className="py-5 px-6">
@@ -542,20 +542,19 @@ export default function AssociateList() {
                         </div>
 
                         {/* Payout status card */}
-                        <div className={`p-4 rounded-2xl border flex items-center justify-between ${
-                          reportData.settled 
-                            ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-500" 
-                            : "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400"
-                        }`}>
+                        <div className={`p-4 rounded-2xl border flex items-center justify-between ${reportData.settled
+                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-500"
+                          : "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400"
+                          }`}>
                           <div className="flex items-center gap-3">
                             {reportData.settled ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
                             <div>
                               <p className="text-xs font-black uppercase tracking-wider">Payout Status</p>
                               <p className="text-sm font-bold mt-0.5">
-                                {reportData.settled 
-                                  ? "Settled (Fully Paid)" 
-                                  : alreadyPaid > 0 
-                                    ? "Partially Settled (Pending)" 
+                                {reportData.settled
+                                  ? "Settled (Fully Paid)"
+                                  : alreadyPaid > 0
+                                    ? "Partially Settled (Pending)"
                                     : "Payout Pending"}
                               </p>
                             </div>
@@ -637,10 +636,10 @@ export default function AssociateList() {
             </div>
 
             <div className="space-y-4">
-              {selectedUserForBank.bank_account && 
-               (selectedUserForBank.bank_account.bank_name || 
-                selectedUserForBank.bank_account.account_number || 
-                selectedUserForBank.bank_account.ifsc_code) ? (
+              {selectedUserForBank.bank_account &&
+                (selectedUserForBank.bank_account.bank_name ||
+                  selectedUserForBank.bank_account.account_number ||
+                  selectedUserForBank.bank_account.ifsc_code) ? (
                 <div className="space-y-3.5">
                   <div className="bg-muted/30 border border-border rounded-2xl p-4.5 space-y-3 font-mono">
                     <div className="flex flex-col gap-0.5">
@@ -690,7 +689,7 @@ export default function AssociateList() {
             <h3 className="text-xl font-black uppercase tracking-tight mb-4">
               Direct Sales - {selectedUserForSales.first_name || selectedUserForSales.name}
             </h3>
-            
+
             <div className="flex-grow overflow-y-auto">
               {loadingSales ? (
                 <div className="py-10 text-center"><Loader2 className="animate-spin mx-auto text-primary" size={24} /></div>
@@ -742,23 +741,23 @@ export default function AssociateList() {
             <button onClick={() => setSelectedSaleForEdit(null)} className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-muted/50 transition-colors">
               <X size={18} />
             </button>
-            <h3 className="text-lg font-black uppercase tracking-tight mb-4 flex items-center gap-2"><FileEdit size={20} className="text-primary"/> Edit Sale</h3>
+            <h3 className="text-lg font-black uppercase tracking-tight mb-4 flex items-center gap-2"><FileEdit size={20} className="text-primary" /> Edit Sale</h3>
             <form onSubmit={handleEditSaleSubmit} className="space-y-4">
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">Total Amount</label>
-                <input type="number" value={editSaleForm.total_amount || ""} onChange={e => setEditSaleForm({...editSaleForm, total_amount: Number(e.target.value)})} className="w-full bg-background border border-border p-2.5 rounded-xl text-sm font-mono focus:border-primary outline-none transition-colors" />
+                <input type="number" value={editSaleForm.total_amount || ""} onChange={e => setEditSaleForm({ ...editSaleForm, total_amount: Number(e.target.value) })} className="w-full bg-background border border-border p-2.5 rounded-xl text-sm font-mono focus:border-primary outline-none transition-colors" />
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">Paid Amount</label>
-                <input type="number" value={editSaleForm.paid_amount || ""} onChange={e => setEditSaleForm({...editSaleForm, paid_amount: Number(e.target.value)})} className="w-full bg-background border border-border p-2.5 rounded-xl text-sm font-mono focus:border-primary outline-none transition-colors" />
+                <input type="number" value={editSaleForm.paid_amount || ""} onChange={e => setEditSaleForm({ ...editSaleForm, paid_amount: Number(e.target.value) })} className="w-full bg-background border border-border p-2.5 rounded-xl text-sm font-mono focus:border-primary outline-none transition-colors" />
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">Plot ID</label>
-                <input type="text" value={editSaleForm.plot_id || ""} onChange={e => setEditSaleForm({...editSaleForm, plot_id: e.target.value})} className="w-full bg-background border border-border p-2.5 rounded-xl text-sm font-mono focus:border-primary outline-none transition-colors" />
+                <input type="text" value={editSaleForm.plot_id || ""} onChange={e => setEditSaleForm({ ...editSaleForm, plot_id: e.target.value })} className="w-full bg-background border border-border p-2.5 rounded-xl text-sm font-mono focus:border-primary outline-none transition-colors" />
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">Customer Name</label>
-                <input type="text" value={editSaleForm.name || (editSaleForm.sale_data && editSaleForm.sale_data.name) || ""} onChange={e => setEditSaleForm({...editSaleForm, name: e.target.value})} className="w-full bg-background border border-border p-2.5 rounded-xl text-sm focus:border-primary outline-none transition-colors" />
+                <input type="text" value={editSaleForm.name || (editSaleForm.sale_data && editSaleForm.sale_data.name) || ""} onChange={e => setEditSaleForm({ ...editSaleForm, name: e.target.value })} className="w-full bg-background border border-border p-2.5 rounded-xl text-sm focus:border-primary outline-none transition-colors" />
               </div>
               <div className="pt-2">
                 <button disabled={submittingEdit} type="submit" className="w-full bg-primary text-black font-black py-3.5 rounded-xl text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 cursor-pointer">
