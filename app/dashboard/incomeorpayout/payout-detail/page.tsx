@@ -107,7 +107,7 @@ export default function PayoutDetailPage() {
 
     const payoutsList = monthlyReportData?.payouts_list || [];
 
-    return sortedNewest.map((p: any, idx: number) => {
+    const allPayouts = sortedNewest.map((p: any) => {
       const amt = (p.commission_amount !== undefined && p.commission_amount !== null)
         ? Number(p.commission_amount)
         : (p.payout_amount !== undefined && p.payout_amount !== null)
@@ -139,7 +139,6 @@ export default function PayoutDetailPage() {
       const status = isPaid ? "PAID" : "PENDING";
 
       return {
-        no: idx + 1,
         date: p.created_at || p.date || p.createdAt || (p.sale_data && (p.sale_data.created_at || p.sale_data.date || p.sale_data.createdAt)),
         amount: amt,
         status: status,
@@ -148,6 +147,14 @@ export default function PayoutDetailPage() {
         processing_fee: processingFee
       };
     });
+
+    const isAdmin = profile?.admin || profile?.super_admin;
+    const visiblePayouts = isAdmin ? allPayouts : allPayouts.filter((p: any) => p.status === "PAID");
+
+    return visiblePayouts.map((p: any, idx: number) => ({
+      ...p,
+      no: idx + 1
+    }));
   }, [rawPlots, selectedMonth, selectedYear, profile, monthlyReportData]);
 
   const totalPaidAmountSum = useMemo(() => {

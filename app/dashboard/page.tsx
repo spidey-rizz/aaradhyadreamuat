@@ -225,13 +225,6 @@ export default function DashboardPage() {
                   <span className="text-xs font-black text-primary-text uppercase tracking-widest">Total Business</span>
                   <span className="text-base font-black text-primary-text font-mono">₹{totalBusiness.toLocaleString()}</span>
                 </div>
-                
-                {policy?.limit !== null && (
-                   <div className="flex justify-between items-center py-2 mt-2 px-3 rounded-xl border border-amber-500/30 bg-amber-500/5">
-                      <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Active Limit</span>
-                      <span className="text-xs font-black text-amber-600 font-mono">₹{policy.limit.toLocaleString()}</span>
-                   </div>
-                )}
               </div>
             </div>
           </div>

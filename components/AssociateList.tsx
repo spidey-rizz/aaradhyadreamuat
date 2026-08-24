@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { apiFetch, endpoints } from "@/lib/api";
-import { Loader2, Search, X, AlertCircle, Users, Calendar, CheckCircle2, Wallet, Award, Landmark } from "lucide-react";
+import { Loader2, Search, X, AlertCircle, Users, Calendar, CheckCircle2, Wallet, Award, Landmark, FileEdit, Trash2, UserMinus } from "lucide-react";
 import { getAssociatePolicy } from "@/lib/adminStore";
+import { useAuth } from "@/lib/useAuth";
 
 const inputCls =
   "w-full bg-background border border-border rounded-xl py-3 px-4 text-foreground focus:border-primary outline-none transition-all text-sm";
@@ -15,6 +16,8 @@ export default function AssociateList() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
+  const { profile } = useAuth();
+  const isSuperAdmin = profile?.super_admin === true || profile?.is_super_admin === true || profile?.role?.toLowerCase() === 'super_admin';
 
   // Monthly Report and Payout Modal State
   const [selectedUserForReport, setSelectedUserForReport] = useState<any | null>(null);
@@ -26,6 +29,80 @@ export default function AssociateList() {
   const [reportError, setReportError] = useState<string | null>(null);
   const [payoutSubmitting, setPayoutSubmitting] = useState(false);
   const [payoutSuccess, setPayoutSuccess] = useState<string | null>(null);
+
+  // Direct Sales Modal State
+  const [selectedUserForSales, setSelectedUserForSales] = useState<any | null>(null);
+  const [directSalesData, setDirectSalesData] = useState<any[]>([]);
+  const [loadingSales, setLoadingSales] = useState(false);
+  const [salesError, setSalesError] = useState<string | null>(null);
+  
+  // Edit Sale Modal State
+  const [selectedSaleForEdit, setSelectedSaleForEdit] = useState<any | null>(null);
+  const [editSaleForm, setEditSaleForm] = useState<any>({});
+  const [submittingEdit, setSubmittingEdit] = useState(false);
+
+  const fetchDirectSales = async (userId: string) => {
+    setLoadingSales(true);
+    setSalesError(null);
+    try {
+      const data = await apiFetch(`/sales/direct/${userId}`);
+      setDirectSalesData(data.sales || []);
+    } catch (err: any) {
+      setSalesError(err.detail || "Failed to load direct sales.");
+    } finally {
+      setLoadingSales(false);
+    }
+  };
+
+  const handleOpenSalesModal = (user: any) => {
+    setSelectedUserForSales(user);
+    fetchDirectSales(user._id || user.id);
+  };
+
+  const handleDeleteUser = async (user: any) => {
+    if (!confirm(`Are you sure you want to delete ${user.first_name || user.name}? This cannot be undone.`)) return;
+    try {
+      await apiFetch(`/broker/admin/user/${user._id || user.id}`, { method: "DELETE" });
+      alert("User deleted successfully.");
+      fetchAllAssociates();
+    } catch (err: any) {
+      alert(err.detail || "Failed to delete user.");
+    }
+  };
+
+  const handleDeleteSale = async (sale: any) => {
+    if (!confirm("Are you sure you want to delete this sale? It may affect payouts and commissions.")) return;
+    try {
+      const saleId = sale._id || sale.id;
+      const month = sale.month || (sale.created_at ? new Date(sale.created_at).getMonth() + 1 : 1);
+      const year = sale.year || (sale.created_at ? new Date(sale.created_at).getFullYear() : new Date().getFullYear());
+      await apiFetch(`/sales/${saleId}?month=${month}&year=${year}`, { method: "DELETE" });
+      alert("Sale deleted successfully.");
+      if (selectedUserForSales) fetchDirectSales(selectedUserForSales._id || selectedUserForSales.id);
+    } catch (err: any) {
+      alert(err.detail || "Failed to delete sale.");
+    }
+  };
+
+  const handleEditSaleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSaleForEdit) return;
+    setSubmittingEdit(true);
+    try {
+      const saleId = selectedSaleForEdit._id || selectedSaleForEdit.id;
+      await apiFetch(`/sales/${saleId}`, {
+        method: "PATCH",
+        body: JSON.stringify(editSaleForm)
+      });
+      alert("Sale updated successfully.");
+      setSelectedSaleForEdit(null);
+      if (selectedUserForSales) fetchDirectSales(selectedUserForSales._id || selectedUserForSales.id);
+    } catch (err: any) {
+      alert(err.detail || "Failed to update sale.");
+    } finally {
+      setSubmittingEdit(false);
+    }
+  };
 
   const fetchMonthlyReport = async (userId: string, m: number, y: number) => {
     setLoadingReport(true);
@@ -123,6 +200,8 @@ export default function AssociateList() {
       const params = new URLSearchParams();
       if (cleanQuery.includes("@")) {
         params.append("email", cleanQuery);
+      } else if (cleanQuery.length === 10 && /[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}/.test(cleanQuery.toUpperCase())) {
+        params.append("pan", cleanQuery.toUpperCase());
       } else {
         const sanitizedPhone = cleanQuery.replace(/\D/g, "");
         const phoneToSend = sanitizedPhone.length === 10 ? "91" + sanitizedPhone : sanitizedPhone;
@@ -290,12 +369,27 @@ export default function AssociateList() {
                             View Report
                           </button>
                           <button
+                            onClick={() => handleOpenSalesModal(user)}
+                            className="px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-600 hover:bg-amber-500 hover:text-white rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap"
+                          >
+                            Sales Admin
+                          </button>
+                          <button
                             onClick={() => setSelectedUserForBank(user)}
                             title="View Bank Details"
                             className="p-1.5 bg-muted hover:bg-muted-foreground/20 border border-border text-foreground rounded-lg transition-all cursor-pointer flex items-center justify-center"
                           >
                             <Landmark size={15} />
                           </button>
+                          {isSuperAdmin && (
+                            <button
+                              onClick={() => handleDeleteUser(user)}
+                              title="Delete User"
+                              className="p-1.5 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/20 rounded-lg transition-all cursor-pointer flex items-center justify-center"
+                            >
+                              <UserMinus size={15} />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -583,6 +677,95 @@ export default function AssociateList() {
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Direct Sales Admin Modal */}
+      {selectedUserForSales && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-card border border-border rounded-3xl p-6 w-full max-w-4xl shadow-2xl animate-in zoom-in-95 duration-200 relative max-h-[90vh] flex flex-col">
+            <button onClick={() => setSelectedUserForSales(null)} className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-muted/50">
+              <X size={18} />
+            </button>
+            <h3 className="text-xl font-black uppercase tracking-tight mb-4">
+              Direct Sales - {selectedUserForSales.first_name || selectedUserForSales.name}
+            </h3>
+            
+            <div className="flex-grow overflow-y-auto">
+              {loadingSales ? (
+                <div className="py-10 text-center"><Loader2 className="animate-spin mx-auto text-primary" size={24} /></div>
+              ) : salesError ? (
+                <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl text-sm font-semibold">{salesError}</div>
+              ) : directSalesData.length > 0 ? (
+                <table className="w-full text-left border-collapse text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/30">
+                      <th className="py-3 px-3 uppercase text-[10px] tracking-widest font-black text-muted-foreground">Date</th>
+                      <th className="py-3 px-3 uppercase text-[10px] tracking-widest font-black text-muted-foreground">Plot</th>
+                      <th className="py-3 px-3 uppercase text-[10px] tracking-widest font-black text-muted-foreground text-right">Total</th>
+                      <th className="py-3 px-3 uppercase text-[10px] tracking-widest font-black text-muted-foreground text-right">Paid</th>
+                      <th className="py-3 px-3 uppercase text-[10px] tracking-widest font-black text-muted-foreground text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {directSalesData.map((s, i) => (
+                      <tr key={i} className="hover:bg-muted/20 transition-colors">
+                        <td className="py-3 px-3 text-foreground font-medium">{new Date(s.created_at).toLocaleDateString('en-IN')}</td>
+                        <td className="py-3 px-3 font-mono font-bold text-foreground">{s.plot_id}</td>
+                        <td className="py-3 px-3 text-right font-mono font-black text-primary-text">₹{s.total_amount?.toLocaleString('en-IN') || 0}</td>
+                        <td className="py-3 px-3 text-right font-mono font-black text-emerald-500">₹{s.paid_amount?.toLocaleString('en-IN') || 0}</td>
+                        <td className="py-3 px-3">
+                          <div className="flex justify-center gap-2">
+                            <button onClick={() => { setSelectedSaleForEdit(s); setEditSaleForm(s); }} className="p-1.5 text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors"><FileEdit size={16} /></button>
+                            <button onClick={() => handleDeleteSale(s)} className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"><Trash2 size={16} /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="text-center py-16 text-muted-foreground flex flex-col items-center gap-2">
+                  <Wallet size={32} className="opacity-20 text-primary-text" />
+                  <p className="text-sm font-semibold">No direct sales found.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Sale Modal */}
+      {selectedSaleForEdit && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-card border border-border rounded-3xl p-6 w-full max-w-md shadow-2xl relative animate-in zoom-in-95 duration-200">
+            <button onClick={() => setSelectedSaleForEdit(null)} className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-muted/50 transition-colors">
+              <X size={18} />
+            </button>
+            <h3 className="text-lg font-black uppercase tracking-tight mb-4 flex items-center gap-2"><FileEdit size={20} className="text-primary"/> Edit Sale</h3>
+            <form onSubmit={handleEditSaleSubmit} className="space-y-4">
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">Total Amount</label>
+                <input type="number" value={editSaleForm.total_amount || ""} onChange={e => setEditSaleForm({...editSaleForm, total_amount: Number(e.target.value)})} className="w-full bg-background border border-border p-2.5 rounded-xl text-sm font-mono focus:border-primary outline-none transition-colors" />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">Paid Amount</label>
+                <input type="number" value={editSaleForm.paid_amount || ""} onChange={e => setEditSaleForm({...editSaleForm, paid_amount: Number(e.target.value)})} className="w-full bg-background border border-border p-2.5 rounded-xl text-sm font-mono focus:border-primary outline-none transition-colors" />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">Plot ID</label>
+                <input type="text" value={editSaleForm.plot_id || ""} onChange={e => setEditSaleForm({...editSaleForm, plot_id: e.target.value})} className="w-full bg-background border border-border p-2.5 rounded-xl text-sm font-mono focus:border-primary outline-none transition-colors" />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">Customer Name</label>
+                <input type="text" value={editSaleForm.name || (editSaleForm.sale_data && editSaleForm.sale_data.name) || ""} onChange={e => setEditSaleForm({...editSaleForm, name: e.target.value})} className="w-full bg-background border border-border p-2.5 rounded-xl text-sm focus:border-primary outline-none transition-colors" />
+              </div>
+              <div className="pt-2">
+                <button disabled={submittingEdit} type="submit" className="w-full bg-primary text-black font-black py-3.5 rounded-xl text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 cursor-pointer">
+                  {submittingEdit ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
