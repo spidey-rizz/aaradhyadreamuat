@@ -135,8 +135,12 @@ export default function SuperAdminPanelPage() {
       const now = new Date();
       const salesData = await apiFetch(`${endpoints.monthlyReport}?month=${now.getMonth() + 1}&year=${now.getFullYear()}`);
       setGlobalSales(salesData.sales || salesData.transactions || salesData.all_sales || []);
+    } catch (err) {
+      console.error("Failed to fetch global sales:", err);
+    }
+    
     try {
-      const usersData = await apiFetch(endpoints.getAllUsers);
+      const usersData = await apiFetch(endpoints.allUsers);
       if (usersData && usersData.status === "success" && Array.isArray(usersData.users)) {
         setAllUsers(usersData.users);
       }
