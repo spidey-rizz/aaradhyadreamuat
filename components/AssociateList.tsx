@@ -745,11 +745,11 @@ export default function AssociateList() {
             <form onSubmit={handleEditSaleSubmit} className="space-y-4">
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">Total Amount</label>
-                <input type="number" value={editSaleForm.total_amount || ""} onChange={e => setEditSaleForm({ ...editSaleForm, total_amount: Number(e.target.value) })} className="w-full bg-background border border-border p-2.5 rounded-xl text-sm font-mono focus:border-primary outline-none transition-colors" />
+                <input type="number" onWheel={(e) => (e.target as HTMLElement).blur()} value={editSaleForm.total_amount || ""} onChange={e => setEditSaleForm({ ...editSaleForm, total_amount: Number(e.target.value) })} className="w-full bg-background border border-border p-2.5 rounded-xl text-sm font-mono focus:border-primary outline-none transition-colors" />
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">Paid Amount</label>
-                <input type="number" value={editSaleForm.paid_amount || ""} onChange={e => setEditSaleForm({ ...editSaleForm, paid_amount: Number(e.target.value) })} className="w-full bg-background border border-border p-2.5 rounded-xl text-sm font-mono focus:border-primary outline-none transition-colors" />
+                <input type="number" onWheel={(e) => (e.target as HTMLElement).blur()} value={editSaleForm.paid_amount || ""} onChange={e => setEditSaleForm({ ...editSaleForm, paid_amount: Number(e.target.value) })} className="w-full bg-background border border-border p-2.5 rounded-xl text-sm font-mono focus:border-primary outline-none transition-colors" />
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">Plot ID</label>

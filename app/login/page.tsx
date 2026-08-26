@@ -94,7 +94,9 @@ function LoginContent() {
       // Redirect to dashboard after successful login
       router.replace("/dashboard");
     } catch (err: any) {
-      if (err.status === 403) {
+      if (err.status === 403 && err.detail?.toLowerCase().includes("suspended")) {
+        setError(err.detail);
+      } else if (err.status === 403) {
         setError("Account not verified. Please verify via WhatsApp first.");
       } else {
         setError(err.detail || "Login failed. Please check your credentials.");

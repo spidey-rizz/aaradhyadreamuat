@@ -7,7 +7,6 @@ import { apiFetch, endpoints, clearSessionData } from "@/lib/api";
 import {
   getAssociatePolicy,
   updateAssociatePolicy,
-  addAssociateWarning,
   getWebsiteVisits
 } from "@/lib/adminStore";
 
@@ -37,7 +36,8 @@ import {
   History,
   Lock,
   MailWarning,
-  Layers
+  Layers,
+  Trash
 } from "lucide-react";
 
 type Tab = "overview" | "admins" | "associates" | "levels" | "logs";
@@ -276,17 +276,21 @@ export default function SuperAdminPanelPage() {
     });
   };
 
-  const executeSendWarning = (warningMsg: string) => {
+  const executeSendWarning = async (warningMsg: string) => {
     if (!selectedUser) return;
-    addAssociateWarning(selectedUser._id || selectedUser.id, warningMsg);
-    
-    // Log action
-    fetchLogs();
-    
-    setWarningModalOpen(false);
-    setSelectedUser(null);
-    setWarningInput("");
-    setAllUsers([...allUsers]);
+    try {
+      await apiFetch("/broker/admin/warn", {
+        method: "POST",
+        body: JSON.stringify({ user_id: selectedUser._id || selectedUser.id, warning: warningMsg, expiry_days: 7 })
+      });
+      fetchLogs();
+      setWarningModalOpen(false);
+      setSelectedUser(null);
+      setWarningInput("");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to send warning.");
+    }
   };
 
   const handleSendWarningSubmit = (e: React.FormEvent) => {
@@ -302,13 +306,18 @@ export default function SuperAdminPanelPage() {
     });
   };
 
-  const executeToggleSuspension = (userId: string, userName: string, newStatus: boolean) => {
-    updateAssociatePolicy(userId, { suspended: newStatus });
-    
-    // Log action
-    fetchLogs();
-    
-    setAllUsers([...allUsers]);
+  const executeToggleSuspension = async (userId: string, userName: string, newStatus: boolean) => {
+    try {
+      await apiFetch("/broker/admin/suspend", {
+        method: "POST",
+        body: JSON.stringify({ user_id: userId, suspend: newStatus })
+      });
+      fetchLogs();
+      setAllUsers(prev => prev.map(u => (u._id || u.id) === userId ? { ...u, account_active: !newStatus } : u));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update suspension status.");
+    }
   };
 
   const handleToggleSuspensionClick = (userId: string, userName: string, phone: string, isCurrentlySuspended: boolean) => {
@@ -322,6 +331,18 @@ export default function SuperAdminPanelPage() {
       message: `Are you sure to ${actionWord} this user @${userName} and ${phone || 'N/A'}?`,
       onConfirm: () => executeToggleSuspension(userId, userName, nextStatus)
     });
+  };
+
+  const executeDeleteUser = async (userId: string, userName: string) => {
+    try {
+      await apiFetch(`/broker/admin/user/${userId}`, { method: "DELETE" });
+      fetchLogs();
+      setAllUsers(prev => prev.filter(u => (u._id || u.id) !== userId));
+      setConfirmModal(m => ({ ...m, open: false }));
+    } catch (err: any) {
+      console.error(err);
+      alert(err.detail || "Failed to delete account.");
+    }
   };
 
   const executeLevelChange = (userId: string, userName: string, newLevel: number) => {
@@ -595,13 +616,14 @@ export default function SuperAdminPanelPage() {
                             const uid = user._id || user.id;
                             const policy = getAssociatePolicy(uid);
                             const isSelf = uid === profile._id;
+                            const isSuspended = user.account_active === false;
                             if (isSelf || user.role === "super_admin") return null;
 
                             return (
-                               <tr key={uid} className={`transition-colors ${policy.suspended ? 'bg-red-500/5 hover:bg-red-500/10' : 'hover:bg-muted/30'}`}>
+                               <tr key={uid} className={`transition-colors ${isSuspended ? 'bg-red-500/5 hover:bg-red-500/10' : 'hover:bg-muted/30'}`}>
                                   <td className="py-4 px-6">
                                      <div className="flex items-center gap-3">
-                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs shrink-0 ${policy.suspended ? 'bg-red-500/20 text-red-500' : 'bg-muted border border-border text-foreground'}`}>
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs shrink-0 ${isSuspended ? 'bg-red-500/20 text-red-500' : 'bg-muted border border-border text-foreground'}`}>
                                            {user.first_name?.[0]}{user.last_name?.[0]}
                                         </div>
                                         <span className="font-bold text-sm text-foreground">{user.first_name} {user.last_name}</span>
@@ -610,7 +632,7 @@ export default function SuperAdminPanelPage() {
                                   <td className="py-4 px-6 text-sm font-mono text-muted-foreground">{user.phone}</td>
                                   <td className="py-4 px-6">
                                      <div className="flex flex-col items-start gap-1">
-                                        {policy.suspended ? (
+                                        {isSuspended ? (
                                            <span className="px-2 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-red-500 text-[9px] font-black uppercase tracking-widest flex items-center gap-1"><Ban size={10}/> Suspended</span>
                                         ) : (
                                            <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[9px] font-black uppercase tracking-widest flex items-center gap-1"><CheckCircle2 size={10}/> Active</span>
@@ -652,14 +674,25 @@ export default function SuperAdminPanelPage() {
                                         <MailWarning size={12} className="inline mr-1 -mt-0.5" /> Warn
                                      </button>
                                      <button 
-                                        onClick={() => handleToggleSuspensionClick(uid, `${user.first_name} ${user.last_name}`, user.phone, policy.suspended)}
+                                        onClick={() => handleToggleSuspensionClick(uid, `${user.first_name} ${user.last_name}`, user.phone, isSuspended)}
                                         className={`px-3 py-1.5 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${
-                                           policy.suspended 
+                                           isSuspended 
                                               ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
                                               : "border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20"
                                         }`}
                                      >
-                                        {policy.suspended ? "Reactivate" : "Suspend"}
+                                        {isSuspended ? "Reactivate" : "Suspend"}
+                                     </button>
+                                     <button 
+                                        onClick={() => setConfirmModal({
+                                          open: true,
+                                          title: "Delete Account",
+                                          message: `Are you sure you want to permanently delete the account for @${user.first_name} ${user.last_name}? This action cannot be undone.`,
+                                          onConfirm: () => executeDeleteUser(uid, `${user.first_name} ${user.last_name}`)
+                                        })}
+                                        className="px-3 py-1.5 rounded-lg border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20 text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer"
+                                     >
+                                        <Trash size={12} className="inline mr-1 -mt-0.5" /> Delete
                                      </button>
                                   </td>
                                </tr>
@@ -820,6 +853,7 @@ export default function SuperAdminPanelPage() {
                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-muted-foreground">₹</span>
                      <input 
                         type="number" 
+                        onWheel={(e) => (e.target as HTMLElement).blur()}
                         placeholder="Unlimited"
                         value={limitInput}
                         onChange={(e) => setLimitInput(e.target.value)}

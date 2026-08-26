@@ -2,7 +2,7 @@
  * Unified API client for Aaradhya Real Estate
  */
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.aaradhyadreamcity.in";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://test.aaradhyadreamcity.in";
 
 export class APIError extends Error {
   status: number;
@@ -29,14 +29,14 @@ export function clearSessionData() {
   if (typeof window !== "undefined") {
     // Clear access token cookie
     document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    
+
     // Clear localStorage
     try {
       localStorage.clear();
     } catch (e) {
       console.error("Failed to clear localStorage:", e);
     }
-    
+
     // Clear sessionStorage, preserving theme context if exists
     try {
       const theme = sessionStorage.getItem("theme");

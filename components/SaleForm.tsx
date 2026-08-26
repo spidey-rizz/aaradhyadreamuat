@@ -400,6 +400,7 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
             <input
               required
               type="number"
+              onWheel={(e) => (e.target as HTMLElement).blur()}
               placeholder="Total Price"
               value={form.total_amount}
               onChange={(e) => set("total_amount", e.target.value)}
@@ -412,6 +413,7 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
             <input
               required
               type="number"
+              onWheel={(e) => (e.target as HTMLElement).blur()}
               placeholder="Paid Price"
               value={form.paid_amount}
               onChange={(e) => set("paid_amount", e.target.value)}
@@ -425,6 +427,7 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
               <input
                 required
                 type="number"
+                onWheel={(e) => (e.target as HTMLElement).blur()}
                 placeholder="Prepaid portion (Required)"
                 value={form.prepaid}
                 onChange={(e) => set("prepaid", e.target.value)}

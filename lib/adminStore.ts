@@ -1,6 +1,6 @@
 "use client";
 
-// Define the shape of an Action Log
+
 export interface AdminLog {
   id: string;
   date: string;
@@ -9,7 +9,6 @@ export interface AdminLog {
   action: string;
 }
 
-// Define the shape of Associate Policy (Limit, Suspended, Warnings, Levels)
 export interface AssociatePolicy {
   suspended: boolean;
   limit: number | null;
@@ -20,7 +19,6 @@ export interface AssociatePolicy {
 const POLICIES_KEY = "aaradhya_associate_policies";
 const VISITS_KEY = "aaradhya_website_visits";
 
-// -- Associate Policies --
 
 const encodeBase64 = (str: string) => {
   try {
@@ -30,6 +28,8 @@ const encodeBase64 = (str: string) => {
   }
 };
 
+
+
 const decodeBase64 = (str: string) => {
   try {
     return decodeURIComponent(escape(atob(str)));
@@ -37,6 +37,8 @@ const decodeBase64 = (str: string) => {
     return atob(str);
   }
 };
+
+
 
 export function getAllAssociatePolicies(): Record<string, AssociatePolicy> {
   if (typeof window === "undefined") return {};
@@ -46,8 +48,6 @@ export function getAllAssociatePolicies(): Record<string, AssociatePolicy> {
       const isBase64 = !raw.trim().startsWith("{") && !raw.trim().startsWith("[");
       const decodedStr = isBase64 ? decodeBase64(raw) : raw;
       const parsed = JSON.parse(decodedStr);
-      
-      // Auto-migrate old plain text records to obfuscated format
       if (!isBase64) {
         localStorage.setItem(POLICIES_KEY, encodeBase64(decodedStr));
       }
@@ -68,30 +68,12 @@ export function updateAssociatePolicy(userId: string, updates: Partial<Associate
   if (typeof window === "undefined") return;
   const policies = getAllAssociatePolicies();
   const current = policies[userId] || { suspended: false, limit: null, warnings: [] };
-  
+
   policies[userId] = { ...current, ...updates };
   localStorage.setItem(POLICIES_KEY, encodeBase64(JSON.stringify(policies)));
 }
 
-export function addAssociateWarning(userId: string, warning: string) {
-  if (typeof window === "undefined") return;
-  const policies = getAllAssociatePolicies();
-  const current = policies[userId] || { suspended: false, limit: null, warnings: [] };
-  
-  current.warnings = [...current.warnings, warning];
-  policies[userId] = current;
-  localStorage.setItem(POLICIES_KEY, encodeBase64(JSON.stringify(policies)));
-}
 
-export function clearAssociateWarnings(userId: string) {
-  if (typeof window === "undefined") return;
-  const policies = getAllAssociatePolicies();
-  const current = policies[userId] || { suspended: false, limit: null, warnings: [] };
-  
-  current.warnings = [];
-  policies[userId] = current;
-  localStorage.setItem(POLICIES_KEY, encodeBase64(JSON.stringify(policies)));
-}
 
 // -- Website Visits --
 
@@ -101,7 +83,7 @@ export function getWebsiteVisits(): number {
   if (raw) {
     return parseInt(raw, 10);
   }
-  
+
   // Set an initial realistic number
   const initial = 14850 + Math.floor(Math.random() * 100);
   localStorage.setItem(VISITS_KEY, initial.toString());
@@ -112,7 +94,7 @@ export function incrementWebsiteVisits() {
   if (typeof window === "undefined") return;
   const current = getWebsiteVisits();
   localStorage.setItem(VISITS_KEY, (current + 1).toString());
-  
+
   fetch("https://abacus.jasoncameron.dev/hit/aaradhyadreamcity/visits")
     .catch(() => console.warn("Failed to increment visits counter (offline)"));
 }

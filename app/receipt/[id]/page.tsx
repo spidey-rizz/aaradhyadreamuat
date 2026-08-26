@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
+import { apiFetch } from '@/lib/api';
 import { Receipt, ReceiptData } from '@/components/Receipt';
 import html2canvas from 'html2canvas-pro';
 import jsPDF from 'jspdf';
@@ -23,15 +24,9 @@ export default function ReceiptPage() {
       try {
         setLoading(true);
         // Replace with the exact API endpoint based on your backend documentation
-        // Example: https://api.aaradhyadreamcity.in/api/bookings/{id}
-        const res = await fetch(`https://api.aaradhyadreamcity.in/api/v1/bookings/${id}`);
-        
-        if (!res.ok) {
-          throw new Error('Failed to fetch receipt data');
-        }
+        // Example: /api/v1/bookings/{id}
+        const json = await apiFetch(`/api/v1/bookings/${id}`);
 
-        const json = await res.json();
-        
         // Map the backend response to our generic ReceiptData interface.
         // Adjust these fields based on the actual API response keys.
         const receiptData: ReceiptData = {
@@ -67,13 +62,13 @@ export default function ReceiptPage() {
     try {
       setIsGeneratingPdf(true);
       const element = receiptRef.current;
-      
+
       const canvas = await html2canvas(element, {
         scale: 2, // Higher scale for better quality
         useCORS: true,
         logging: false,
       });
-      
+
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -83,13 +78,13 @@ export default function ReceiptPage() {
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
+
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
 
       // Print via hidden iframe containing the PDF blob
       const pdfBlob = pdf.output('blob');
       const blobUrl = URL.createObjectURL(pdfBlob);
-      
+
       // Cleanup previous blob URL if exists to avoid memory leaks
       if (typeof window !== "undefined" && (window as any)._activePrintBlobUrl) {
         URL.revokeObjectURL((window as any)._activePrintBlobUrl);
@@ -110,9 +105,9 @@ export default function ReceiptPage() {
         iframe.style.border = "none";
         document.body.appendChild(iframe);
       }
-      
+
       iframe.src = blobUrl;
-      
+
       iframe.onload = () => {
         iframe.contentWindow?.focus();
         iframe.contentWindow?.print();
@@ -131,13 +126,13 @@ export default function ReceiptPage() {
     try {
       setIsGeneratingPdf(true);
       const element = receiptRef.current;
-      
+
       const canvas = await html2canvas(element, {
         scale: 2, // Higher scale for better quality
         useCORS: true,
         logging: false,
       });
-      
+
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -147,10 +142,10 @@ export default function ReceiptPage() {
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
+
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
       pdf.save(`Receipt-${data?.plotNo || id}.pdf`);
-      
+
     } catch (err) {
       console.error('Error generating PDF', err);
       alert('Failed to generate PDF. Please try printing instead.');
@@ -175,7 +170,7 @@ export default function ReceiptPage() {
           <AlertCircle className="w-6 h-6 mr-3 flex-shrink-0" />
           <p>{error || 'Receipt data not found.'}</p>
         </div>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           className="mt-6 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md transition-colors"
         >
@@ -197,7 +192,7 @@ export default function ReceiptPage() {
           <Printer className="w-4 h-4" />
           Print Receipt
         </button>
-        
+
         <button
           onClick={handleDownloadPdf}
           disabled={isGeneratingPdf}

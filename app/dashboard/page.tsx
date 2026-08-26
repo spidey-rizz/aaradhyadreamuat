@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
 import { copyToClipboard } from "@/lib/clipboard";
-import { getAssociatePolicy, clearAssociateWarnings } from "@/lib/adminStore";
+import { getAssociatePolicy } from "@/lib/adminStore";
+import { apiFetch } from "@/lib/api";
 import {
   User,
   Copy,
@@ -72,8 +73,7 @@ export default function DashboardPage() {
   const teamBusiness = profile.team_sale || referralList.reduce((acc: number, curr: any) => acc + (curr.direct_sale || curr.total_sales || 0), 0);
   const totalBusiness = profile.lifetime_sale || (selfBusiness + teamBusiness);
 
-  const policy = getAssociatePolicy(profile._id || profile.id);
-  const warnings = policy?.warnings || [];
+  const warnings = profile.warnings || [];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -89,7 +89,7 @@ export default function DashboardPage() {
                    <AlertTriangle className="text-amber-500" size={24} /> Official Warning Notice
                 </h3>
                 <div className="space-y-3 mt-4">
-                   {warnings.map((w, i) => (
+                   {warnings.map((w: string, i: number) => (
                       <p key={i} className="text-foreground font-medium text-sm border-l-2 border-amber-500/50 pl-3">
                          "{w}"
                       </p>
@@ -97,7 +97,14 @@ export default function DashboardPage() {
                 </div>
              </div>
              <button 
-                onClick={() => { clearAssociateWarnings(profile._id || profile.id); window.location.reload(); }}
+                onClick={async () => {
+                  try {
+                    await apiFetch("/broker/user/clear-warnings", { method: "POST" });
+                    window.location.reload();
+                  } catch (err) {
+                    console.error("Failed to clear warnings", err);
+                  }
+                }}
                 className="shrink-0 bg-background border border-border text-foreground px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-muted transition-colors flex items-center gap-2 cursor-pointer"
              >
                 <XCircle size={16} /> Acknowledge
