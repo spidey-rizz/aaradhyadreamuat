@@ -33,6 +33,13 @@ const EMPTY_FORM = {
   address: "",
   payment: "cash",
   type: "NEW" as "NEW" | "SETTLEMENT",
+  upi_id: "",
+  rtgs_id: "",
+  cheque_no: "",
+  bank_name: "",
+  branch_name: "",
+  ifsc_code: "",
+  account_number: "",
 };
 
 const inputCls =
@@ -216,6 +223,13 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
           payment: form.payment,
           type: form.type,
           prepaid: form.type === "SETTLEMENT" ? (parseFloat(form.prepaid) || 0) : 0,
+          upi_id: form.payment === "upi" ? form.upi_id.trim() || undefined : undefined,
+          rtgs_id: form.payment === "rtgs" ? form.rtgs_id.trim() || undefined : undefined,
+          cheque_no: form.payment === "cheque" ? form.cheque_no.trim() || undefined : undefined,
+          bank_name: (form.payment === "rtgs" || form.payment === "cheque" || form.payment === "bank_transfer") ? form.bank_name.trim() || undefined : undefined,
+          branch_name: form.payment === "cheque" ? form.branch_name.trim() || undefined : undefined,
+          account_number: form.payment === "bank_transfer" ? form.account_number.trim() || undefined : undefined,
+          ifsc_code: form.payment === "bank_transfer" ? form.ifsc_code.trim() || undefined : undefined,
         }),
       });
 
@@ -227,10 +241,20 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
         customerName: form.name.trim(),
         phone: form.phone.trim(),
         address: form.address.trim(),
-        paymentMode: form.payment === "cash" ? "Cash" : form.payment === "bank_transfer" ? "Bank Transfer" : form.payment === "cheque" ? "Cheque" : form.payment === "upi" ? "UPI" : form.payment,
+        paymentMode: form.payment === "cash" ? "Cash" : form.payment === "bank_transfer" ? "Bank Transfer" : form.payment === "cheque" ? "Cheque" : form.payment === "rtgs" ? "RTGS" : form.payment === "upi" ? "UPI" : form.payment,
         totalAmount: parseFloat(form.total_amount),
         paidAmount: parseFloat(form.paid_amount),
         prepaid: form.type === "SETTLEMENT" ? (parseFloat(form.prepaid) || 0) : 0,
+        metadata: form.payment === "cash" ? undefined : {
+          upi_id: form.upi_id.trim() || undefined,
+          rtgs_id: form.rtgs_id.trim() || undefined,
+          cheque_no: form.cheque_no.trim() || undefined,
+          bank_name: form.bank_name.trim() || undefined,
+          branch_name: form.branch_name.trim() || undefined,
+          account_number: form.account_number.trim() || undefined,
+          ifsc_code: form.ifsc_code.trim() || undefined,
+          payment_type: form.payment.toUpperCase(),
+        }
       };
 
       setReceiptToView(receiptData);
@@ -388,12 +412,143 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
               className={`${inputCls} cursor-pointer`}
             >
               <option value="cash">Cash</option>
-              <option value="bank_transfer">Bank Transfer</option>
-              <option value="cheque">Cheque</option>
               <option value="upi">UPI</option>
+              <option value="rtgs">RTGS</option>
+              <option value="cheque">Cheque</option>
+              <option value="bank_transfer">Bank Transfer</option>
             </select>
           </div>
         </div>
+
+        {/* Dynamic Payment Metadata Inputs */}
+        {form.payment === "upi" && (
+          <div className="bg-background/60 border border-border/80 rounded-2xl p-4 animate-in fade-in slide-in-from-top-1 space-y-2">
+            <p className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5">
+              <span>UPI Payment Metadata</span>
+            </p>
+            <div>
+              <label className={labelCls}>UPI ID / VPA</label>
+              <input
+                type="text"
+                placeholder="e.g. customer@okhdfcbank or 9876543210@upi"
+                value={form.upi_id}
+                onChange={(e) => set("upi_id", e.target.value)}
+                className={inputCls}
+              />
+            </div>
+          </div>
+        )}
+
+        {form.payment === "rtgs" && (
+          <div className="bg-background/60 border border-border/80 rounded-2xl p-4 animate-in fade-in slide-in-from-top-1 space-y-3">
+            <p className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5">
+              <span>RTGS / UTR Reference Metadata</span>
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className={labelCls}>RTGS / Reference ID</label>
+                <input
+                  type="text"
+                  placeholder="e.g. UTIB202309180012"
+                  value={form.rtgs_id}
+                  onChange={(e) => set("rtgs_id", e.target.value)}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>Bank Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Axis Bank"
+                  value={form.bank_name}
+                  onChange={(e) => set("bank_name", e.target.value)}
+                  className={inputCls}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {form.payment === "cheque" && (
+          <div className="bg-background/60 border border-border/80 rounded-2xl p-4 animate-in fade-in slide-in-from-top-1 space-y-3">
+            <p className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5">
+              <span>Cheque Metadata</span>
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className={labelCls}>Cheque Number</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 000124"
+                  value={form.cheque_no}
+                  onChange={(e) => set("cheque_no", e.target.value)}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>Bank Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. State Bank of India"
+                  value={form.bank_name}
+                  onChange={(e) => set("bank_name", e.target.value)}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>Branch Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Hazratganj Branch"
+                  value={form.branch_name}
+                  onChange={(e) => set("branch_name", e.target.value)}
+                  className={inputCls}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {form.payment === "bank_transfer" && (
+          <div className="bg-background/60 border border-border/80 rounded-2xl p-4 animate-in fade-in slide-in-from-top-1 space-y-3">
+            <p className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5">
+              <span>Bank Transfer Metadata</span>
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className={labelCls}>Bank Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. HDFC Bank"
+                  value={form.bank_name}
+                  onChange={(e) => set("bank_name", e.target.value)}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>Account Number</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 50100234857281"
+                  value={form.account_number}
+                  onChange={(e) => set("account_number", e.target.value)}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>IFSC Code</label>
+                <input
+                  type="text"
+                  placeholder="e.g. HDFC0001234"
+                  value={form.ifsc_code}
+                  onChange={(e) => set("ifsc_code", e.target.value)}
+                  className={inputCls}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className={`grid grid-cols-1 ${form.type === "SETTLEMENT" ? "sm:grid-cols-3" : "sm:grid-cols-2"} gap-5`}>
           <div className="space-y-1">
             <label className={labelCls}>Total Amount (₹) *</label>

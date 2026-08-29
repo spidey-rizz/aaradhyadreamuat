@@ -23,7 +23,8 @@ import {
   ChevronDown,
   Shield,
   ShieldAlert,
-  Loader2
+  Loader2,
+  KeyRound
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -126,6 +127,11 @@ export default function DashboardLayout({
       label: "Edit Profile",
       href: "/dashboard/edit-profile",
       icon: UserCheck,
+    },
+    {
+      label: "Change Password",
+      href: "/dashboard/change-password",
+      icon: KeyRound,
     },
   ];
 

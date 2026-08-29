@@ -12,6 +12,16 @@ export interface ReceiptData {
   paidAmount?: number;
   remainingAmount?: number;
   prepaid?: number;
+  metadata?: {
+    upi_id?: string;
+    rtgs_id?: string;
+    cheque_no?: string;
+    bank_name?: string;
+    branch_name?: string;
+    account_number?: string;
+    ifsc_code?: string;
+    payment_type?: string;
+  };
 }
 
 interface ReceiptProps {
@@ -31,6 +41,7 @@ export const Receipt: React.FC<ReceiptProps> = ({ data }) => {
     paidAmount,
     remainingAmount: apiRemainingAmount,
     prepaid,
+    metadata,
   } = data;
 
   const parsedTotal = Number(totalAmount) || 0;
@@ -90,6 +101,48 @@ export const Receipt: React.FC<ReceiptProps> = ({ data }) => {
               <th className="py-3 px-2 w-1/2">Payment Mode</th>
               <td className="py-3 px-2 font-medium">{paymentMode || 'N/A'}</td>
             </tr>
+            {metadata?.upi_id && metadata.upi_id !== 'n/a' && (
+              <tr className="border-b border-gray-200">
+                <th className="py-3 px-2 w-1/2">UPI ID</th>
+                <td className="py-3 px-2 font-medium">{metadata.upi_id}</td>
+              </tr>
+            )}
+            {metadata?.rtgs_id && metadata.rtgs_id !== 'n/a' && (
+              <tr className="border-b border-gray-200">
+                <th className="py-3 px-2 w-1/2">RTGS / Reference ID</th>
+                <td className="py-3 px-2 font-medium">{metadata.rtgs_id}</td>
+              </tr>
+            )}
+            {metadata?.cheque_no && metadata.cheque_no !== 'n/a' && (
+              <tr className="border-b border-gray-200">
+                <th className="py-3 px-2 w-1/2">Cheque No.</th>
+                <td className="py-3 px-2 font-medium">{metadata.cheque_no}</td>
+              </tr>
+            )}
+            {metadata?.bank_name && metadata.bank_name !== 'n/a' && (
+              <tr className="border-b border-gray-200">
+                <th className="py-3 px-2 w-1/2">Bank Name</th>
+                <td className="py-3 px-2 font-medium">{metadata.bank_name}</td>
+              </tr>
+            )}
+            {metadata?.branch_name && metadata.branch_name !== 'n/a' && (
+              <tr className="border-b border-gray-200">
+                <th className="py-3 px-2 w-1/2">Branch Name</th>
+                <td className="py-3 px-2 font-medium">{metadata.branch_name}</td>
+              </tr>
+            )}
+            {metadata?.account_number && metadata.account_number !== 'n/a' && (
+              <tr className="border-b border-gray-200">
+                <th className="py-3 px-2 w-1/2">Account Number</th>
+                <td className="py-3 px-2 font-medium">{metadata.account_number}</td>
+              </tr>
+            )}
+            {metadata?.ifsc_code && metadata.ifsc_code !== 'n/a' && (
+              <tr className="border-b border-gray-200">
+                <th className="py-3 px-2 w-1/2">IFSC Code</th>
+                <td className="py-3 px-2 font-medium">{metadata.ifsc_code}</td>
+              </tr>
+            )}
             <tr className="border-b border-gray-200">
               <th className="py-3 px-2 w-1/2">Total Amount</th>
               <td className="py-3 px-2 font-medium">₹{parsedTotal.toLocaleString('en-IN')}</td>

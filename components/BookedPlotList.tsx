@@ -52,6 +52,7 @@ export default function BookedPlotList() {
       paidAmount: plot.paid_amount,
       remainingAmount: remainingVal,
       prepaid: prepaidAmount,
+      metadata: typeof plot.sale_metadata === "object" ? plot.sale_metadata : undefined,
     };
     setReceiptToView(receiptData);
     setIsModalOpen(true);

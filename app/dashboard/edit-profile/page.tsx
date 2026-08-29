@@ -293,6 +293,27 @@ export default function EditProfilePage() {
           </button>
         </form>
       </div>
+
+      {/* Security & Password Card */}
+      <div className="bg-card border border-border rounded-[2.5rem] p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary-text shrink-0">
+            <Lock size={22} />
+          </div>
+          <div>
+            <h3 className="text-base font-black uppercase tracking-tight text-foreground">Account Security</h3>
+            <p className="text-xs text-muted-foreground font-medium mt-0.5">Need to update your login password? Keep your account protected.</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => router.push("/dashboard/change-password")}
+          className="px-6 py-3.5 rounded-xl bg-muted hover:bg-primary hover:text-black border border-border text-xs font-black uppercase tracking-widest transition-all cursor-pointer whitespace-nowrap shadow-sm"
+        >
+          Change Password
+        </button>
+      </div>
     </div>
   );
 }
+

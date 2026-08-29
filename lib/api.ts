@@ -103,4 +103,6 @@ export const endpoints = {
   addPayout: "/sales/payout/add",
   payoutsList: "/sales/payouts",
   plotInfo: "/sales/plot/",
+  updatePassword: "/broker/password/update",
 };
+

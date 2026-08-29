@@ -30,6 +30,16 @@ export default function AssociateList() {
   const [payoutSubmitting, setPayoutSubmitting] = useState(false);
   const [payoutSuccess, setPayoutSuccess] = useState<string | null>(null);
 
+  // Payout Payment Metadata State
+  const [payoutPaymentType, setPayoutPaymentType] = useState<string>("cash");
+  const [payoutUpiId, setPayoutUpiId] = useState<string>("");
+  const [payoutRtgsId, setPayoutRtgsId] = useState<string>("");
+  const [payoutChequeNo, setPayoutChequeNo] = useState<string>("");
+  const [payoutBankName, setPayoutBankName] = useState<string>("");
+  const [payoutBranchName, setPayoutBranchName] = useState<string>("");
+  const [payoutAccountNumber, setPayoutAccountNumber] = useState<string>("");
+  const [payoutIfscCode, setPayoutIfscCode] = useState<string>("");
+
   // Direct Sales Modal State
   const [selectedUserForSales, setSelectedUserForSales] = useState<any | null>(null);
   const [directSalesData, setDirectSalesData] = useState<any[]>([]);
@@ -126,6 +136,14 @@ export default function AssociateList() {
     const currentYear = now.getFullYear();
     setReportMonth(currentMonth);
     setReportYear(currentYear);
+    setPayoutPaymentType("cash");
+    setPayoutUpiId("");
+    setPayoutRtgsId("");
+    setPayoutChequeNo("");
+    setPayoutBankName(user.bank_account?.bank_name || "");
+    setPayoutBranchName(user.bank_account?.branch_name || "");
+    setPayoutAccountNumber(user.bank_account?.account_number || "");
+    setPayoutIfscCode(user.bank_account?.ifsc_code || "");
     fetchMonthlyReport(user._id || user.id, currentMonth, currentYear);
   };
 
@@ -135,6 +153,15 @@ export default function AssociateList() {
     setReportMonth(m);
     setReportYear(y);
     fetchMonthlyReport(selectedUserForReport._id || selectedUserForReport.id, m, y);
+  };
+
+  const handleAutoFillBankDetails = () => {
+    if (selectedUserForReport?.bank_account) {
+      setPayoutBankName(selectedUserForReport.bank_account.bank_name || "");
+      setPayoutAccountNumber(selectedUserForReport.bank_account.account_number || "");
+      setPayoutIfscCode(selectedUserForReport.bank_account.ifsc_code || "");
+      setPayoutBranchName(selectedUserForReport.bank_account.branch_name || "");
+    }
   };
 
   const handleCreatePayout = async () => {
@@ -153,7 +180,15 @@ export default function AssociateList() {
           user_id: selectedUserForReport._id || selectedUserForReport.id,
           amount: amount,
           month: reportMonth,
-          year: reportYear
+          year: reportYear,
+          payment: payoutPaymentType,
+          upi_id: payoutPaymentType === "upi" ? payoutUpiId.trim() || undefined : undefined,
+          rtgs_id: payoutPaymentType === "rtgs" ? payoutRtgsId.trim() || undefined : undefined,
+          cheque_no: payoutPaymentType === "cheque" ? payoutChequeNo.trim() || undefined : undefined,
+          bank_name: (payoutPaymentType === "rtgs" || payoutPaymentType === "cheque" || payoutPaymentType === "bank_transfer") ? payoutBankName.trim() || undefined : undefined,
+          branch_name: payoutPaymentType === "cheque" ? payoutBranchName.trim() || undefined : undefined,
+          account_number: payoutPaymentType === "bank_transfer" ? payoutAccountNumber.trim() || undefined : undefined,
+          ifsc_code: payoutPaymentType === "bank_transfer" ? payoutIfscCode.trim() || undefined : undefined,
         })
       });
       setPayoutSuccess("Payout recorded successfully.");
@@ -573,22 +608,196 @@ export default function AssociateList() {
                     </div>
                   )}
 
-                  {/* Direct Payout Creation Button */}
+                  {/* Direct Payout Creation Section */}
                   {!reportData.settled && (reportData.settlement_amount || 0) > 0 && (
-                    <button
-                      onClick={handleCreatePayout}
-                      disabled={payoutSubmitting}
-                      className="w-full bg-primary text-black py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:scale-[1.01] active:scale-[0.99] transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
-                    >
-                      {payoutSubmitting ? (
-                        <>
-                          <Loader2 className="animate-spin" size={15} />
-                          Processing Payout...
-                        </>
-                      ) : (
-                        "Direct Create Payout (Pay Now)"
+                    <div className="bg-muted/40 border border-border rounded-2xl p-4 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-primary">
+                          Release Payout
+                        </p>
+                        <span className="text-xs font-mono font-black text-foreground">
+                          ₹{Number(reportData.settlement_amount || 0).toLocaleString("en-IN")}
+                        </span>
+                      </div>
+
+                      {/* Payment Mode Selector */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground block mb-1">
+                          Payment Mode
+                        </label>
+                        <select
+                          value={payoutPaymentType}
+                          onChange={(e) => setPayoutPaymentType(e.target.value)}
+                          className="w-full bg-background border border-border rounded-xl py-2.5 px-3 text-foreground focus:border-primary outline-none transition-all text-xs cursor-pointer font-semibold"
+                        >
+                          <option value="cash">Cash (No Metadata)</option>
+                          <option value="bank_transfer">Bank Transfer</option>
+                          <option value="upi">UPI</option>
+                          <option value="rtgs">RTGS</option>
+                          <option value="cheque">Cheque</option>
+                        </select>
+                      </div>
+
+                      {/* Dynamic Payout Metadata Inputs */}
+                      {payoutPaymentType === "upi" && (
+                        <div className="space-y-1 bg-background/50 border border-border/70 p-3 rounded-xl">
+                          <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground block mb-1">
+                            UPI ID / VPA
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. associate@okhdfcbank"
+                            value={payoutUpiId}
+                            onChange={(e) => setPayoutUpiId(e.target.value)}
+                            className="w-full bg-background border border-border rounded-lg py-2 px-3 text-xs text-foreground focus:border-primary outline-none"
+                          />
+                        </div>
                       )}
-                    </button>
+
+                      {payoutPaymentType === "rtgs" && (
+                        <div className="space-y-2.5 bg-background/50 border border-border/70 p-3 rounded-xl">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <div>
+                              <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground block mb-1">
+                                RTGS / Reference ID
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="e.g. UTR123456789"
+                                value={payoutRtgsId}
+                                onChange={(e) => setPayoutRtgsId(e.target.value)}
+                                className="w-full bg-background border border-border rounded-lg py-2 px-3 text-xs text-foreground focus:border-primary outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground block mb-1">
+                                Bank Name
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="e.g. HDFC Bank"
+                                value={payoutBankName}
+                                onChange={(e) => setPayoutBankName(e.target.value)}
+                                className="w-full bg-background border border-border rounded-lg py-2 px-3 text-xs text-foreground focus:border-primary outline-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {payoutPaymentType === "cheque" && (
+                        <div className="space-y-2.5 bg-background/50 border border-border/70 p-3 rounded-xl">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                            <div>
+                              <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground block mb-1">
+                                Cheque No.
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="e.g. 000543"
+                                value={payoutChequeNo}
+                                onChange={(e) => setPayoutChequeNo(e.target.value)}
+                                className="w-full bg-background border border-border rounded-lg py-2 px-3 text-xs text-foreground focus:border-primary outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground block mb-1">
+                                Bank Name
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="e.g. SBI"
+                                value={payoutBankName}
+                                onChange={(e) => setPayoutBankName(e.target.value)}
+                                className="w-full bg-background border border-border rounded-lg py-2 px-3 text-xs text-foreground focus:border-primary outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground block mb-1">
+                                Branch Name
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="e.g. Gomti Nagar"
+                                value={payoutBranchName}
+                                onChange={(e) => setPayoutBranchName(e.target.value)}
+                                className="w-full bg-background border border-border rounded-lg py-2 px-3 text-xs text-foreground focus:border-primary outline-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {payoutPaymentType === "bank_transfer" && (
+                        <div className="space-y-2.5 bg-background/50 border border-border/70 p-3 rounded-xl">
+                          {selectedUserForReport?.bank_account && (
+                            <div className="flex justify-between items-center pb-1">
+                              <span className="text-[10px] text-muted-foreground font-semibold">Associate Bank Account Found</span>
+                              <button
+                                type="button"
+                                onClick={handleAutoFillBankDetails}
+                                className="text-[10px] font-black text-primary hover:underline cursor-pointer uppercase tracking-wider"
+                              >
+                                Auto-Fill Bank Info
+                              </button>
+                            </div>
+                          )}
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                            <div>
+                              <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground block mb-1">
+                                Bank Name
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="e.g. ICICI Bank"
+                                value={payoutBankName}
+                                onChange={(e) => setPayoutBankName(e.target.value)}
+                                className="w-full bg-background border border-border rounded-lg py-2 px-3 text-xs text-foreground focus:border-primary outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground block mb-1">
+                                Account No.
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="e.g. 1029384756"
+                                value={payoutAccountNumber}
+                                onChange={(e) => setPayoutAccountNumber(e.target.value)}
+                                className="w-full bg-background border border-border rounded-lg py-2 px-3 text-xs text-foreground focus:border-primary outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground block mb-1">
+                                IFSC Code
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="e.g. ICIC0001234"
+                                value={payoutIfscCode}
+                                onChange={(e) => setPayoutIfscCode(e.target.value)}
+                                className="w-full bg-background border border-border rounded-lg py-2 px-3 text-xs text-foreground focus:border-primary outline-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <button
+                        onClick={handleCreatePayout}
+                        disabled={payoutSubmitting}
+                        className="w-full bg-primary text-black py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:scale-[1.01] active:scale-[0.99] transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer mt-2"
+                      >
+                        {payoutSubmitting ? (
+                          <>
+                            <Loader2 className="animate-spin" size={15} />
+                            Processing Payout...
+                          </>
+                        ) : (
+                          `Direct Create Payout (${payoutPaymentType.toUpperCase().replace('_', ' ')})`
+                        )}
+                      </button>
+                    </div>
                   )}
                 </>
               ) : (
