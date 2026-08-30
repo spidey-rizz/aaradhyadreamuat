@@ -24,6 +24,7 @@ const EMPTY_FORM = {
   associate_error: "",
   user_id: "",
   plot_id: "",
+  market_price: "",
   total_amount: "",
   paid_amount: "",
   prepaid: "",
@@ -72,12 +73,14 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
         const amountPaidPreviously = saleData.paid_amount || saleData.amount || 0;
         const totalPlotAmount = saleData.total_amount || saleData.totalAmount || 0;
         const remainingToPay = totalPlotAmount - amountPaidPreviously;
+        const marketAmt = saleData.market_price || saleData.marketPrice || 0;
         
         setForm((f) => ({
           ...f,
           prepaid: String(amountPaidPreviously),
           total_amount: String(totalPlotAmount),
           paid_amount: String(remainingToPay > 0 ? remainingToPay : 0),
+          market_price: marketAmt > 0 ? String(marketAmt) : f.market_price,
         }));
         
         setPrepaidFetchedMsg({
@@ -99,6 +102,23 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
       setLoadingPrepaid(false);
     }
   };
+
+  const discountPercent = useMemo(() => {
+    const market = parseFloat(form.market_price) || 0;
+    const total = parseFloat(form.total_amount) || 0;
+    if (market > 0 && total > 0 && market > total) {
+      const pct = ((market - total) / market) * 100;
+      return pct % 1 === 0 ? Number(pct.toFixed(0)) : Number(pct.toFixed(2));
+    }
+    return 0;
+  }, [form.market_price, form.total_amount]);
+
+  const discountPercentFormatted = useMemo(() => {
+    if (discountPercent > 0) {
+      return `${discountPercent}%`;
+    }
+    return "0%";
+  }, [discountPercent]);
 
   const remainingBalance = useMemo(() => {
     const total = parseFloat(form.total_amount) || 0;
@@ -208,6 +228,8 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
       sanitizedBuyerPhone = "91" + sanitizedBuyerPhone;
     }
 
+    const parsedMarketVal = parseFloat(form.market_price) || 0;
+
     try {
       const res = await apiFetch(endpoints.addSale, {
         method: "POST",
@@ -216,6 +238,8 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
           plot_id: form.plot_id.trim(),
           total_amount: totalAmtVal,
           paid_amount: paidAmtVal,
+          market_price: parsedMarketVal > 0 ? parsedMarketVal : undefined,
+          discount_percent: discountPercent > 0 ? discountPercent : undefined,
           name: form.name.trim(),
           aadhar: String(form.aadhar).trim(),
           phone: sanitizedBuyerPhone,
@@ -242,6 +266,8 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
         phone: form.phone.trim(),
         address: form.address.trim(),
         paymentMode: form.payment === "cash" ? "Cash" : form.payment === "bank_transfer" ? "Bank Transfer" : form.payment === "cheque" ? "Cheque" : form.payment === "rtgs" ? "RTGS" : form.payment === "upi" ? "UPI" : form.payment,
+        marketPrice: parsedMarketVal > 0 ? parsedMarketVal : undefined,
+        discountPercent: discountPercent > 0 ? discountPercent : undefined,
         totalAmount: parseFloat(form.total_amount),
         paidAmount: parseFloat(form.paid_amount),
         prepaid: form.type === "SETTLEMENT" ? (parseFloat(form.prepaid) || 0) : 0,
@@ -549,18 +575,40 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
           </div>
         )}
 
-        <div className={`grid grid-cols-1 ${form.type === "SETTLEMENT" ? "sm:grid-cols-3" : "sm:grid-cols-2"} gap-5`}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="space-y-1">
+            <label className={labelCls}>Market Price (₹)</label>
+            <input
+              type="number"
+              onWheel={(e) => (e.target as HTMLElement).blur()}
+              placeholder="e.g. 5000"
+              value={form.market_price}
+              onChange={(e) => set("market_price", e.target.value)}
+              className={`${inputCls} font-mono`}
+            />
+          </div>
           <div className="space-y-1">
             <label className={labelCls}>Total Amount (₹) *</label>
             <input
               required
               type="number"
               onWheel={(e) => (e.target as HTMLElement).blur()}
-              placeholder="Total Price"
+              placeholder="e.g. 4000"
               value={form.total_amount}
               onChange={(e) => set("total_amount", e.target.value)}
               readOnly={form.type === "SETTLEMENT"}
               className={`${inputCls} font-mono ${form.type === "SETTLEMENT" ? "bg-muted cursor-not-allowed opacity-75" : ""}`}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>Discount (%)</label>
+            <input
+              type="text"
+              readOnly
+              tabIndex={-1}
+              value={discountPercentFormatted}
+              placeholder="0%"
+              className={`${inputCls} font-mono bg-muted/50 cursor-not-allowed text-emerald-500 font-bold select-none`}
             />
           </div>
           <div className="space-y-1">
@@ -577,7 +625,7 @@ export default function SaleForm({ saleType }: { saleType: "NEW" | "SETTLEMENT" 
             />
           </div>
           {form.type === "SETTLEMENT" && (
-            <div className="space-y-1">
+            <div className="space-y-1 sm:col-span-2 lg:col-span-4">
               <label className={labelCls}>Prepaid (₹) *</label>
               <input
                 required

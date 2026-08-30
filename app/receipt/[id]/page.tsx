@@ -37,9 +37,11 @@ export default function ReceiptPage() {
           phone: json.data?.phone || json.data?.customer?.phone,
           address: json.data?.address || json.data?.customer?.address,
           paymentMode: json.data?.paymentMode,
-          totalAmount: json.data?.totalAmount,
-          paidAmount: json.data?.paidAmount,
-          remainingAmount: json.data?.remainingAmount,
+          marketPrice: json.data?.market_price || json.data?.marketPrice || json.data?.sale_data?.market_price,
+          discountPercent: json.data?.discount_percent || json.data?.discountPercent || json.data?.sale_data?.discount_percent,
+          totalAmount: json.data?.totalAmount || json.data?.total_amount,
+          paidAmount: json.data?.paidAmount || json.data?.paid_amount,
+          remainingAmount: json.data?.remainingAmount || json.data?.remaining_amount,
         };
 
         setData(receiptData);

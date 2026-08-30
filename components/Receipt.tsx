@@ -8,6 +8,8 @@ export interface ReceiptData {
   phone?: string;
   address?: string;
   paymentMode?: string;
+  marketPrice?: number;
+  discountPercent?: number;
   totalAmount?: number;
   paidAmount?: number;
   remainingAmount?: number;
@@ -37,6 +39,8 @@ export const Receipt: React.FC<ReceiptProps> = ({ data }) => {
     phone,
     address,
     paymentMode,
+    marketPrice,
+    discountPercent,
     totalAmount,
     paidAmount,
     remainingAmount: apiRemainingAmount,
@@ -44,6 +48,8 @@ export const Receipt: React.FC<ReceiptProps> = ({ data }) => {
     metadata,
   } = data;
 
+  const parsedMarketPrice = Number(marketPrice) || 0;
+  const parsedDiscountPercent = Number(discountPercent) || 0;
   const parsedTotal = Number(totalAmount) || 0;
   const parsedPaid = Number(paidAmount) || 0;
   const parsedPrepaid = Number(prepaid) || 0;
@@ -142,6 +148,20 @@ export const Receipt: React.FC<ReceiptProps> = ({ data }) => {
                 <th className="py-3 px-2 w-1/2">IFSC Code</th>
                 <td className="py-3 px-2 font-medium">{metadata.ifsc_code}</td>
               </tr>
+            )}
+            {parsedMarketPrice > 0 && parsedMarketPrice > parsedTotal && (
+              <>
+                <tr className="border-b border-gray-200">
+                  <th className="py-3 px-2 w-1/2">Market Price</th>
+                  <td className="py-3 px-2 font-medium line-through text-gray-500">₹{parsedMarketPrice.toLocaleString('en-IN')}</td>
+                </tr>
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <th className="py-3 px-2 w-1/2">Discount</th>
+                  <td className="py-3 px-2 font-medium text-emerald-600">
+                    {parsedDiscountPercent > 0 ? `${parsedDiscountPercent}%` : `${(((parsedMarketPrice - parsedTotal) / parsedMarketPrice) * 100).toFixed(0)}%`}
+                  </td>
+                </tr>
+              </>
             )}
             <tr className="border-b border-gray-200">
               <th className="py-3 px-2 w-1/2">Total Amount</th>

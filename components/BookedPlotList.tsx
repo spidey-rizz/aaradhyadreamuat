@@ -40,6 +40,9 @@ export default function BookedPlotList() {
       ? Math.max(0, plot.total_amount - (prepaidAmount + plot.paid_amount))
       : (plot.remaining_amount != null ? plot.remaining_amount : plot.total_amount - plot.paid_amount);
 
+    const mPrice = Number(plot.market_price || plot.sale_data?.market_price || 0);
+    const dPercent = Number(plot.discount_percent || plot.sale_data?.discount_percent || 0);
+
     const receiptData = {
       receiptNo: plot._id || plot.id,
       date: plot.created_at || plot.date || plot.createdAt,
@@ -48,6 +51,8 @@ export default function BookedPlotList() {
       phone: plot.sale_data?.phone || plot.phone || plot.buyer_phone,
       address: plot.sale_data?.address || plot.address || plot.buyer_address,
       paymentMode: plot.payment || plot.payment_mode || plot.sale_data?.payment || "Cash",
+      marketPrice: mPrice > 0 ? mPrice : undefined,
+      discountPercent: dPercent > 0 ? dPercent : undefined,
       totalAmount: plot.total_amount,
       paidAmount: plot.paid_amount,
       remainingAmount: remainingVal,
