@@ -68,17 +68,22 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     headers,
   });
 
-  if (response.status === 401 && typeof window !== "undefined") {
-    // Session expired or unauthorized
-    clearSessionData();
-    if (!window.location.pathname.includes("/login")) {
-      window.location.href = "/login?expired=true";
-    }
-  }
-
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
+    if (typeof window !== "undefined") {
+      const isSuspended = (response.status === 403 || response.status === 401) && 
+        typeof data?.detail === "string" && 
+        (data.detail.toLowerCase().includes("suspended") || data.detail.toLowerCase().includes("blocked"));
+
+      if (response.status === 401 || isSuspended) {
+        clearSessionData();
+        if (!window.location.pathname.includes("/login")) {
+          window.location.href = isSuspended ? "/login?suspended=true" : "/login?expired=true";
+        }
+      }
+    }
+
     throw new APIError(
       response.status,
       data.detail || "An unexpected error occurred",

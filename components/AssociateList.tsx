@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { apiFetch, endpoints } from "@/lib/api";
-import { Loader2, Search, X, AlertCircle, Users, Calendar, CheckCircle2, Wallet, Award, Landmark, FileEdit, Trash2, UserMinus } from "lucide-react";
+import { Loader2, Search, X, AlertCircle, Users, Calendar, CheckCircle2, Wallet, Award, Landmark, FileEdit, Trash2, UserMinus, Ban, ShieldCheck } from "lucide-react";
 import { getAssociatePolicy } from "@/lib/adminStore";
 import { useAuth } from "@/lib/useAuth";
 
@@ -77,6 +77,23 @@ export default function AssociateList() {
       fetchAllAssociates();
     } catch (err: any) {
       alert(err.detail || "Failed to delete user.");
+    }
+  };
+
+  const handleToggleSuspension = async (user: any) => {
+    const isSuspended = user.account_active === false;
+    const nextStatus = !isSuspended;
+    const actionWord = nextStatus ? "suspend (invalidate all active sessions)" : "reactivate";
+    if (!confirm(`Are you sure you want to ${actionWord} for @${user.first_name || user.name} (${user.phone})?`)) return;
+    try {
+      await apiFetch("/broker/admin/suspend", {
+        method: "POST",
+        body: JSON.stringify({ user_id: user._id || user.id, suspend: nextStatus })
+      });
+      alert(`User ${nextStatus ? "suspended and all sessions invalidated" : "reactivated"} successfully.`);
+      setRawResults(prev => prev.map(u => (u._id || u.id) === (user._id || user.id) ? { ...u, account_active: !nextStatus } : u));
+    } catch (err: any) {
+      alert(err.detail || "Failed to update suspension status.");
     }
   };
 
@@ -366,15 +383,28 @@ export default function AssociateList() {
                       </td>
                       <td className="py-5 px-6">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-xs shrink-0 group-hover:scale-110 transition-transform">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs shrink-0 group-hover:scale-110 transition-transform ${
+                            user.account_active === false
+                              ? "bg-red-500/10 border border-red-500/30 text-red-500"
+                              : "bg-primary/10 border border-primary/20 text-primary"
+                          }`}>
                             {user.first_name?.[0]}
                             {user.last_name?.[0]}
                           </div>
-                          <span className="font-bold text-foreground text-sm">
-                            {user.first_name || user.name
-                              ? `${user.first_name || ""} ${user.last_name || ""}`.trim() || user.name
-                              : "—"}
-                          </span>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-foreground text-sm">
+                                {user.first_name || user.name
+                                  ? `${user.first_name || ""} ${user.last_name || ""}`.trim() || user.name
+                                  : "—"}
+                              </span>
+                              {user.account_active === false && (
+                                <span className="px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-red-500 text-[8px] font-black uppercase tracking-wider">
+                                  Suspended
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </td>
                       <td className="py-5 px-6 text-sm text-muted-foreground font-mono">{user.referral_code || "—"}</td>
@@ -408,6 +438,17 @@ export default function AssociateList() {
                             className="px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-600 hover:bg-amber-500 hover:text-white rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap"
                           >
                             Sales Admin
+                          </button>
+                          <button
+                            onClick={() => handleToggleSuspension(user)}
+                            title={user.account_active === false ? "Reactivate User" : "Suspend User (Invalidate all sessions)"}
+                            className={`p-1.5 rounded-lg border transition-all cursor-pointer flex items-center justify-center ${
+                              user.account_active === false 
+                                ? "bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white border-emerald-500/20" 
+                                : "bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border-red-500/20"
+                            }`}
+                          >
+                            {user.account_active === false ? <ShieldCheck size={15} /> : <Ban size={15} />}
                           </button>
                           <button
                             onClick={() => setSelectedUserForBank(user)}

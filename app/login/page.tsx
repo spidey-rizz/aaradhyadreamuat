@@ -15,6 +15,7 @@ function LoginContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const expired = searchParams.get("expired");
+  const suspended = searchParams.get("suspended");
 
   // ── Session check: if already logged in with valid JWT, redirect based on role ──
   const { status } = useAuth({ redirectBasedOnRole: true, redirectIfValid: "/dashboard" });
@@ -135,7 +136,14 @@ function LoginContent() {
             <p className="text-muted-foreground font-medium">Access your dashboard and manage your network.</p>
           </div>
 
-          {expired && (
+          {suspended && (
+            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex gap-3 text-red-600 dark:text-red-300">
+              <AlertCircle className="shrink-0" size={20} />
+              <p className="text-sm font-medium">Your account has been suspended by the administrator. Please contact support.</p>
+            </div>
+          )}
+
+          {expired && !suspended && (
             <div className="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex gap-3 text-amber-600 dark:text-amber-200">
               <AlertCircle className="shrink-0" size={20} />
               <p className="text-sm font-medium">Your session has expired. Please login again.</p>

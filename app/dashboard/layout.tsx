@@ -66,7 +66,8 @@ export default function DashboardLayout({
   }
 
   const policy = getAssociatePolicy(profile._id || profile.id);
-  if (policy.suspended) {
+  const isSuspended = policy.suspended || profile?.account_active === false || profile?.account_enabled === false;
+  if (isSuspended) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
         <div className="bg-red-500/10 border border-red-500/20 p-8 rounded-[2rem] max-w-lg w-full shadow-2xl">
@@ -78,7 +79,7 @@ export default function DashboardLayout({
           <button 
             onClick={() => { 
               clearSessionData();
-              window.location.href = "/login"; 
+              window.location.href = "/login?suspended=true"; 
             }}
             className="w-full bg-red-500 text-white font-black text-xs uppercase tracking-widest py-4 rounded-xl hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20"
           >

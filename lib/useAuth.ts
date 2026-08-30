@@ -69,6 +69,14 @@ export function useAuth(options?: {
           }
         }
 
+        // Check if account is suspended
+        if (data && (data.account_active === false || data.account_enabled === false)) {
+          clearSessionData();
+          setStatus("unauthenticated");
+          router.replace("/login?suspended=true");
+          return;
+        }
+
         setProfile(data);
         setStatus("authenticated");
 
@@ -103,6 +111,42 @@ export function useAuth(options?: {
     };
 
     verifySession();
+
+    // Active session heartbeat and tab focus check to detect suspension or invalidation immediately
+    const checkActiveSession = async () => {
+      const token = getCookie("access_token");
+      if (!token) return;
+
+      try {
+        const data = await apiFetch(endpoints.me);
+        if (data && (data.account_active === false || data.account_enabled === false)) {
+          clearSessionData();
+          setStatus("unauthenticated");
+          if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
+            window.location.href = "/login?suspended=true";
+          }
+        }
+      } catch (err: any) {
+        // apiFetch automatically handles 401 and 403 suspension redirection
+      }
+    };
+
+    const intervalId = setInterval(checkActiveSession, 15000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        checkActiveSession();
+      }
+    };
+
+    window.addEventListener("focus", checkActiveSession);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener("focus", checkActiveSession);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
