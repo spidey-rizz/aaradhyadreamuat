@@ -17,7 +17,6 @@ export interface AssociatePolicy {
 }
 
 const POLICIES_KEY = "aaradhya_associate_policies";
-const VISITS_KEY = "aaradhya_website_visits";
 
 
 const encodeBase64 = (str: string) => {
@@ -71,30 +70,4 @@ export function updateAssociatePolicy(userId: string, updates: Partial<Associate
 
   policies[userId] = { ...current, ...updates };
   localStorage.setItem(POLICIES_KEY, encodeBase64(JSON.stringify(policies)));
-}
-
-
-
-// -- Website Visits --
-
-export function getWebsiteVisits(): number {
-  if (typeof window === "undefined") return 14850;
-  const raw = localStorage.getItem(VISITS_KEY);
-  if (raw) {
-    return parseInt(raw, 10);
-  }
-
-  // Set an initial realistic number
-  const initial = 14850 + Math.floor(Math.random() * 100);
-  localStorage.setItem(VISITS_KEY, initial.toString());
-  return initial;
-}
-
-export function incrementWebsiteVisits() {
-  if (typeof window === "undefined") return;
-  const current = getWebsiteVisits();
-  localStorage.setItem(VISITS_KEY, (current + 1).toString());
-
-  fetch("https://abacus.jasoncameron.dev/hit/aaradhyadreamcity/visits")
-    .catch(() => console.warn("Failed to increment visits counter (offline)"));
 }

@@ -7,7 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "@/lib/ThemeContext";
 import { useAuth } from "@/lib/useAuth";
 import { clearSessionData } from "@/lib/api";
-import { getAssociatePolicy, incrementWebsiteVisits } from "@/lib/adminStore";
+import { getAssociatePolicy } from "@/lib/adminStore";
 import {
   User,
   Users,
@@ -38,11 +38,6 @@ export default function DashboardLayout({
   const { theme, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [payoutSubmenuOpen, setPayoutSubmenuOpen] = useState(false);
-
-  // Increment website visits on mount
-  useEffect(() => {
-    incrementWebsiteVisits();
-  }, []);
 
   // Close mobile sidebar on route change
   useEffect(() => {

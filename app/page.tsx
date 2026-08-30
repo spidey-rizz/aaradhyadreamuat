@@ -41,12 +41,6 @@ export default function Home() {
   const section3 = useInView(0.15);
   const statsSection = useInView(0.1);
 
-  useEffect(() => {
-    // Increment the global website visits counter dynamically using Abacus API
-    fetch("https://abacus.jasoncameron.dev/hit/aaradhyadreamcity/visits")
-      .catch(() => console.warn("Failed to increment visits counter (offline)"));
-  }, []);
-
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground transition-colors duration-500 overflow-x-hidden max-w-[100vw]">
       <Navbar />

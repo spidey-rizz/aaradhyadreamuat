@@ -6,8 +6,7 @@ import { useAuth } from "@/lib/useAuth";
 import { apiFetch, endpoints, clearSessionData } from "@/lib/api";
 import {
   getAssociatePolicy,
-  updateAssociatePolicy,
-  getWebsiteVisits
+  updateAssociatePolicy
 } from "@/lib/adminStore";
 
 interface AdminLog {
@@ -28,21 +27,32 @@ import {
   Briefcase,
   TrendingUp,
   MapPin,
-  X,
-  Shield,
-  Ban,
   CheckCircle2,
+  XCircle,
   AlertTriangle,
+  ChevronRight,
+  Shield,
+  Layers,
+  Award,
   History,
   Lock,
+  Plus,
+  ArrowUpDown,
+  Filter,
+  Check,
+  X,
+  Phone,
+  Mail,
+  Ban,
+  ShieldCheck,
+  Calendar,
   MailWarning,
-  Layers,
   Trash
 } from "lucide-react";
 
 type Tab = "overview" | "admins" | "associates" | "levels" | "logs";
 
-export default function SuperAdminPanelPage() {
+export default function SuperAdminPage() {
   const { status, profile } = useAuth({ redirectIfInvalid: "/login?expired=true" });
   const router = useRouter();
 
@@ -52,7 +62,7 @@ export default function SuperAdminPanelPage() {
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [globalSales, setGlobalSales] = useState<any[]>([]);
-  const [visitsCount, setVisitsCount] = useState(14850);
+  const [totalPlotsCount, setTotalPlotsCount] = useState<number | null>(null);
 
   // ── Admin Control States ──
   const [adminSearchQuery, setAdminSearchQuery] = useState("");
@@ -140,31 +150,15 @@ export default function SuperAdminPanelPage() {
     }
     
     try {
-      const usersData = await apiFetch(endpoints.allUsers);
-      if (usersData && usersData.status === "success" && Array.isArray(usersData.users)) {
-        setAllUsers(usersData.users);
+      const salesData = await apiFetch("/sales/sold-plots?page=1&page_size=1");
+      if (salesData && typeof salesData.total_plots === "number") {
+        setTotalPlotsCount(salesData.total_plots);
       }
-    } catch (err) {
-      console.error("Failed to fetch users", err);
-    }
-
-    try {
-      const salesData = await apiFetch("/broker/sales/sold-plots");
       if (salesData && Array.isArray(salesData.plots)) {
         setGlobalSales(salesData.plots);
       }
     } catch (err) {
       console.error("Failed to fetch global sales", err);
-    }
-
-    // Live visits update
-    try {
-      const data = await apiFetch("/broker/admin/stats");
-      if (data && typeof data.value === "number") {
-        setVisitsCount(14850 + data.value);
-      }
-    } catch (err) {
-      console.warn("Failed to fetch real-time website visits (offline)");
     }
     
     setLoadingUsers(false);
@@ -185,7 +179,6 @@ export default function SuperAdminPanelPage() {
     if (status === "authenticated" && isSuperAdmin) {
       fetchAllData();
       fetchLogs();
-      setVisitsCount(getWebsiteVisits());
     }
   }, [status, isSuperAdmin]);
 
@@ -212,10 +205,11 @@ export default function SuperAdminPanelPage() {
     return sponsors.size;
   }, [allUsers]);
 
-  // Real-time Plots Sold: Estimated realistically from business (at avg 2.5L/plot) + current month report
+  // Real-time Plots Sold from backend database count
   const totalPlotsSold = useMemo(() => {
-    return Math.round(totalBusiness / 250000) || globalSales.length;
-  }, [totalBusiness, globalSales]);
+    if (totalPlotsCount !== null) return totalPlotsCount;
+    return globalSales.length;
+  }, [totalPlotsCount, globalSales]);
 
   // Actions
   const toggleUserPrivilege = async (userId: string, isCurrentlyAdmin: boolean, userName: string) => {
@@ -463,8 +457,8 @@ export default function SuperAdminPanelPage() {
           <div className="bg-card border border-border rounded-3xl p-6 shadow-sm hover:border-primary/30 transition-all group relative overflow-hidden">
             <div className="absolute right-0 top-0 opacity-5 group-hover:scale-110 transition-transform p-4"><Globe size={80} className="text-primary" /></div>
             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-4 flex items-center gap-2"><Globe size={14}/> Website Visits</h4>
-            <p className="text-4xl font-black text-foreground font-mono">{visitsCount.toLocaleString("en-IN")}</p>
-            <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mt-2 flex items-center gap-1"><TrendingUp size={12}/> Live Tracking Active</p>
+            <p className="text-4xl font-black text-foreground font-mono">N/A</p>
+            <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest mt-2">Not Configured</p>
           </div>
 
           <div className="bg-card border border-border rounded-3xl p-6 shadow-sm hover:border-primary/30 transition-all group relative overflow-hidden">
