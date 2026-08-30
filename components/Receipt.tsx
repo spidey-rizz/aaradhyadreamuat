@@ -1,4 +1,5 @@
 import React from 'react';
+import { COMPANY_INFO } from '@/lib/company';
 
 export interface ReceiptData {
   receiptNo?: string;
@@ -69,12 +70,18 @@ export const Receipt: React.FC<ReceiptProps> = ({ data }) => {
       
       {/* Header / Company Details */}
       <div className="text-center border-b-2 border-black pb-4 mb-6">
-        <h1 className="text-3xl font-bold uppercase tracking-wider mb-2">Aaradhya Dream City</h1>
-        <h2 className="text-xl font-semibold mb-2">Payment Receipt</h2>
-        <div className="flex justify-center gap-4 text-sm mt-2">
-          <p><span className="font-semibold">Contact:</span> +91 93356 02932</p>
-          <p><span className="font-semibold">Email:</span> support@aaradhyadreamcity.in</p>
+        <h1 className="text-3xl font-bold uppercase tracking-wider mb-1">{COMPANY_INFO.name}</h1>
+        <p className="text-xs text-gray-600 max-w-xl mx-auto mb-2 leading-relaxed">
+          {COMPANY_INFO.fullAddress}
+        </p>
+        <div className="flex justify-center flex-wrap gap-x-6 gap-y-1 text-xs text-gray-700 font-medium mb-3">
+          <p><span className="font-semibold text-black">Contact:</span> {COMPANY_INFO.phone}</p>
+          <p><span className="font-semibold text-black">Email:</span> {COMPANY_INFO.email}</p>
+          <p><span className="font-semibold text-black">Website:</span> {COMPANY_INFO.website.replace('https://', '')}</p>
         </div>
+        <h2 className="text-base font-bold uppercase tracking-widest text-zinc-900 bg-gray-100 py-1 px-4 inline-block rounded-md border border-gray-300">
+          Payment Receipt
+        </h2>
       </div>
 
       {/* Basic Info */}
