@@ -148,38 +148,41 @@ export default function DashboardLayout({
   }
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-card border-r border-border/80 text-foreground">
-      {/* Branding & Logo */}
-      <div className="p-6 border-b border-border/60">
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative w-10 h-10 transition-all">
-            <Image src="/logo.png" alt="Logo" fill sizes="40px" className="object-contain" />
+    <div className="flex flex-col h-full min-h-0 bg-card border-r border-border/80 text-foreground">
+      {/* Branding & Profile Header (Fixed at top) */}
+      <div className="shrink-0">
+        {/* Branding & Logo */}
+        <div className="p-6 border-b border-border/60">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="relative w-10 h-10 transition-all">
+              <Image src="/logo.png" alt="Logo" fill sizes="40px" className="object-contain" />
+            </div>
+            <div className="flex flex-col leading-none">
+              <span className="text-base font-black tracking-tight text-foreground">Aaradhya</span>
+              <span className="text-[10px] font-bold tracking-[0.2em] text-primary uppercase mt-0.5">Dream City</span>
+            </div>
+          </Link>
+        </div>
+
+        {/* Profile summary card inside Sidebar */}
+        <div className="p-4 mx-4 my-4 rounded-2xl bg-muted/50 border border-border/40 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black shrink-0">
+            {profile?.first_name?.[0] || "U"}{profile?.last_name?.[0] || ""}
           </div>
-          <div className="flex flex-col leading-none">
-            <span className="text-base font-black tracking-tight text-foreground">Aaradhya</span>
-            <span className="text-[10px] font-bold tracking-[0.2em] text-primary uppercase mt-0.5">Dream City</span>
+          <div className="min-w-0 flex-grow">
+            <h4 className="text-xs font-bold text-foreground truncate uppercase">
+              {profile?.first_name} {profile?.last_name}
+            </h4>
+            <p className="text-[9px] text-muted-foreground font-semibold tracking-wider uppercase">
+              Level {profile?.level || 1} Associate
+            </p>
           </div>
-        </Link>
+        </div>
       </div>
 
-      {/* Profile summary card inside Sidebar */}
-      <div className="p-4 mx-4 my-6 rounded-2xl bg-muted/50 border border-border/40 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black shrink-0">
-          {profile?.first_name?.[0] || "U"}{profile?.last_name?.[0] || ""}
-        </div>
-        <div className="min-w-0 flex-grow">
-          <h4 className="text-xs font-bold text-foreground truncate uppercase">
-            {profile?.first_name} {profile?.last_name}
-          </h4>
-          <p className="text-[9px] text-muted-foreground font-semibold tracking-wider uppercase">
-            Level {profile?.level || 1} Associate
-          </p>
-        </div>
-      </div>
-
-      {/* Navigation Links */}
-      <nav className="flex-grow px-4 space-y-1.5">
-        <p className="text-[9px] font-black tracking-[0.3em] text-muted-foreground/60 uppercase px-3 mb-3">Navigation</p>
+      {/* Navigation Links (Scrollable area) */}
+      <nav className="flex-1 min-h-0 overflow-y-auto px-4 py-2 space-y-1.5">
+        <p className="text-[9px] font-black tracking-[0.3em] text-muted-foreground/60 uppercase px-3 mb-2">Navigation</p>
         {menuItems.map((item) => {
           const Icon = item.icon;
           
@@ -265,12 +268,12 @@ export default function DashboardLayout({
         })}
       </nav>
 
-      {/* Sidebar Footer Actions */}
-      <div className="p-4 border-t border-border/60 space-y-2.5">
+      {/* Sidebar Footer Actions (Fixed at bottom) */}
+      <div className="shrink-0 p-4 border-t border-border/60 space-y-2 bg-card">
         {/* Back to Home Button */}
         <Link
           href="/"
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors w-full"
+          className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors w-full"
         >
           <Home size={16} className="text-primary" />
           <span>Back to Home</span>
@@ -279,7 +282,7 @@ export default function DashboardLayout({
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
-          className="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-border/40 hover:bg-muted/30 transition-all text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground"
+          className="flex items-center justify-between w-full px-4 py-2.5 rounded-xl border border-border/40 hover:bg-muted/30 transition-all text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground"
         >
           <div className="flex items-center gap-3">
             {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
@@ -290,7 +293,7 @@ export default function DashboardLayout({
         {/* Logout */}
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-colors w-full"
+          className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-colors w-full"
         >
           <LogOut size={16} />
           <span>Sign Out</span>
@@ -332,10 +335,10 @@ export default function DashboardLayout({
             onClick={() => setMobileMenuOpen(false)}
           />
           {/* Drawer Panel */}
-          <div className="relative flex flex-col w-4/5 max-w-sm h-full bg-card shadow-2xl animate-in slide-in-from-left duration-300">
+          <div className="relative flex flex-col w-4/5 max-w-sm h-full bg-card shadow-2xl animate-in slide-in-from-left duration-300 overflow-hidden">
             <button
               onClick={() => setMobileMenuOpen(false)}
-              className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-xl bg-muted hover:bg-muted/80 text-foreground border border-border/40 transition-transform"
+              className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-xl bg-muted hover:bg-muted/80 text-foreground border border-border/40 transition-transform z-10"
             >
               <X size={20} strokeWidth={2.5} />
             </button>
@@ -345,7 +348,7 @@ export default function DashboardLayout({
       )}
 
       {/* Desktop Sidebar (Permanent) */}
-      <aside className="hidden md:block w-72 fixed left-0 top-0 bottom-0 h-screen z-20">
+      <aside className="hidden md:block w-72 fixed left-0 top-0 bottom-0 h-screen z-20 overflow-hidden">
         {sidebarContent}
       </aside>
 
