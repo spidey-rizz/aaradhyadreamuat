@@ -2,7 +2,7 @@
  * Unified API client for Aaradhya Real Estate
  */
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://test.aaradhyadreamcity.in";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.aaradhyadreamcity.in";
 
 export class APIError extends Error {
   status: number;
@@ -72,8 +72,8 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
 
   if (!response.ok) {
     if (typeof window !== "undefined") {
-      const isSuspended = (response.status === 403 || response.status === 401) && 
-        typeof data?.detail === "string" && 
+      const isSuspended = (response.status === 403 || response.status === 401) &&
+        typeof data?.detail === "string" &&
         (data.detail.toLowerCase().includes("suspended") || data.detail.toLowerCase().includes("blocked"));
 
       if (response.status === 401 || isSuspended) {
