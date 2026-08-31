@@ -17,6 +17,7 @@ export interface CompanyInfo {
   website: string;
   gstin?: string;
   cin?: string;
+  logoUrl?: string;
 }
 
 export const COMPANY_INFO: CompanyInfo = {
@@ -32,6 +33,7 @@ export const COMPANY_INFO: CompanyInfo = {
   email: "support@aaradhyadreamcity.in",
   supportEmail: "support@aaradhyadreamcity.in",
   website: "https://aaradhyadreamcity.in",
+  logoUrl: "/logo.png",
 };
 
 export default COMPANY_INFO;

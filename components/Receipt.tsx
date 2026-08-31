@@ -70,7 +70,12 @@ export const Receipt: React.FC<ReceiptProps> = ({ data }) => {
       
       {/* Header / Company Details */}
       <div className="text-center border-b-2 border-black pb-4 mb-6">
-        <h1 className="text-3xl font-bold uppercase tracking-wider mb-1">{COMPANY_INFO.name}</h1>
+        <div className="flex items-center justify-center gap-3 mb-1">
+          {COMPANY_INFO.logoUrl && (
+            <img src={COMPANY_INFO.logoUrl} alt="Logo" className="w-16 h-16 object-contain" />
+          )}
+          <h1 className="text-3xl font-bold uppercase tracking-wider">{COMPANY_INFO.name}</h1>
+        </div>
         <p className="text-xs text-gray-600 max-w-xl mx-auto mb-2 leading-relaxed">
           {COMPANY_INFO.fullAddress}
         </p>
