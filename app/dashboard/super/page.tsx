@@ -107,10 +107,40 @@ export default function SuperAdminPage() {
   const fetchAllData = async () => {
     setLoadingUsers(true);
     
-    // Fetch users (real-time data) with page_size=100 (API maximum)
+    // Fetch users (real-time data) across all pages
     try {
-      const usersData = await apiFetch(`${endpoints.allUsers}?page=1&page_size=100`);
-      const normalizedUsers = (usersData.users || []).map((u: any) => {
+      let accumulatedUsers: any[] = [];
+      let pageNum = 1;
+      let keepFetching = true;
+      const pageSize = 100;
+
+      while (keepFetching && pageNum <= 50) {
+        const usersData = await apiFetch(`${endpoints.allUsers}?page=${pageNum}&page_size=${pageSize}`);
+        const batch = usersData.users || usersData.data || usersData.results || (Array.isArray(usersData) ? usersData : []);
+        if (!batch || batch.length === 0) {
+          keepFetching = false;
+        } else {
+          accumulatedUsers = [...accumulatedUsers, ...batch];
+          const total = usersData.total_users ?? usersData.total ?? usersData.total_count ?? usersData.count ?? null;
+          if (total != null && accumulatedUsers.length >= Number(total)) {
+            keepFetching = false;
+          } else if (batch.length < pageSize) {
+            keepFetching = false;
+          } else {
+            pageNum++;
+          }
+        }
+      }
+
+      // Deduplicate by ID
+      const uniqueMap = new Map();
+      accumulatedUsers.forEach((u) => {
+        const id = u._id || u.id || u.phone;
+        if (id) uniqueMap.set(id, u);
+      });
+      const uniqueUsers = Array.from(uniqueMap.values());
+
+      const normalizedUsers = uniqueUsers.map((u: any) => {
         const normalized = { ...u };
         if (normalized.admin !== undefined && normalized.is_admin === undefined) {
           normalized.is_admin = normalized.admin;

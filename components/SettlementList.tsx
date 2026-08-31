@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { apiFetch, endpoints } from "@/lib/api";
-import { Loader2, Users, Phone, X, AlertCircle, RefreshCw, CheckCircle2, Calendar } from "lucide-react";
+import { Loader2, Users, Phone, X, AlertCircle, RefreshCw, CheckCircle2, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 const inputCls =
   "w-full bg-background border border-border rounded-xl py-3 px-4 text-foreground focus:border-primary outline-none transition-all text-sm";
@@ -316,6 +316,27 @@ export default function SettlementList() {
             </tbody>
           </table>
         </div>
+        {payouts.length === 100 || page > 1 ? (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-muted/20">
+            <button
+              type="button"
+              disabled={page === 1 || loading}
+              onClick={() => fetchPayoutsList(page - 1)}
+              className="px-4 py-2 text-xs font-bold uppercase tracking-wider border border-border rounded-xl hover:bg-muted disabled:opacity-50 transition-colors cursor-pointer flex items-center gap-1"
+            >
+              <ChevronLeft size={14} /> Previous
+            </button>
+            <span className="text-xs font-black font-mono">Page {page}</span>
+            <button
+              type="button"
+              disabled={payouts.length < 100 || loading}
+              onClick={() => fetchPayoutsList(page + 1)}
+              className="px-4 py-2 text-xs font-bold uppercase tracking-wider border border-border rounded-xl hover:bg-muted disabled:opacity-50 transition-colors cursor-pointer flex items-center gap-1"
+            >
+              Next <ChevronRight size={14} />
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );

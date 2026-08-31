@@ -2,7 +2,11 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { apiFetch, endpoints } from "@/lib/api";
-import { Loader2, Search, X, AlertCircle, Users, Calendar, CheckCircle2, Wallet, Award, Landmark, FileEdit, Trash2, UserMinus, Ban, ShieldCheck } from "lucide-react";
+import { 
+  Loader2, Search, X, AlertCircle, Users, Calendar, CheckCircle2, 
+  Wallet, Award, Landmark, FileEdit, Trash2, UserMinus, Ban, ShieldCheck,
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, RefreshCw, DownloadCloud, SlidersHorizontal
+} from "lucide-react";
 import { getAssociatePolicy } from "@/lib/adminStore";
 import { useAuth } from "@/lib/useAuth";
 
@@ -14,8 +18,14 @@ export default function AssociateList() {
   const [levelFilter, setLevelFilter] = useState("all");
   const [rawResults, setRawResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingAll, setLoadingAll] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+  const [totalCount, setTotalCount] = useState<number | null>(null);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isAllLoaded, setIsAllLoaded] = useState(false);
   const { profile } = useAuth();
   const isSuperAdmin = profile?.super_admin === true || profile?.is_super_admin === true || profile?.role?.toLowerCase() === 'super_admin';
 
@@ -74,7 +84,11 @@ export default function AssociateList() {
     try {
       await apiFetch(`/broker/admin/user/${user._id || user.id}`, { method: "DELETE" });
       alert("User deleted successfully.");
-      fetchAllAssociates();
+      if (isAllLoaded) {
+        setRawResults(prev => prev.filter(u => (u._id || u.id) !== (user._id || user.id)));
+      } else {
+        fetchAllAssociates(page, pageSize);
+      }
     } catch (err: any) {
       alert(err.detail || "Failed to delete user.");
     }
@@ -218,13 +232,35 @@ export default function AssociateList() {
     }
   };
 
-  const fetchAllAssociates = async () => {
+  const fetchAllAssociates = async (pageNum = 1, size = pageSize) => {
     setLoading(true);
     setError(null);
     setSearched(false);
+    setIsAllLoaded(false);
     try {
-      const data = await apiFetch(`${endpoints.allUsers}?page=1&page_size=100`);
-      setRawResults(data.users || []);
+      const data = await apiFetch(`${endpoints.allUsers}?page=${pageNum}&page_size=${size}`);
+      const usersList = data.users || data.data || data.results || (Array.isArray(data) ? data : []);
+      setRawResults(usersList);
+      setPage(pageNum);
+
+      // Extract total if available in response
+      const total = data.total_users ?? data.total ?? data.total_count ?? data.count ?? null;
+      if (total != null && Number(total) >= 0) {
+        const numTotal = Number(total);
+        setTotalCount(numTotal);
+        setTotalPages(Math.max(1, Math.ceil(numTotal / size)));
+      } else if (data.total_pages) {
+        const tPages = Number(data.total_pages);
+        setTotalPages(tPages);
+        setTotalCount(null);
+      } else {
+        setTotalCount(null);
+        if (usersList.length < size) {
+          setTotalPages(pageNum);
+        } else {
+          setTotalPages(pageNum + 1);
+        }
+      }
     } catch (err: any) {
       setError(err.detail || "Failed to fetch associates.");
       setRawResults([]);
@@ -233,21 +269,81 @@ export default function AssociateList() {
     }
   };
 
+  const handleLoadAllAssociates = async () => {
+    setLoadingAll(true);
+    setError(null);
+    setSearched(false);
+    try {
+      let accumulated: any[] = [];
+      let curPage = 1;
+      let keepFetching = true;
+      const batchSize = 100;
+
+      while (keepFetching && curPage <= 50) {
+        const data = await apiFetch(`${endpoints.allUsers}?page=${curPage}&page_size=${batchSize}`);
+        const batch = data.users || data.data || data.results || (Array.isArray(data) ? data : []);
+        if (!batch || batch.length === 0) {
+          keepFetching = false;
+        } else {
+          accumulated = [...accumulated, ...batch];
+          const total = data.total_users ?? data.total ?? data.total_count ?? data.count ?? null;
+          if (total != null && accumulated.length >= Number(total)) {
+            keepFetching = false;
+          } else if (batch.length < batchSize) {
+            keepFetching = false;
+          } else {
+            curPage++;
+          }
+        }
+      }
+
+      // Deduplicate by ID/phone
+      const uniqueMap = new Map();
+      accumulated.forEach((u) => {
+        const id = u._id || u.id || u.phone;
+        if (id) uniqueMap.set(id, u);
+      });
+      const uniqueList = Array.from(uniqueMap.values());
+      setRawResults(uniqueList);
+      setPage(1);
+      setTotalCount(uniqueList.length);
+      setTotalPages(1);
+      setIsAllLoaded(true);
+    } catch (err: any) {
+      setError(err.detail || "Failed to load all associates.");
+    } finally {
+      setLoadingAll(false);
+    }
+  };
+
   useEffect(() => {
-    fetchAllAssociates();
+    fetchAllAssociates(1, pageSize);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || loading) return;
+    if (totalPages && newPage > totalPages) return;
+    fetchAllAssociates(newPage, pageSize);
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setPage(1);
+    fetchAllAssociates(1, newSize);
+  };
 
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const cleanQuery = query.trim();
     if (!cleanQuery) {
-      fetchAllAssociates();
+      fetchAllAssociates(1, pageSize);
       return;
     }
     setLoading(true);
     setError(null);
     setSearched(true);
+    setIsAllLoaded(false);
     try {
       const params = new URLSearchParams();
       if (cleanQuery.includes("@")) {
@@ -262,9 +358,14 @@ export default function AssociateList() {
       const data = await apiFetch(`${endpoints.userLookup}?${params.toString()}`);
       let list = Array.isArray(data) ? data : [data].filter(Boolean);
       setRawResults(list);
+      setPage(1);
+      setTotalPages(1);
+      setTotalCount(list.length);
     } catch (err: any) {
       setError(err.detail || "No associate found.");
       setRawResults([]);
+      setTotalCount(0);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
@@ -272,7 +373,8 @@ export default function AssociateList() {
 
   const handleClearSearch = () => {
     setQuery("");
-    fetchAllAssociates();
+    setSearched(false);
+    fetchAllAssociates(1, pageSize);
   };
 
   const displayedResults = useMemo(() => {
@@ -289,13 +391,13 @@ export default function AssociateList() {
 
   return (
     <div className="space-y-5 max-w-5xl mx-auto">
-      {/* Search Bar */}
+      {/* Search Bar & Top Controls */}
       <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-grow">
           <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search by phone or email..."
+            placeholder="Search by phone, email, or PAN..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className={`${inputCls} pl-10 pr-10`}
@@ -304,7 +406,7 @@ export default function AssociateList() {
             <button
               type="button"
               onClick={handleClearSearch}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 cursor-pointer"
             >
               <X size={15} />
             </button>
@@ -314,7 +416,7 @@ export default function AssociateList() {
         <select
           value={levelFilter}
           onChange={(e) => setLevelFilter(e.target.value)}
-          className={`${inputCls} sm:w-44 cursor-pointer`}
+          className={`${inputCls} sm:w-44 cursor-pointer font-bold`}
         >
           <option value="all">All Levels</option>
           {[1, 2, 3, 4, 5, 6, 7].map((l) => (
@@ -331,7 +433,34 @@ export default function AssociateList() {
           {loading ? <Loader2 className="animate-spin" size={15} /> : <Search size={15} />}
           Search
         </button>
+        <button
+          type="button"
+          onClick={() => fetchAllAssociates(page, pageSize)}
+          disabled={loading}
+          title="Refresh List"
+          className="p-3 bg-muted border border-border text-foreground hover:border-primary/40 rounded-xl transition-all flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-50"
+        >
+          <RefreshCw size={16} className={loading ? "animate-spin text-primary" : ""} />
+        </button>
       </form>
+
+      {/* Active Search Banner */}
+      {searched && (
+        <div className="flex items-center justify-between bg-primary/10 border border-primary/20 px-4 py-3 rounded-2xl text-xs">
+          <div className="flex items-center gap-2">
+            <Search size={14} className="text-primary" />
+            <span className="font-bold text-foreground">
+              Search Results for <span className="text-primary font-mono font-black">"{query}"</span> ({displayedResults.length} found)
+            </span>
+          </div>
+          <button
+            onClick={handleClearSearch}
+            className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline cursor-pointer flex items-center gap-1"
+          >
+            <X size={12} /> Clear & View All
+          </button>
+        </div>
+      )}
 
       {/* Error */}
       {error && (
@@ -482,6 +611,125 @@ export default function AssociateList() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        {!searched && (
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-border bg-muted/20">
+            <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground font-medium">
+              {isAllLoaded ? (
+                <span className="bg-primary/10 text-primary-text border border-primary/20 px-3 py-1 rounded-lg font-bold text-[11px] uppercase tracking-wider">
+                  All {displayedResults.length} Associates Loaded
+                </span>
+              ) : (
+                <span>
+                  Page <strong className="text-foreground font-mono font-black">{page}</strong>
+                  {totalPages > 1 && <> of <strong className="text-foreground font-mono font-black">{totalPages}</strong></>}
+                  {totalCount !== null ? (
+                    <> (<strong className="text-foreground font-mono">{totalCount}</strong> total associates)</>
+                  ) : (
+                    <> (<strong className="text-foreground font-mono">{displayedResults.length}</strong> shown)</>
+                  )}
+                  {levelFilter !== "all" && (
+                    <span className="ml-1 text-primary"> (Filtered: LvL-{levelFilter})</span>
+                  )}
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Page Size Selector */}
+              {!isAllLoaded && (
+                <div className="flex items-center gap-1.5 mr-2">
+                  <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider hidden sm:inline">Per page:</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                    className="bg-background border border-border text-foreground text-xs font-bold rounded-lg px-2.5 py-1.5 focus:border-primary outline-none cursor-pointer"
+                  >
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                    <option value={200}>200</option>
+                  </select>
+                </div>
+              )}
+
+              {/* Pagination Navigation */}
+              {isAllLoaded ? (
+                <button
+                  type="button"
+                  onClick={() => fetchAllAssociates(1, pageSize)}
+                  className="px-4 py-2 text-xs font-bold uppercase tracking-wider border border-border rounded-xl hover:bg-muted transition-colors cursor-pointer"
+                >
+                  Switch to Paginated View
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    disabled={page === 1 || loading}
+                    onClick={() => handlePageChange(page - 1)}
+                    className="px-3.5 py-2 text-xs font-bold uppercase tracking-wider border border-border rounded-xl hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1"
+                  >
+                    <ChevronLeft size={14} /> Prev
+                  </button>
+
+                  {/* Page numbers (smart window) */}
+                  <div className="flex items-center gap-1">
+                    {(() => {
+                      const pages: number[] = [];
+                      const maxVisible = 5;
+                      let start = Math.max(1, page - 2);
+                      let end = Math.min(totalPages, start + maxVisible - 1);
+                      if (end - start + 1 < maxVisible) {
+                        start = Math.max(1, end - maxVisible + 1);
+                      }
+                      for (let i = start; i <= end; i++) {
+                        pages.push(i);
+                      }
+                      return pages.map((pNum) => (
+                        <button
+                          key={pNum}
+                          type="button"
+                          disabled={loading}
+                          onClick={() => handlePageChange(pNum)}
+                          className={`w-8 h-8 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
+                            pNum === page
+                              ? "bg-primary text-black font-black shadow-sm"
+                              : "border border-border hover:bg-muted text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          {pNum}
+                        </button>
+                      ));
+                    })()}
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={(totalCount !== null ? page >= totalPages : rawResults.length < pageSize) || loading}
+                    onClick={() => handlePageChange(page + 1)}
+                    className="px-3.5 py-2 text-xs font-bold uppercase tracking-wider border border-border rounded-xl hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1 bg-primary text-black"
+                  >
+                    Next <ChevronRight size={14} />
+                  </button>
+
+                  {/* Load All Button */}
+                  <button
+                    type="button"
+                    disabled={loading || loadingAll}
+                    onClick={handleLoadAllAssociates}
+                    title="Load all associates across all pages in one single list"
+                    className="px-3 py-2 text-[10px] font-black uppercase tracking-wider border border-primary/30 bg-primary/10 text-primary-text rounded-xl hover:bg-primary hover:text-black transition-all cursor-pointer flex items-center gap-1 ml-1"
+                  >
+                    {loadingAll ? <Loader2 className="animate-spin" size={13} /> : <DownloadCloud size={13} />}
+                    Load All
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Monthly Report & Payout Modal */}
