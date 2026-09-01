@@ -198,14 +198,16 @@ export const Receipt: React.FC<ReceiptProps> = ({ data }) => {
       </div>
 
       {/* Signature Section */}
-      <div className="flex justify-between items-end mt-24 pt-8">
-        <div className="text-center w-48 border-t border-black pt-2">
-          <p className="font-semibold">Customer Signature</p>
+      <div className="flex justify-between w-full mt-12 pt-4 break-inside-avoid">
+        <div className="w-40 text-center self-end mt-16">
+          <div className="border-t border-black pt-2">
+            <p className="font-semibold text-sm">Customer Signature</p>
+          </div>
         </div>
-        <div className="text-center w-64 pt-2 flex flex-col items-center">
-          <span className="font-bold text-sm mb-12">For {COMPANY_INFO.name}</span>
-          <div className="w-full border-t border-black pt-2">
-            <p className="font-semibold">Authorized Signatory</p>
+        <div className="w-56 text-center self-end">
+          <p className="font-bold text-sm mb-10">For {COMPANY_INFO.name}</p>
+          <div className="border-t border-black pt-2">
+            <p className="font-semibold text-sm">Authorized Signatory</p>
           </div>
         </div>
       </div>
