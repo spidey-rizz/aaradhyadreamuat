@@ -18,17 +18,31 @@ export default function ReceiptModal({ isOpen, onClose, data }: ReceiptModalProp
 
   if (!isOpen || !data) return null;
 
-  const handlePrint = async () => {
-    if (!printRef.current) return;
-
+  const generatePdfDocument = async () => {
+    if (!printRef.current) return null;
+    
+    const element = printRef.current;
+    
+    // Clone the element to render it outside the scrollable container.
+    // This prevents html2canvas from cutting off the image at the visible screen boundary.
+    const clone = element.cloneNode(true) as HTMLElement;
+    clone.style.position = "absolute";
+    clone.style.top = "-9999px";
+    clone.style.left = "0";
+    clone.style.width = `${element.offsetWidth}px`;
+    clone.style.height = "auto";
+    clone.style.overflow = "visible";
+    clone.style.transform = "none";
+    
+    document.body.appendChild(clone);
+    
     try {
-      setIsGeneratingPdf(true);
-      const element = printRef.current;
-      
-      const canvas = await html2canvas(element, {
-        scale: 2, // Higher scale for better quality
+      const canvas = await html2canvas(clone, {
+        scale: 2,
         useCORS: true,
         logging: false,
+        windowWidth: clone.scrollWidth,
+        windowHeight: clone.scrollHeight,
       });
       
       const imgData = canvas.toDataURL("image/png");
@@ -39,15 +53,40 @@ export default function ReceiptModal({ isOpen, onClose, data }: ReceiptModalProp
       });
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      // Calculate scaled height to maintain aspect ratio
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      let heightLeft = pdfHeight;
+      let position = 0;
 
-      // Print via hidden iframe containing the PDF blob
+      // Add first page
+      pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
+      heightLeft -= pageHeight;
+
+      // Add subsequent pages if the content is taller than one A4 page
+      while (heightLeft > 0) {
+        position = position - pageHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
+        heightLeft -= pageHeight;
+      }
+      
+      return pdf;
+    } finally {
+      document.body.removeChild(clone);
+    }
+  };
+
+  const handlePrint = async () => {
+    try {
+      setIsGeneratingPdf(true);
+      const pdf = await generatePdfDocument();
+      if (!pdf) return;
+      
       const pdfBlob = pdf.output("blob");
       const blobUrl = URL.createObjectURL(pdfBlob);
       
-      // Cleanup previous blob URL if exists to avoid memory leaks
       if (typeof window !== "undefined" && (window as any)._activePrintBlobUrl) {
         URL.revokeObjectURL((window as any)._activePrintBlobUrl);
       }
@@ -83,31 +122,12 @@ export default function ReceiptModal({ isOpen, onClose, data }: ReceiptModalProp
   };
 
   const handleDownloadPdf = async () => {
-    if (!printRef.current) return;
-
     try {
       setIsGeneratingPdf(true);
-      const element = printRef.current;
+      const pdf = await generatePdfDocument();
+      if (!pdf) return;
       
-      const canvas = await html2canvas(element, {
-        scale: 2, // Higher scale for better quality
-        useCORS: true,
-        logging: false,
-      });
-      
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Receipt-${data.plotNo || "Plot"}.pdf`);
-      
+      pdf.save(`Receipt-${data?.plotNo || "Plot"}.pdf`);
     } catch (err) {
       console.error("Error generating PDF", err);
       alert("Failed to generate PDF. Please try printing instead.");
