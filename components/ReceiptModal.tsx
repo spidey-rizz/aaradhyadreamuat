@@ -54,24 +54,25 @@ export default function ReceiptModal({ isOpen, onClose, data }: ReceiptModalProp
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      // Calculate scaled height to maintain aspect ratio
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      let heightLeft = pdfHeight;
-      let position = 0;
+      const margin = 8; // 8mm margin
+      const printableWidth = pdfWidth - margin * 2;
+      const printableHeight = pageHeight - margin * 2;
 
-      // Add first page
-      pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
-      heightLeft -= pageHeight;
+      let renderWidth = printableWidth;
+      let renderHeight = (canvas.height * printableWidth) / canvas.width;
 
-      // Add subsequent pages if the content is taller than one A4 page
-      while (heightLeft > 0) {
-        position = position - pageHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
-        heightLeft -= pageHeight;
+      // Ensure content strictly fits within a single A4 page
+      if (renderHeight > printableHeight) {
+        const scaleFactor = printableHeight / renderHeight;
+        renderHeight = printableHeight;
+        renderWidth = renderWidth * scaleFactor;
       }
-      
+
+      const xOffset = margin + (printableWidth - renderWidth) / 2;
+      const yOffset = margin;
+
+      pdf.addImage(imgData, "PNG", xOffset, yOffset, renderWidth, renderHeight);
+
       return pdf;
     } finally {
       document.body.removeChild(clone);
@@ -140,6 +141,10 @@ export default function ReceiptModal({ isOpen, onClose, data }: ReceiptModalProp
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
       {/* Dynamic Style Injection for Perfect Printing */}
       <style>{`
+        @page {
+          size: A4 portrait;
+          margin: 8mm;
+        }
         @media print {
           /* Hide all screen elements */
           body * {
@@ -153,11 +158,13 @@ export default function ReceiptModal({ isOpen, onClose, data }: ReceiptModalProp
             position: absolute;
             left: 0;
             top: 0;
-            width: 100%;
+            width: 100% !important;
+            max-width: 100% !important;
             border: none !important;
             box-shadow: none !important;
             padding: 0 !important;
             margin: 0 !important;
+            page-break-inside: avoid !important;
           }
         }
       `}</style>

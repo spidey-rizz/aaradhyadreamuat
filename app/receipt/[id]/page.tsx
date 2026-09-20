@@ -79,9 +79,24 @@ export default function ReceiptPage() {
       });
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 8;
+      const printableWidth = pdfWidth - margin * 2;
+      const printableHeight = pageHeight - margin * 2;
 
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      let renderWidth = printableWidth;
+      let renderHeight = (canvas.height * printableWidth) / canvas.width;
+
+      if (renderHeight > printableHeight) {
+        const scaleFactor = printableHeight / renderHeight;
+        renderHeight = printableHeight;
+        renderWidth = renderWidth * scaleFactor;
+      }
+
+      const xOffset = margin + (printableWidth - renderWidth) / 2;
+      const yOffset = margin;
+
+      pdf.addImage(imgData, 'PNG', xOffset, yOffset, renderWidth, renderHeight);
 
       // Print via hidden iframe containing the PDF blob
       const pdfBlob = pdf.output('blob');
@@ -143,9 +158,24 @@ export default function ReceiptPage() {
       });
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 8;
+      const printableWidth = pdfWidth - margin * 2;
+      const printableHeight = pageHeight - margin * 2;
 
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      let renderWidth = printableWidth;
+      let renderHeight = (canvas.height * printableWidth) / canvas.width;
+
+      if (renderHeight > printableHeight) {
+        const scaleFactor = printableHeight / renderHeight;
+        renderHeight = printableHeight;
+        renderWidth = renderWidth * scaleFactor;
+      }
+
+      const xOffset = margin + (printableWidth - renderWidth) / 2;
+      const yOffset = margin;
+
+      pdf.addImage(imgData, 'PNG', xOffset, yOffset, renderWidth, renderHeight);
       pdf.save(`Receipt-${data?.plotNo || id}.pdf`);
 
     } catch (err) {
