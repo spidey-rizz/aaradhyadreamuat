@@ -13,14 +13,21 @@ import { getAssociatePolicy } from "./adminStore";
  * @param redirectBasedOnRole - If true, redirects to the role-specific dashboard on valid session
  * @param requiredRole        - If set, redirects to /login if the user's role does not match
  */
+
+// --- GLOBAL CACHE TO PREVENT ROUTE-CHANGE LOADING SPINNERS ---
+let cachedProfile: any = null;
+let profileFetchPromise: Promise<any> | null = null;
+let lastFetchTime: number = 0;
+const CACHE_TTL = 10000; // 10 seconds cache
+
 export function useAuth(options?: {
   redirectIfValid?: string;
   redirectIfInvalid?: string;
   redirectBasedOnRole?: boolean;
   requiredRole?: string | string[];
 }) {
-  const [status, setStatus] = useState<"loading" | "authenticated" | "unauthenticated">("loading");
-  const [profile, setProfile] = useState<any>(null);
+  const [status, setStatus] = useState<"loading" | "authenticated" | "unauthenticated">(cachedProfile ? "authenticated" : "loading");
+  const [profile, setProfile] = useState<any>(cachedProfile);
   const router = useRouter();
   // Use a ref so the effect only runs once on mount, not on every pathname change.
   const hasRun = useRef(false);
@@ -42,7 +49,18 @@ export function useAuth(options?: {
       }
 
       try {
-        const data = await apiFetch(endpoints.me);
+        let data = cachedProfile;
+        const now = Date.now();
+        // Fetch if no cache, or if cache is older than TTL
+        if (!data || (now - lastFetchTime > CACHE_TTL)) {
+          if (!profileFetchPromise) {
+            profileFetchPromise = apiFetch(endpoints.me);
+          }
+          data = await profileFetchPromise;
+          cachedProfile = data;
+          lastFetchTime = Date.now();
+          profileFetchPromise = null;
+        }
         
         // Normalize role and admin properties for database alignment
         if (data) {
@@ -118,7 +136,18 @@ export function useAuth(options?: {
       if (!token) return;
 
       try {
-        const data = await apiFetch(endpoints.me);
+        let data = cachedProfile;
+        const now = Date.now();
+        // Fetch if no cache, or if cache is older than TTL
+        if (!data || (now - lastFetchTime > CACHE_TTL)) {
+          if (!profileFetchPromise) {
+            profileFetchPromise = apiFetch(endpoints.me);
+          }
+          data = await profileFetchPromise;
+          cachedProfile = data;
+          lastFetchTime = Date.now();
+          profileFetchPromise = null;
+        }
         if (data && (data.account_active === false || data.account_enabled === false)) {
           clearSessionData();
           setStatus("unauthenticated");
