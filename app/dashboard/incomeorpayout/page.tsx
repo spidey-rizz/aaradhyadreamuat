@@ -30,10 +30,10 @@ export default function PayoutsPage() {
   }
 
   // Real data from profile
-  const referralList: any[] = profile?.referral_list || [];
-  const selfDepositVal = profile?.total_sales || 0;
-  const teamDepositVal = referralList.reduce((acc: number, m: any) => acc + (m.total_sales || 0), 0);
-  const totalDepositVal = selfDepositVal + teamDepositVal;
+  // Use the pre-calculated backend fields to prevent recursive double counting
+  const selfDepositVal = profile?.direct_sale || 0;
+  const teamDepositVal = profile?.team_sale || 0;
+  const totalDepositVal = profile?.lifetime_sale || (selfDepositVal + teamDepositVal);
 
 
   const navCards = [

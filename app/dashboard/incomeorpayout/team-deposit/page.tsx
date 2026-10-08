@@ -55,14 +55,21 @@ export default function TeamDepositPage() {
 
     // Helper to calculate self sales and recursively sum up team sales
     const computeSales = (node: any): { self: number; team: number } => {
-      const self = salesMap[node.phone] || 0;
+      // The total_sales mapped here is actually the cumulative lifetime_sale from the backend
+      const cumulativeSales = salesMap[node.phone] || 0;
+      
       let team = 0;
       if (node.direct_referrals && node.direct_referrals.length > 0) {
         for (const child of node.direct_referrals) {
           const childSales = computeSales(child);
+          // Add the child's entire cumulative contribution to this node's team volume
           team += childSales.self + childSales.team;
         }
       }
+      
+      // Since cumulativeSales = self + team, we can perfectly deduce the self sales
+      const self = Math.max(0, cumulativeSales - team);
+      
       node.selfSales = self;
       node.teamSales = team;
       return { self, team };
